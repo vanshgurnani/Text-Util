@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const fetch = require('node-fetch'); // npm install node-fetch
+// const fetch = require('node-fetch'); // npm install node-fetch
 
 const app = express();
 app.use(cors()); // Enable CORS for all routes
@@ -18,7 +18,7 @@ app.get('/api/news', async (req, res) => {
 });
 
 // Start the server
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
