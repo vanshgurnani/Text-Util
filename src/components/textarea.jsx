@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './text.css';
-import axios from 'axios';
+// import axios from 'axios';
 
 function Textarea(props) {
   const [text, setText] = useState('Enter the text 2');
@@ -79,15 +79,15 @@ function Textarea(props) {
             cols="30"
           ></textarea>
         </div>
-        <button onClick={handleUpClick} className="btn btn-primary">Convert to UpperCase</button>
-        <button onClick={handleClear} className="btn btn-danger mx-2">Clear</button>
-        <button onClick={handleTextToSpeech} className="btn btn-success mx-2">Text to Speech</button>
+        <button onClick={handleUpClick} className="btn btn-primary mx-2 my-2">Convert to UpperCase</button>
+        <button onClick={handleClear} className="btn btn-danger mx-2 my-2">Clear</button>
+        <button onClick={handleTextToSpeech} className="btn btn-success mx-2 my-2">Text to Speech</button>
   {/*<button onClick={translateText} className="btn btn-primary mx-2">Translate to Japanese</button>*/}
       </div>
       <div className={`container ${style}`} style={{color: props.mode==='dark'?'white':'#042743'}}>
         <h1>Text Summary</h1>
-        <p>Character Count: {text.length}</p>
-        <p>Estimated Reading Time: {0.008 * text.split(" ").length} minutes</p>
+        <p>Character Count: {text.split(" ").filter((element)=>{return element.length!==0}).length}</p>
+        <p>Estimated Reading Time: {0.008 * text.split(" ").filter((element)=>{return element.length!==0}).length} minutes</p>
         <p>{text}</p>
       </div>
       {/*<div>

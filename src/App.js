@@ -36,7 +36,7 @@ function App() {
     <Alert alert={alert}/>
       <Routes>
         <Route exact path='' element={<TextArea showAlert={showAlert} head="Welcome to NotePad" mode={mode} />}/>
-        <Route exact path='/about' element={<About />}/>
+        <Route exact path='/about' element={<About mode={mode} />}/>
       </Routes>
     </Router>
   );
