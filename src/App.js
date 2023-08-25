@@ -38,7 +38,7 @@ function App() {
       <Routes>
         <Route exact path='' element={<TextArea showAlert={showAlert} head="Welcome to NotePad" mode={mode} />}/>
         <Route exact path='/about' element={<About mode={mode} />}/>
-        <Route exact path='/news' element={<News mode={mode} />}/>
+        <Route exact path='/news' element={<News pageSize={5} mode={mode} />}/>
         </Routes>
     </Router>
   );

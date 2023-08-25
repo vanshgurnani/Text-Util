@@ -2,6 +2,7 @@ import React from 'react'
 import {Link } from 'react-router-dom';
 
 function navbar(props) {
+  
   return (
     <>
     <nav className={`navbar navbar-expand-lg navbar-${props.mode} bg-${props.mode}`}>
@@ -22,7 +23,7 @@ function navbar(props) {
             <Link className="nav-link active" aria-current="page" to="/news">News</Link>
           </li>
         </ul>
-        <div className={`form-check form-switch text-${props.mode==='light'?'dark':'light'}`}>
+        <div className={`mx-2 form-check form-switch text-${props.mode==='light'?'dark':'light'}`}>
           <input className="form-check-input" type="checkbox" onClick={props.toggleMode} role="switch" id="flexSwitchCheckDefault"/>
           <label className="form-check-label" for="flexSwitchCheckDefault">Enable Dark Mode</label>
         </div>
