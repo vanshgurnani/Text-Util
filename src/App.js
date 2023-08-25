@@ -5,6 +5,7 @@ import TextArea from '../src/components/textarea';
 import About from '../src/components/about';
 import Navbar from '../src/components/navbar';
 import Alert from '../src/components/alert';
+import News from '../src/components/news';
 
 function App() {
   const [mode,setMode]=useState('light');
@@ -37,7 +38,8 @@ function App() {
       <Routes>
         <Route exact path='' element={<TextArea showAlert={showAlert} head="Welcome to NotePad" mode={mode} />}/>
         <Route exact path='/about' element={<About mode={mode} />}/>
-      </Routes>
+        <Route exact path='/news' element={<News mode={mode} />}/>
+        </Routes>
     </Router>
   );
 }

@@ -19,7 +19,7 @@ function navbar(props) {
             <Link className="nav-link active" aria-current="page" to="/about">About</Link>
           </li>
           <li className="nav-item">
-            <a className="nav-link active" aria-current="page" href="#">Contact</a>
+            <Link className="nav-link active" aria-current="page" to="/news">News</Link>
           </li>
         </ul>
         <div className={`form-check form-switch text-${props.mode==='light'?'dark':'light'}`}>
