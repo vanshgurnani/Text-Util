@@ -86,7 +86,7 @@ function Textarea(props) {
       </div>
       <div className={`container ${style}`} style={{color: props.mode==='dark'?'white':'#042743'}}>
         <h1>Text Summary</h1>
-        <p>Character Count: {text.split(" ").filter((element)=>{return element.length!==0}).length}</p>
+        <p>Character Count: {text.split(/\s+/).filter((element)=>{return element.length!==0}).length}</p>
         <p>Estimated Reading Time: {0.008 * text.split(" ").filter((element)=>{return element.length!==0}).length} minutes</p>
         <p>{text}</p>
       </div>
