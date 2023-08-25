@@ -1,0 +1,13 @@
+/* Textarea.css */
+.dark-mode {
+    color: white;
+    background-color: black;
+  }
+  
+  .light-mode {
+    color: black;
+    background-color: white;
+  }
+.body{
+  background-color: #042743;
+}  
