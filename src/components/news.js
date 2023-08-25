@@ -9,14 +9,13 @@ export default class news extends Component {
             articles: []
         };
     }
-    backendUrl = 'https://localhost:5000/api/news';
     async componentDidMount() {
         console.log("cdm");
-        // let url="https://newsapi.org/v2/top-headlines?country=in&category=business&apiKey=3e69e2dc8d9241889ee2d1372eafa6e7";
+        let url="https://newsapi.org/v2/top-headlines?country=in&category=business&apiKey=3e69e2dc8d9241889ee2d1372eafa6e7";
         // const apiKey = process.env.REACT_APP_API_KEY; // Replace with your actual variable name
         // const url = `https://newsapi.org/v2/top-headlines?country=in&category=business&apiKey=${apiKey}`;
-        // let data=await fetch(url);
-        const data = await fetch(backendUrl);
+        let data=await fetch(url);
+        // const data = await fetch(backendUrl);
         let parsedData=await data.json();
         console.log(parsedData);
         this.setState({articles: parsedData.articles});
