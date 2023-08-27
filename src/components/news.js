@@ -27,10 +27,11 @@ export default class News extends Component {
             page: 1,
             totalResults: 0 
         };
+        document.title = "News App "+ this.props.category;
     }
 
     async updateNews(pageNo){
-        const url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apikey=dbe57b028aeb41e285a226a94865f7a7&page=${this.state.page}&pageSize=${this.props.pageSize}`;
+        const url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apikey=${this.props.apiKey}&page=${this.state.page}&pageSize=${this.props.pageSize}`;
         this.setState({ loading: true });
         let data = await fetch(url);
         let parsedData = await data.json()
@@ -40,6 +41,8 @@ export default class News extends Component {
             loading: false
         })
     }
+
+    
 
     
     async componentDidMount() {
