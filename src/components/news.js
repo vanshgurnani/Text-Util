@@ -1,106 +1,85 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import NewsItem from '../components/newsitem';
 import Loader from './spinner';
 import PropTypes from 'prop-types';
 
-export default class News extends Component {
-    static defaultProps = {
-        country: 'in',
-        pageSize: 8,
-        category:"general",
-        heading:"General",
-    }
+function News(props) {
+    const [articles, setArticles] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(1);
+    const [totalResults, setTotalResults] = useState(0);
 
-    static propTypes = {  
-        country: PropTypes.string,
-        pageSize: PropTypes.number,
-        category: PropTypes.string,
-        heading: PropTypes.string,
-    }
-
-
-    constructor(props) {
-        super(props);
-        this.state = {
-            articles: [],
-            loading: false,
-            page: 1,
-            totalResults: 0 
-        };
-        document.title = "News App "+ this.props.category;
-    }
-
-    async updateNews(pageNo){
-        const url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apikey=${this.props.apiKey}&page=${this.state.page}&pageSize=${this.props.pageSize}`;
-        this.setState({ loading: true });
+    const updateNews = async (pageNo) => {
+        const url = `https://newsapi.org/v2/top-headlines?country=${props.country}&category=${props.category}&apikey=${props.apiKey}&page=${page}&pageSize=${props.pageSize}`;
+        setLoading(true);
         let data = await fetch(url);
-        let parsedData = await data.json()
-        this.setState({
-            articles: parsedData.articles,
-            totalResults: parsedData.totalResults,
-            loading: false
-        })
+        let parsedData = await data.json();
+        setArticles(parsedData.articles);
+        setTotalResults(parsedData.totalResults);
+        setLoading(false);
     }
 
-    
+    useEffect(() => {
+        document.title = "News App " + props.category;
+        updateNews();
+    }, [page]);
 
-    
-    async componentDidMount() {
-        this.updateNews();
+    const handleNextClick = () => {
+        setPage(page + 1);
+        
     }
 
-    handleNextClick = async () => {
-        this.setState({ page: this.state.page + 1 });
-        this.updateNews();
+    const handlePrevClick = () => {
+        setPage(page - 1);
     }
 
-    handlePrevClick = async () => {
-        this.setState({ page: this.state.page - 1 });
-        this.updateNews();
-    }
+    let mystyle = {
+        color: props.mode === 'dark' ? 'white' : '#042743'
+    };
 
-    render() {
-        let mystyle = {
-            color: this.props.mode === 'dark' ? 'white' : '#042743'
-        };
-        let {heading}=this.props;
-        return (
-            <div className='container my-3' style={mystyle}>
-                <h1 className='text-center'>This is {heading} Page - Top Headlines!</h1>
-                <div className="container d-flex justify-content-between">
-                        <button disabled={this.state.page <= 1} type="button" className="btn btn-dark" onClick={this.handlePrevClick}>
-                            &larr; Previous
-                        </button>
-                        <button disabled={this.state.page>=5} type="button" className="btn btn-dark" onClick={this.handleNextClick}>
-                            Next &rarr;
-                        </button>
-                        {/*+ 1 > Math.ceil(this.state.totalResults / 20*/}
-                </div>
-                {this.state.loading && <Loader />}
-                <div className="row mx-5">
-                    {!this.state.loading && this.state.articles.map((element) => (
-                        <div className="col-md-4" key={element.url}>
-                            <NewsItem
-                                title={element.title}
-                                description={element.description}
-                                imageurl={element.urlToImage}
-                                newsUrl={element.url}
-                                author={element.author}
-                                date={element.publishedAt}
-                                source={element.source.name}
-                            />
-                        </div>
-                    ))}
-                </div>
-                    {/*<div className="container d-flex justify-content-between">
-                        <button disabled={this.state.page <= 1} type="button" className="btn btn-dark" onClick={this.handlePrevClick}>
-                            &larr; Previous
-                        </button>
-                        <button disabled={this.state.page >= 3} type="button" className="btn btn-dark" onClick={this.handleNextClick}>
-                            Next &rarr;
-                        </button>
-                    </div>*/}
+    return (
+        <div className='container my-3' style={mystyle}>
+            <h1 className='text-center'>This is {props.heading} Page - Top Headlines!</h1>
+            <div className="container d-flex justify-content-between">
+                <button disabled={page <= 1} type="button" className="btn btn-dark" onClick={handlePrevClick}>
+                    &larr; Previous
+                </button>
+                <button disabled={page >= 5} type="button" className="btn btn-dark" onClick={handleNextClick}>
+                    Next &rarr;
+                </button>
             </div>
-        );
-    }
+            {loading && <Loader />}
+            <div className="row mx-5">
+                {!loading && articles.map((element) => (
+                    <div className="col-md-4" key={element.url}>
+                        <NewsItem
+                            title={element.title}
+                            description={element.description}
+                            imageurl={element.urlToImage}
+                            newsUrl={element.url}
+                            author={element.author}
+                            date={element.publishedAt}
+                            source={element.source.name}
+                        />
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
 }
+
+News.defaultProps = {
+    country: 'in',
+    pageSize: 8,
+    category: "general",
+    heading: "General",
+};
+
+News.propTypes = {
+    country: PropTypes.string,
+    pageSize: PropTypes.number,
+    category: PropTypes.string,
+    heading: PropTypes.string,
+};
+
+export default News;
