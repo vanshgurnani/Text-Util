@@ -20,7 +20,25 @@ function navbar(props) {
             <Link className="nav-link active" aria-current="page" to="/about">About</Link>
           </li>
           <li className="nav-item">
-            <Link className="nav-link active" aria-current="page" to="/news">News</Link>
+            <Link className="nav-link active" aria-current="page" to="/business"> Business</Link>
+          </li>
+          <li className="nav-item">
+            <Link className="nav-link active" aria-current="page" to="/entertainment">Entertainment</Link>
+          </li>
+          <li className="nav-item">
+            <Link className="nav-link active" aria-current="page" to="/health">Health</Link>
+          </li>
+          <li className="nav-item">
+            <Link className="nav-link active" aria-current="page" to="/science">Science</Link>
+          </li>
+          <li className="nav-item">
+            <Link className="nav-link active" aria-current="page" to="/sports">Sports</Link>
+          </li>
+          <li className="nav-item">
+            <Link className="nav-link active" aria-current="page" to="/technology">Technology</Link>
+          </li>
+          <li className="nav-item">
+            <Link className="nav-link active" aria-current="page" to="/general">General</Link>
           </li>
         </ul>
         <div className={`mx-2 form-check form-switch text-${props.mode==='light'?'dark':'light'}`}>

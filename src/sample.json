@@ -1,0 +1,266 @@
+{
+    "status": "ok",
+    "totalResults": 69,
+    "articles": [
+    {
+    "source": {
+    "id": null,
+    "name": "CNBC"
+    },
+    "author": "Hayden Field",
+    "title": "Instacart files to go public on Nasdaq to try and unfreeze tech IPO market  CNBC",
+    "description": "Following a 20month drought in venturebacked tech IPOs, Instacart filed on Friday to go public on the Nasdaq.",
+    "url": "https://www.cnbc.com/2023/08/25/instacartfilestogopubliconnasdaqtounfreezetechipomarket.html",
+    "urlToImage": "https://image.cnbcfm.com/api/v1/image/1072917381692907530309gettyimages1239231900INSTACART_SIMO.jpeg?v=1692987986&w=1920&h=1080",
+    "publishedAt": "20230825T18:26:26Z",
+    "content": "Instacart, the grocery delivery company that slashed its valuation during last year's market slide, filed its paperwork to go public on Friday in what's poised to be the first significant venturebac… [+4711 chars]"
+    },
+    {
+    "source": {
+    "id": "businessinsider",
+    "name": "Business Insider"
+    },
+    "author": "Jennifer Sor",
+    "title": "Housing Market: Homebuyers Lost $71,000 in Purchasing Power in 2023  Markets Insider",
+    "description": "The housing affordability crisis has been created in large part by high mortgage rates, with the 30year fixed rate clocking in around 7.5% this week.",
+    "url": "https://markets.businessinsider.com/news/commodities/housingmarketaffordabilitymortgagerateshomebuyerpurchasingpowerredfin20238",
+    "urlToImage": "https://i.insider.com/62a20cb32253ea001951ed05?width=1200&format=jpeg",
+    "publishedAt": "20230825T17:55:00Z",
+    "content": "The average homebuyer lost around $71,000 in purchasing power over the last year, according to a new Redfin analysis\r\nThat's due in large part to high mortgage rates, which have created a housing aff… [+1925 chars]"
+    },
+    {
+    "source": {
+    "id": "reuters",
+    "name": "Reuters"
+    },
+    "author": "Hannah Lang",
+    "title": "Biden administration unveils new crypto tax reporting rules  Reuters",
+    "description": "Cryptocurrency brokers, including exchanges and payment processors, would have to report new information on users' sales and exchanges of digital assets to the Internal Revenue Service (IRS) under a proposed U.S. Treasury Department rule published on Friday.",
+    "url": "https://www.reuters.com/markets/us/bidenadministrationunveilsnewcryptotaxreportingrules20230825/",
+    "urlToImage": "https://www.reuters.com/resizer/K8xS8NpiUCzYx1IUSjpUVW64yB4=/1200x628/smart/filters:quality(80)/cloudfrontuseast2.images.arcpublishing.com/reuters/KAKYS42VTZLOHGEIMSJE2K54AE.jpg",
+    "publishedAt": "20230825T16:58:00Z",
+    "content": "Aug 25 (Reuters)  Cryptocurrency brokers, including exchanges and payment processors, would have to report new information on users' sales and exchanges of digital assets to the Internal Revenue Ser… [+3856 chars]"
+    },
+    {
+    "source": {
+    "id": null,
+    "name": "YouTube"
+    },
+    "author": null,
+    "title": "The market has reacted to Powell's comments neutrally, says former Dallas Fed President Fisher  CNBC Television",
+    "description": "Richard Fisher, Barclay's senior advisor and former U.S. Federal Reserve Bank of Dallas president, joins 'Halftime Report' to discuss the market reaction to ...",
+    "url": "https://www.youtube.com/watch?v=KKp6a8CCcHY",
+    "urlToImage": "https://i.ytimg.com/vi/KKp6a8CCcHY/maxresdefault.jpg",
+    "publishedAt": "20230825T16:56:38Z",
+    "content": null
+    },
+    {
+    "source": {
+    "id": null,
+    "name": "Investor's Business Daily"
+    },
+    "author": "Investor's Business Daily",
+    "title": "Fed Chair Powell At Jackson Hole: More Rate Hikes A Real Threat; S&P 500 Shrugs  Investor's Business Daily",
+    "description": null,
+    "url": "https://www.investors.com/news/federalreservechairpowellatjacksonholeherestherealriskforthesp500/",
+    "urlToImage": null,
+    "publishedAt": "20230825T16:40:00Z",
+    "content": null
+    },
+    {
+    "source": {
+    "id": null,
+    "name": "NBC Chicago"
+    },
+    "author": "NBC 5 Staff",
+    "title": "Facebook settlement claim forms close Friday. How to apply for a piece of the $725M settlement  NBC Chicago",
+    "description": "You've got one day left to fill out a Facebook settlement claim form to be part of a $725 million classaction privacy lawsuit.",
+    "url": "https://www.nbcchicago.com/news/tech/facebookprivacysettlementdeadlineclaimclaimformhowtoapply/3214906/",
+    "urlToImage": "https://media.nbcchicago.com/2022/08/GettyImages1240931270.jpg?quality=85&strip=all&resize=1200%2C675",
+    "publishedAt": "20230825T16:31:43Z",
+    "content": "Facebook users, the clock is ticking. \r\nThe deadline to file a claim in a $725 million classaction Facebook privacy settlement is Friday, and only eligible users who file a claim will be among those… [+6000 chars]"
+    },
+    {
+    "source": {
+    "id": null,
+    "name": "Yahoo Entertainment"
+    },
+    "author": "Lewis Krauskopf and Yoruk Bahceli",
+    "title": "BofA sees \"trouble\" ahead for tech stocks despite big inflows  Yahoo Finance",
+    "description": "Strategists at BofA Global Research see secondhalf \"trouble\" for technology stocks even as the sector took in its largest inflow in 10 weeks, the firm said ...",
+    "url": "https://finance.yahoo.com/news/bofaseestroubleaheadtech162101597.html",
+    "urlToImage": "https://media.zenfs.com/en/reutersfinance.com/1a86fe6291396f4ae8d65b4519c24323",
+    "publishedAt": "20230825T16:21:01Z",
+    "content": "By Lewis Krauskopf and Yoruk Bahceli\r\n(Reuters)  Strategists at BofA Global Research see secondhalf \"trouble\" for technology stocks even as the sector took in its largest inflow in 10 weeks, the fi… [+1336 chars]"
+    },
+    {
+    "source": {
+    "id": null,
+    "name": "The Guardian"
+    },
+    "author": "Kalyeena Makortoff",
+    "title": "Heineken exits Russia with €1 sale of operations  The Guardian",
+    "description": "Dutch multinational brewer takes €300m loss from transfer of assets to Russia’s Arnest Group",
+    "url": "https://www.theguardian.com/world/2023/aug/25/heinekencompleteslengthyexitfromrussiawithsaleofoperationsfor1",
+    "urlToImage": "https://i.guim.co.uk/img/media/804e0ceb3eb93c064ac403df1d98aa17843362da/0_114_4004_2403/master/4004.jpg?width=1200&height=630&quality=85&auto=format&fit=crop&overlayalign=bottom%2Cleft&overlaywidth=100p&overlaybase64=L2ltZy9zdGF0aWMvb3ZlcmxheXMvdGctZGVmYXVsdC5wbmc&enable=upscale&s=eacecdc7d882db6e426384cce979cdac",
+    "publishedAt": "20230825T16:19:00Z",
+    "content": "Heineken has completed its lengthy exit from Russia with the sale of its operations there for a symbolic 1, after Moscow clamped down on asset sales in retaliation for western sanctions.\r\nThe Dutch b… [+7769 chars]"
+    },
+    {
+    "source": {
+    "id": null,
+    "name": "Barron's"
+    },
+    "author": "Angela Palumbo, Shaina Mishkin",
+    "title": "Zillow Launches Loan Program to Help Home Buyers as Mortgage Rates Soar  Barron's",
+    "description": "The group is offering a downpayment program, through which borrowers will offer up 1% and it will contribute the additional 2%.",
+    "url": "https://www.barrons.com/articles/zillowloanhomebuyersmortgageratesstockdc1266a1",
+    "urlToImage": "https://images.barrons.com/im614071/social",
+    "publishedAt": "20230825T16:10:00Z",
+    "content": null
+    },
+    {
+    "source": {
+    "id": null,
+    "name": "Yahoo Entertainment"
+    },
+    "author": "Reuters",
+    "title": "Private equity firm Veritas makes a takeover offer for BlackBerry  source  Yahoo Finance",
+    "description": "U.Slisted shares of BlackBerry rose about 17%.  Veritas and Blackberry did not immediately respond to Reuters requests for comment.  BlackBerry had said in ...",
+    "url": "https://finance.yahoo.com/news/veritassaidconsidertakeoveroffer160810364.html",
+    "urlToImage": "https://media.zenfs.com/en/reutersfinance.com/735031a36545a875269837c8a3dd9127",
+    "publishedAt": "20230825T16:08:10Z",
+    "content": "(Reuters) Private equity firm Veritas Capital has made an offer to buy Canadian software company BlackBerry, according to a person familiar with the matter.\r\nU.Slisted shares of BlackBerry rose abo… [+1075 chars]"
+    },
+    {
+    "source": {
+    "id": "thewallstreetjournal",
+    "name": "The Wall Street Journal"
+    },
+    "author": "Alexander Gladstone, Andrew Scurria, Jodi Xu Klein",
+    "title": "Rite Aid Prepares Bankruptcy That Would Halt Opioid Lawsuits  The Wall Street Journal",
+    "description": "The drugstore chain is preparing a chapter 11 filing within weeks and doesn’t have an agreement with opioid plaintiffs, people familiar with its plans said",
+    "url": "https://www.wsj.com/articles/riteaidpreparesbankruptcythatwouldhaltopioidlawsuits69f94242",
+    "urlToImage": "https://images.wsj.net/im841852/social",
+    "publishedAt": "20230825T15:59:00Z",
+    "content": null
+    },
+    {
+    "source": {
+    "id": "cnn",
+    "name": "CNN"
+    },
+    "author": "Chris Isidore",
+    "title": "UAW members approve possible strikes at GM, Ford and Stellantis  CNN",
+    "description": "Members of the United Auto Workers union overwhelmingly approved possible strikes at the nation’s three unionized automakers next month, as the union tries to win back many of the concessions it lost more than 15 years ago and protect members during the trans…",
+    "url": "https://www.cnn.com/2023/08/25/business/uawstrikevotegmfordstellantis/index.html",
+    "urlToImage": "https://media.cnn.com/api/v1/images/stellar/prod/23082416310001gmfactorydetroit111721file.jpg?c=16x9&q=w_800,c_fill",
+    "publishedAt": "20230825T15:40:00Z",
+    "content": "Members of the United Auto Workers union overwhelmingly approved possible strikes at the nations three unionized automakers next month, as the union tries to win back many of the concessions it lost … [+4084 chars]"
+    },
+    {
+    "source": {
+    "id": "reuters",
+    "name": "Reuters"
+    },
+    "author": "Lewis Krauskopf, Chibuike Oguh, Lance Tupper",
+    "title": "Nvidia's $25 billion buyback 'a headscratcher' for some shareholders  Reuters",
+    "description": "Nvidia's <a href=\"https://www.reuters.com/markets/companies/NVDA.O\" target=\"_blank\">(NVDA.O)</a> move to buy back $25 billion of its shares after its stock has more than tripled this year caught some investors offguard, even as they cheered a stellar second…",
+    "url": "https://www.reuters.com/technology/nvidias25billionbuybackaheadscratchersomeshareholders20230825/",
+    "urlToImage": "https://www.reuters.com/resizer/nHxilCSRV9iQaZZe9g_7EztTCM=/1200x628/smart/filters:quality(80)/cloudfrontuseast2.images.arcpublishing.com/reuters/GZR23324W5JGZKFWWSGDYKTHSE.jpg",
+    "publishedAt": "20230825T15:33:06Z",
+    "content": "NEW YORK, Aug 25 (Reuters)  Nvidia's (NVDA.O) move to buy back $25 billion of its shares after its stock has more than tripled this year caught some investors offguard, even as they cheered a stell… [+5093 chars]"
+    },
+    {
+    "source": {
+    "id": null,
+    "name": "Investor's Business Daily"
+    },
+    "author": "Investor's Business Daily",
+    "title": "Market Suffers Big Reversal Amid Nvidia, Powell: Weekly Review  Investor's Business Daily",
+    "description": null,
+    "url": "https://www.investors.com/news/marketrallyattemptsuffersbigreversalnvidiaearningspowellspeech/",
+    "urlToImage": null,
+    "publishedAt": "20230825T15:16:00Z",
+    "content": null
+    },
+    {
+    "source": {
+    "id": null,
+    "name": "Barron's"
+    },
+    "author": "Angela Palumbo",
+    "title": "Ulta Posts a BeatandRaise Quarter. It Will 'Continue to Outperform Peers.'  Barron's",
+    "description": "Ulta Beauty reports secondquarter earnings and revenue that beat Wall Street expectations.",
+    "url": "https://www.barrons.com/articles/ultabeautystockearningscb908344",
+    "urlToImage": "https://images.barrons.com/im842046/social",
+    "publishedAt": "20230825T14:44:00Z",
+    "content": "Ulta Beautys\r\nquarterly earnings beat Wall Street expectations, highlighting a resilient beauty category, according to a Canaccord Genuity analyst.\r\n Ulta\r\n(ticker: ULTA) reported secondquarter earn… [+2755 chars]"
+    },
+    {
+    "source": {
+    "id": null,
+    "name": "MarketWatch"
+    },
+    "author": "Barbara Kollmeyer",
+    "title": "'We are going to need a new story' to get investors excited again, says Morgan Stanley's Mike Wilson  MarketWatch",
+    "description": "Morgan Stanley's chief investment strategist Mike Wilson says the hunt is on for a new theme for markets to latch on to to resume a march higher.",
+    "url": "https://www.marketwatch.com/story/wearegoingtoneedanewstorytogetinvestorsexcitedagainsaysmorganstanleysmikewilsonc867a2a5",
+    "urlToImage": "https://images.mktw.net/im809979/social",
+    "publishedAt": "20230825T14:29:00Z",
+    "content": "While some investors had hoped that Nvidia Corp.s \r\n NVDA,\r\n 3.66%\r\nblowout earnings would light a fuse under Wall Street, as Thursdays losses showed, that was not meant to be. Some of that was pegg… [+1840 chars]"
+    },
+    {
+    "source": {
+    "id": null,
+    "name": "WTOP"
+    },
+    "author": "Jeff Clabaugh",
+    "title": "DC region’s oldest bank is getting much bigger  WTOP",
+    "description": "Burke & Herbert Bank, the oldest continuouslyoperating bank in the D.C. region, will more than double in size through a merger with Summit Financial Group.",
+    "url": "https://wtop.com/businessfinance/2023/08/dcregionsoldestbankisgettingmuchbigger/",
+    "urlToImage": "https://wtop.com/wpcontent/uploads/2023/08/082523_burke_herbert.jpg",
+    "publishedAt": "20230825T14:23:53Z",
+    "content": "Burke &amp; Herbert CEO David Boyle will serve as chief executive of the merged bank. (Courtesy Burke &amp; Herbert)\r\nAlexandria, Virginiabased Burke &amp; Herbert Bank will more than double in size… [+1564 chars]"
+    },
+    {
+    "source": {
+    "id": null,
+    "name": "Barron's"
+    },
+    "author": "Adam Clark",
+    "title": "Affirm Stock Is Soaring. Why Analysts Are Split on Its Prospects.  Barron's",
+    "description": "Affirm stock was rising on Friday as shareholders welcomed its revenue growth. Analysts are split on how it can deal with economic headwinds.",
+    "url": "https://www.barrons.com/articles/affirmstockearningscreditqualitystudentloans79f6ddab",
+    "urlToImage": "https://images.barrons.com/im368966/social",
+    "publishedAt": "20230825T14:12:00Z",
+    "content": "Affirm\r\nHoldings stock was surging Friday but Wall Street analysts were divided on whether its the right time to back the stock after the pay later company shrugged off concerns about strains on cons… [+1859 chars]"
+    },
+    {
+    "source": {
+    "id": "usatoday",
+    "name": "USA Today"
+    },
+    "author": ", USA TODAY",
+    "title": "2 more eye drop products recalled after being linked to potentially deadly bacteria  USA TODAY",
+    "description": "According to the Federal Drug Administration, consumers should not use Dr. Berne’s MSM Drops 5% Solution or LightEyez MSM Eye Drops.",
+    "url": "https://www.usatoday.com/story/news/health/2023/08/25/eyedropproductsrecalledbacteriacontamination/70677272007/",
+    "urlToImage": "https://www.gannettcdn.com/presto/2019/07/06/USAT/bf3e925078714dc4bb06e8598e06deffeyedropsgetty.jpg?auto=webp&crop=2120,1193,x1,y69&format=pjpg&width=1200",
+    "publishedAt": "20230825T14:08:51Z",
+    "content": "The Federal Drug Administration is warning people to stop using two more eye drop products after the agency found bacterial contamination in some of them.\r\nAccording to a notice posted on the FDA's w… [+2102 chars]"
+    },
+    {
+    "source": {
+    "id": null,
+    "name": "Nlrb.gov"
+    },
+    "author": null,
+    "title": "Board Issues Decision Announcing New Framework for Union Representation Proceedings  National Labor Relations Board",
+    "description": null,
+    "url": "https://www.nlrb.gov/newsoutreach/newsstory/boardissuesdecisionannouncingnewframeworkforunionrepresentation",
+    "urlToImage": null,
+    "publishedAt": "20230825T14:06:21Z",
+    "content": null
+    }
+    ]
+    }

@@ -5,7 +5,7 @@ export class newsitem extends Component {
   
 
   render() {
-    let { title, description, imageurl, newsUrl } = this.props;
+    let { title, description, imageurl, newsUrl, author, date,source } = this.props;
 
     return (
       <>
@@ -14,6 +14,8 @@ export class newsitem extends Component {
           <div className="card-body">
             <h5 className="card-title">{title}</h5>
             {/*<p className="card-text">{description}</p>*/}
+            <span class="badge text-bg-success">{source}</span>
+            <p className="card-text"><small class="text-muted">By {!author?"Unknown" : author} <br /> on {date}</small></p>
             <a href={newsUrl} className="btn btn-primary" target='_blank'>Read More</a>
           </div>
         </div>

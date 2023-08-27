@@ -38,7 +38,14 @@ function App() {
       <Routes>
         <Route exact path='' element={<TextArea showAlert={showAlert} head="Welcome to NotePad" mode={mode} />}/>
         <Route exact path='/about' element={<About mode={mode} />}/>
-        <Route exact path='/news' element={<News pageSize={5} mode={mode} />}/>
+        <Route exact path='/general' element={<News key="general" heading="General" pageSize={5} country="in" category="general" mode={mode} />}/>
+        <Route exact path='/business' element={<News key="business" heading="Business" pageSize={5} country="in" category="business" mode={mode} />}/>
+        <Route exact path='/entertainment' element={<News key="entertainment" heading="Entertainment" pageSize={5} country="in" category="entertainment" mode={mode} />}/>
+
+        <Route exact path='/health' element={<News key="health" heading="Health" pageSize={5} country="in" category="health" mode={mode} />}/>
+        <Route exact path='/science' element={<News key="science" heading="Science" pageSize={5} country="in" category="science" mode={mode} />}/>
+        <Route exact path='/sports' element={<News key="sports" heading="Sports" pageSize={5} country="in" category="sports" mode={mode} />}/>
+        <Route exact path='/technology' element={<News key="technology" heading="Technology" pageSize={5} country="in" category="technology" mode={mode} />}/>
         </Routes>
     </Router>
   );
