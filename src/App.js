@@ -12,8 +12,8 @@ function App(props) {
   const [mode,setMode]=useState('light');
   const [alert,setAlert]=useState(null);
   
-    // const api = process.env.REACT_APP_NEWS_API;
-    const api="3e69e2dc8d9241889ee2d1372eafa6e7";
+    const api = process.env.REACT_APP_NEWS_API;
+    // const api="3e69e2dc8d9241889ee2d1372eafa6e7";
   
   const showAlert=(message,type)=>{
       setAlert({
