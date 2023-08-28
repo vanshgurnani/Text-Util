@@ -26,7 +26,6 @@ function News(props) {
 
     const handleNextClick = () => {
         setPage(page + 1);
-        
     }
 
     const handlePrevClick = () => {

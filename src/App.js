@@ -6,7 +6,7 @@ import About from '../src/components/about';
 import Navbar from '../src/components/navbar';
 import Alert from '../src/components/alert';
 import News from '../src/components/news';
-// import LoadingBar from 'react-top-loading-bar';
+
 
 function App(props) {
   const [mode,setMode]=useState('light');
@@ -33,6 +33,7 @@ function App(props) {
       document.body.style.backgroundColor='white';
       showAlert("Light Mode has been enabled","warning");
       document.title="Notepad Light Mode";
+      console.log(api)
     }
   }
   return (
