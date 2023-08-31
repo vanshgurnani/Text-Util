@@ -38,7 +38,7 @@ function News(props) {
     };
 
     return (
-        <div className='container my-3' style={mystyle}>
+        <div className='container my-3 mr-3' style={mystyle}>
             <h1 className='text-center'>This is {props.heading} Page - Top Headlines!</h1>
             <div className="container d-flex justify-content-between">
                 <button disabled={page <= 1} type="button" className="btn btn-dark" onClick={handlePrevClick}>
