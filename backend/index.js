@@ -22,18 +22,20 @@ const PORT = process.env.PORT || 5000;
 //     },
 //   };
   
-//   app.use(cors(corsOptions));
-const allowedOrigins = [
-    'http://localhost:3000',
-    'https://text-util-rosy.vercel.app', // Replace with your Vercel frontend URL
-  ];
+// //   app.use(cors(corsOptions));
+// const allowedOrigins = [
+//     'http://localhost:3000',
+//     'https://text-util-rosy.vercel.app', // Replace with your Vercel frontend URL
+//   ];
   
-  app.use(cors({
-    origin: allowedOrigins,
+//   app.use(cors({
+//     origin: allowedOrigins,
+//   }));
+// // app.use(cors());
+// app.use(express.json());
+app.use(cors({
+    origin: '*',
   }));
-// app.use(cors());
-app.use(express.json());
-
 // Define database and collection names
 const DB_NAME = 'Notepad';
 const COLLECTION_NAME = 'notes';

@@ -26,44 +26,17 @@ function Textarea(props) {
   // };
   
    // Function to save note to the backend
-  //  const saveNote = async () => {
-  //   try {
-  //     const response = await axios.post('http://localhost:5000/api/notes', { content: text });
-  //     if (response.data.success) {
-  //       props.showAlert('Note saved successfully!', 'success');
-  //     }
-  //   } catch (error) {
-  //     console.error('Error saving note:', error);
-  //     props.showAlert('Error saving note', 'danger');
-  //   }
-  // };
-
-  const saveNote = async () => {
-    const backendUrl = 'https://text-util-rosy.vercel.app/'; // Update this with your deployed backend URL
-    const fallbackUrl = 'http://localhost:5000'; // Fallback URL
-  
+   const saveNote = async () => {
     try {
-      const response = await axios.post(`${backendUrl}/api/notes`, { content: text });
+      const response = await axios.post('http://localhost:5000/api/notes', { content: text });
       if (response.data.success) {
         props.showAlert('Note saved successfully!', 'success');
       }
     } catch (error) {
       console.error('Error saving note:', error);
       props.showAlert('Error saving note', 'danger');
-  
-      // If the main backend URL fails, try the fallback URL
-      try {
-        const fallbackResponse = await axios.post(`${fallbackUrl}/api/notes`, { content: text });
-        if (fallbackResponse.data.success) {
-          props.showAlert('Note saved successfully using fallback!', 'success');
-        }
-      } catch (fallbackError) {
-        console.error('Error saving note using fallback:', fallbackError);
-        props.showAlert('Error saving note using fallback', 'danger');
-      }
     }
   };
-  
 
   const [style,setStyle]=useState({
     color: 'white',
