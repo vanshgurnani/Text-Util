@@ -55,7 +55,7 @@ function News(props) {
                         <NewsItem
                             title={element.title}
                             description={element.description}
-                            imageurl={element.urlToImage}
+                            imageurl={element.image}
                             newsUrl={element.url}
                             author={element.author}
                             date={element.publishedAt}
