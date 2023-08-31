@@ -19,6 +19,8 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "server": "node backend/index.js",
+    "start:both": "concurrently \"npm start\" \"npm run server\"",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -42,6 +44,7 @@
     ]
   },
   "devDependencies": {
+    "concurrently": "^8.2.1",
     "gh-pages": "^6.0.0"
   }
 }

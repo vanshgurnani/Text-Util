@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './text.css';
-// import axios from 'axios';
+import axios from 'axios';
 
 function Textarea(props) {
   const [text, setText] = useState('Enter the text 2');
@@ -24,6 +24,19 @@ function Textarea(props) {
   //     console.error('Error translating text:', error);
   //   }
   // };
+  
+   // Function to save note to the backend
+   const saveNote = async () => {
+    try {
+      const response = await axios.post('http://localhost:5000/api/notes', { content: text });
+      if (response.data.success) {
+        props.showAlert('Note saved successfully!', 'success');
+      }
+    } catch (error) {
+      console.error('Error saving note:', error);
+      props.showAlert('Error saving note', 'danger');
+    }
+  };
 
   const [style,setStyle]=useState({
     color: 'white',
@@ -82,6 +95,12 @@ function Textarea(props) {
         <button onClick={handleUpClick} className="btn btn-primary mx-2 my-2">Convert to UpperCase</button>
         <button onClick={handleClear} className="btn btn-danger mx-2 my-2">Clear</button>
         <button onClick={handleTextToSpeech} className="btn btn-success mx-2 my-2">Text to Speech</button>
+        <button
+          onClick={saveNote} // Call the saveNote function when the button is clicked
+          className="btn btn-primary mx-2 my-2"
+        >
+          Save Note
+        </button>
   {/*<button onClick={translateText} className="btn btn-primary mx-2">Translate to Japanese</button>*/}
       </div>
       <div className={`container ${style}`} style={{color: props.mode==='dark'?'white':'#042743'}}>

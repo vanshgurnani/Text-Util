@@ -1,4 +1,9 @@
 82eaf160352071845c1e96c0c108cc7a
 https:///top-headlines?category=general&apikey=82eaf160352071845c1e96c0c108cc7a
 
+
 https://gnews.io/api/v4/top-headlines?country=${props.country}&category=${props.category}&apikey=${props.apiKey}&page=${page}&pageSize=${props.pageSize}
+
+const url = 'mongodb+srv://gurnanivansh57:iz64rqtBBQss8iQ7@cluster101.nuwewcc.mongodb.net/tododb?retryWrites=true&w=majority';
+
+npm run start:both
