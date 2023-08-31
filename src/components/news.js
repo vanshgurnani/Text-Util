@@ -10,7 +10,8 @@ function News(props) {
     const [totalResults, setTotalResults] = useState(0);
 
     const updateNews = async (pageNo) => {
-        const url = `https://newsapi.org/v2/top-headlines?country=${props.country}&category=${props.category}&apikey=${props.apiKey}&page=${page}&pageSize=${props.pageSize}`;
+        // const url = `https://newsapi.org/v2/top-headlines?country=${props.country}&category=${props.category}&apikey=${props.apiKey}&page=${page}&pageSize=${props.pageSize}`;
+        const url=`https://gnews.io/api/v4/top-headlines?country=${props.country}&category=${props.category}&apikey=${props.apiKey}&page=${page}&pageSize=${props.pageSize}`;
         setLoading(true);
         let data = await fetch(url);
         let parsedData = await data.json();
