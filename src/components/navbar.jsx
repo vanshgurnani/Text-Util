@@ -19,27 +19,33 @@ function navbar(props) {
           <li className="nav-item">
             <Link className="nav-link active" aria-current="page" to="/about">About</Link>
           </li>
-          <li className="nav-item">
-            <Link className="nav-link active" aria-current="page" to="/business"> Business</Link>
-          </li>
-          <li className="nav-item">
-            <Link className="nav-link active" aria-current="page" to="/entertainment">Entertainment</Link>
-          </li>
-          <li className="nav-item">
-            <Link className="nav-link active" aria-current="page" to="/health">Health</Link>
-          </li>
-          <li className="nav-item">
-            <Link className="nav-link active" aria-current="page" to="/science">Science</Link>
-          </li>
-          <li className="nav-item">
-            <Link className="nav-link active" aria-current="page" to="/sports">Sports</Link>
-          </li>
-          <li className="nav-item">
-            <Link className="nav-link active" aria-current="page" to="/technology">Technology</Link>
-          </li>
-          <li className="nav-item">
-            <Link className="nav-link active" aria-current="page" to="/general">General</Link>
-          </li>
+  <div class="btn-group">
+  <button type="button" class="btn btn-primary" data-bs-toggle="dropdown" aria-expanded="false">News</button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li className="nav-item">
+      <Link className="nav-link active" aria-current="page" to="/business"> Business</Link>
+    </li>
+    <li className="nav-item">
+      <Link className="nav-link active" aria-current="page" to="/health">Health</Link>
+    </li>
+    <li className="nav-item">
+      <Link className="nav-link active" aria-current="page" to="/entertainment">Entertainment</Link>
+    </li>
+
+    <li className="nav-item">
+      <Link className="nav-link active" aria-current="page" to="/science">Science</Link>
+    </li>
+    <li className="nav-item">
+      <Link className="nav-link active" aria-current="page" to="/sports">Sports</Link>
+    </li>
+    <li className="nav-item">
+      <Link className="nav-link active" aria-current="page" to="/technology">Technology</Link>
+    </li>
+    <li className="nav-item">
+        <Link className="nav-link active" aria-current="page" to="/general">General</Link>
+    </li>
+  </ul>
+</div>
         </ul>
         <div className={`mx-2 form-check form-switch text-${props.mode==='light'?'dark':'light'}`}>
           <input className="form-check-input" type="checkbox" onClick={props.toggleMode} role="switch" id="flexSwitchCheckDefault"/>
