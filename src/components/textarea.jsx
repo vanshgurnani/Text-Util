@@ -39,7 +39,7 @@ function Textarea(props) {
   // };
 
   const saveNote = async () => {
-    const backendUrl = 'https://text-util-rosy.vercel.app/'; // Update this with your deployed backend URL
+    const backendUrl = 'https://text-util-2rh9.vercel.app/'; // Update this with your deployed backend URL
     const fallbackUrl = 'http://localhost:5000'; // Fallback URL
   
     try {
