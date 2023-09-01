@@ -25,7 +25,9 @@ const PORT = process.env.PORT || 5000;
 //   app.use(cors(corsOptions));
 const allowedOrigins = [
     'http://localhost:3000',
-    'https://text-util-rosy.vercel.app', // Replace with your Vercel frontend URL
+    'https://text-util-rosy.vercel.app',
+  // Replace with your Vercel frontend URL
+  'mongodb+srv://gurnanivansh57:iz64rqtBBQss8iQ7@cluster101.nuwewcc.mongodb.net/${DB_NAME}?retryWrites=true&w=majority',
   ];
   
   app.use(cors({
