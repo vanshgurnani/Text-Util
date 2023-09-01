@@ -28,7 +28,7 @@ function Textarea(props) {
    // Function to save note to the backend
    const saveNote = async () => {
     try {
-      const response = await axios.post('https://text-util-rosy.vercel.app/api/notes', { content: text });
+      const response = await axios.post('https://text-util-w8t2.vercel.app/api/notes', { content: text });
       if (response.data.success) {
         props.showAlert('Note saved successfully!', 'success');
       }
