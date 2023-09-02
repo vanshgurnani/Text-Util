@@ -53,6 +53,12 @@ const NoteSchema = new mongoose.Schema({
 // Use the provided collection name in the model
 const Note = mongoose.model(COLLECTION_NAME, NoteSchema);
 
+
+// Define a route for the home route ("/")
+app.get('/', (req, res) => {
+  res.send('Welcome to the Notepad API');
+});
+
 // Create a new note
 app.post('/api/notes', async (req, res) => {
   try {
@@ -66,7 +72,7 @@ app.post('/api/notes', async (req, res) => {
   }
 });
 // Get all notes
-app.get('/', async (req, res) => {
+app.get('/api/notes', async (req, res) => {
   try {
     const notes = await Note.find(); // Fetch all notes from the database
     res.json(notes);
