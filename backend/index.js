@@ -66,7 +66,7 @@ app.post('/api/notes', async (req, res) => {
   }
 });
 // Get all notes
-app.get('/api/notes', async (req, res) => {
+app.get('/', async (req, res) => {
   try {
     const notes = await Note.find(); // Fetch all notes from the database
     res.json(notes);
