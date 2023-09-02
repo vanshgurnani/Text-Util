@@ -66,6 +66,16 @@ app.post('/api/notes', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+// Get all notes
+app.get('/apir/notes', async (req, res) => {
+  try {
+    const notes = await Note.find(); // Fetch all notes from the database
+    res.json(notes);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 // More routes for reading, updating, and deleting notes
 
