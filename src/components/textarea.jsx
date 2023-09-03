@@ -1,36 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './text.css';
 import axios from 'axios';
 
 function Textarea(props) {
   const [text, setText] = useState('Enter the text 2');
-  // const [japaneseText, setJapaneseText] = useState('');
-  // const [btn,setBtn]=useState("Enter dark mode");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
 
+  useEffect(() => {
+    // Load initial notes or perform any other necessary setup
+    loadNotes();
+  }, []);
 
-  // const translateText = async () => {
-  //   try {
-  //     const response = await axios.post(
-  //       `https://translation.googleapis.com/language/translate/v2?key=YOUR_API_KEY`,
-  //       {
-  //         q: text,
-  //         target: 'ja', // Target language: Japanese
-  //       }
-  //     );
+  const loadNotes = async () => {
+    try {
+      const response = await axios.get('https://text-util-83cs.vercel.app/api/notes');
+      setSearchResults(response.data.notes);
+    } catch (error) {
+      console.error('Error loading notes:', error);
+    }
+  };
 
-  //     const translatedText = response.data.data.translations[0].translatedText;
-  //     setJapaneseText(translatedText);
-  //   } catch (error) {
-  //     console.error('Error translating text:', error);
-  //   }
-  // };
-  
-   // Function to save note to the backend
-   const saveNote = async () => {
+  const searchNotes = async () => {
+    try {
+      const response = await axios.get(`https://text-util-83cs.vercel.app/api/search?searchTerm=${searchTerm}`);
+      setSearchResults(response.data.notes);
+    } catch (error) {
+      console.error('Error searching for notes:', error);
+    }
+  };
+
+  // Function to save note to the backend
+  const saveNote = async () => {
     try {
       const response = await axios.post('https://text-util-83cs.vercel.app/api/notes', { content: text });
       if (response.data.success) {
         props.showAlert('Note saved successfully!', 'success');
+        loadNotes(); // Refresh the notes list after saving
       }
     } catch (error) {
       console.error('Error saving note:', error);
@@ -38,15 +44,15 @@ function Textarea(props) {
     }
   };
 
-  const [style,setStyle]=useState({
+  const [style, setStyle] = useState({
     color: 'white',
-    backgroundColor: 'black'
-  })
+    backgroundColor: 'black',
+  });
 
   const handleUpClick = () => {
     let newText = text.toUpperCase();
     setText(newText);
-    props.showAlert("Converted to Uppercase!","success");
+    props.showAlert('Converted to Uppercase!', 'success');
   };
 
   const handleUpChange = (event) => {
@@ -67,52 +73,71 @@ function Textarea(props) {
     }
   };
 
-  // const toggle = () => {
-  //   if (style === 'light-mode') {
-  //     setStyle('dark-mode');
-  //     setBtn("Enter Light Mode");
-  //   } else {
-  //     setStyle('light-mode');
-  //     setBtn("Enter Dark Mode");
-  //   }
-  // }
-
   return (
     <>
-      <div className={`container ${style}`} style={{color: props.mode==='dark'?'white':'#042743'}}>
-        <h1>{props.head}</h1>
-        <div className='mb-3'>
-          <textarea
-            className="form-control"
-            onChange={handleUpChange}
-            value={text}
-            id="myBox"
-            rows="8"
-            style={{ resize: "none" }}
-            cols="30"
-          ></textarea>
+      <div className={`container ${style}`} style={{ color: props.mode === 'dark' ? 'white' : '#042743' }}>
+        <div className='d-flex justify-content-between'>
+
+          <h1>{props.head}</h1>
+          {/* Search input and button */}
+          <div className="mb-3 d-flex">
+            <input
+              className="form-control me-2" type="search" aria-label="Search"
+              placeholder="Search notes..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <button onClick={searchNotes} className="btn btn-primary px-4 mx-2 my-2">
+              Search
+            </button>
+          </div>
         </div>
-        <button onClick={handleUpClick} className="btn btn-primary mx-2 my-2">Convert to UpperCase</button>
-        <button onClick={handleClear} className="btn btn-danger mx-2 my-2">Clear</button>
-        <button onClick={handleTextToSpeech} className="btn btn-success mx-2 my-2">Text to Speech</button>
-        <button
-          onClick={saveNote} // Call the saveNote function when the button is clicked
-          className="btn btn-primary mx-2 my-2"
-        >
+
+
+        {/* Rest of your UI components */}
+        <textarea
+          className="form-control"
+          onChange={handleUpChange}
+          value={text}
+          id="myBox"
+          rows="8"
+          style={{ resize: 'none' }}
+          cols="30"
+        ></textarea>
+        <button onClick={handleUpClick} className="btn btn-primary mx-2 my-2">
+          Convert to Uppercase
+        </button>
+        <button onClick={handleClear} className="btn btn-danger mx-2 my-2">
+          Clear
+        </button>
+        <button onClick={handleTextToSpeech} className="btn btn-success mx-2 my-2">
+          Text to Speech
+        </button>
+        <button onClick={saveNote} className="btn btn-primary mx-2 my-2">
           Save Note
         </button>
-  {/*<button onClick={translateText} className="btn btn-primary mx-2">Translate to Japanese</button>*/}
       </div>
-      <div className={`container ${style}`} style={{color: props.mode==='dark'?'white':'#042743'}}>
-        <h1>Text Summary</h1>
-        <p>Character Count: {text.split(/\s+/).filter((element)=>{return element.length!==0}).length}</p>
-        <p>Estimated Reading Time: {0.008 * text.split(" ").filter((element)=>{return element.length!==0}).length} minutes</p>
-        <p>{text}</p>
+      <div className={`container ${style}`} style={{ color: props.mode === 'dark' ? 'white' : '#042743' }}>
+      <p>Character Count: {text.split(/\s+/).filter((element) => element.length !== 0).length}</p>
+      <p>Estimated Reading Time: {0.008 * text.split(' ').filter((element) => element.length !== 0).length} minutes</p>
+      <p>{text}</p>
+      {/* Display search results or all notes */}
+      {searchResults.length > 0 ? (
+        <div>
+          <h1>Search Results</h1>
+          {searchResults.map((note) => (
+            <div key={note._id}>
+              <p>{note.content}</p>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div>
+          <h1>All Notes</h1>
+          {searchTerm.length > 0 && <p>No matching notes found</p>}
+        </div>
+      )}
       </div>
-      {/*<div>
-        <h2>Japanese Translation:</h2>
-        <p>{japaneseText}</p>
-  </div>*/}
     </>
   );
 }
