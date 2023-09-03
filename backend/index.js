@@ -81,6 +81,19 @@ app.get('/apir/notes', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+app.get('/api/search', async (req, res) => {
+  try {
+    const { searchTerm } = req.query; // Get the search term from the query parameter
+
+    // Use MongoDB or your database of choice to search for notes based on the search term
+    const matchedNotes = await Note.find({ content: { $regex: searchTerm, $options: 'i' } });
+
+    res.json({ notes: matchedNotes });
+  } catch (error) {
+    console.error('Error searching for notes:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 // More routes for reading, updating, and deleting notes
 
