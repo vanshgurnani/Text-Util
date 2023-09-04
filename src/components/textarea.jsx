@@ -4,6 +4,7 @@ import axios from 'axios';
 import { generatePDF } from './pdf';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { FaTrash } from 'react-icons/fa';
 
 function Textarea(props) {
   const [text, setText] = useState('');
@@ -55,7 +56,11 @@ function Textarea(props) {
     }
     try {
       const response = await axios.get(`https://text-util-83cs.vercel.app/api/search?searchTerm=${searchTerm}`);
-      setSearchResults(response.data.notes);
+      // setSearchResults(response.data.notes);
+      // Sort the search results by timestamp in descending order
+      const sortedResults = response.data.notes.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      
+      setSearchResults(sortedResults);
     } catch (error) {
       console.error('Error searching for notes:', error);
     }
@@ -164,9 +169,13 @@ function Textarea(props) {
       {searchResults && searchResults.length > 0 ? (
         <div>
           <h1>Search Results</h1>
-          {searchResults.map((note,index) => (
-            <div key={note._id}>
-              <p>{`${index + 1}. ${note.content}`}</p>
+          {searchResults.map((note, index) => (
+            <div key={note._id} className="card">
+              <div className="card-body">
+                <h5 className="card-title">{`${index + 1}. Note Content`}</h5>
+                <p className="card-text">Timestamp: {new Date(note.timestamp).toLocaleString()}</p>
+                  <FaTrash /> Delete
+              </div>
             </div>
           ))}
         </div>
