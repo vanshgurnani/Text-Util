@@ -52,7 +52,7 @@ app.get('/', (req, res) => {
 });
 
 // Create a new note
-app.post('/api/notes', async (req, res) => {
+app.post('/api/save-notes', async (req, res) => {
   try {
     const { content } = req.body;
     const newNote = new Note({ content });
