@@ -95,16 +95,18 @@ app.get('/api/search', async (req, res) => {
   }
 });
 
+
 app.get('/api/previous-notes', async (req, res) => {
   try {
-    // Retrieve the most recent previous note from your database
-    const latestPreviousNote = await Note.findOne().sort({ createdAt: -1 }); // Sort by creation date in descending order to get the latest
-    res.json({ latestNote: latestPreviousNote });
+    // Retrieve all previous notes from your database
+    const previousNotes = await Note.findOne().sort({ createdAt: -1 }); // Sort by creation date in descending order to get the most recent first
+    res.json({ previousNotes });
   } catch (error) {
-    console.error('Error fetching latest previous note:', error);
+    console.error('Error fetching previous notes:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 
 
