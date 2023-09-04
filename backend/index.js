@@ -64,7 +64,7 @@ app.post('/api/notes', async (req, res) => {
   }
 });
 // Get all notes
-app.get('/apir/notes', async (req, res) => {
+app.get('/api/fetch-notes', async (req, res) => {
   try {
     const notes = await Note.find(); // Fetch all notes from the database
     res.json(notes);
@@ -73,6 +73,8 @@ app.get('/apir/notes', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+
 app.get('/api/search', async (req, res) => {
   try {
     const { searchTerm } = req.query; // Get the search term from the query parameter
