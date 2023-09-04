@@ -37,6 +37,10 @@ mongoose.connect(`mongodb+srv://gurnanivansh57:iz64rqtBBQss8iQ7@cluster101.nuwew
 
 const NoteSchema = new mongoose.Schema({
   content: String,
+  timestamp: {
+    type: Date,
+    default: Date.now, // This sets the default value to the current date and time
+  },
 });
 
 // Use the provided collection name in the model

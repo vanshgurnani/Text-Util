@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 function Textarea(props) {
-  const [text, setText] = useState('Enter the text 2');
+  const [text, setText] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
 
@@ -17,7 +17,7 @@ function Textarea(props) {
 
   const loadNotes = async () => {
     try {
-      const response = await axios.get('https://text-util-83cs.vercel.app/api/notes');
+      const response = await axios.get('https://text-util-83cs.vercel.app/api/fetch-notes');
       setSearchResults(response.data.notes);
     } catch (error) {
       console.error('Error loading notes:', error);
@@ -104,18 +104,8 @@ function Textarea(props) {
     }
   };
 
-  const fetchAllNotes = async () => {
-    try {
-      const response = await axios.get('https://text-util-83cs.vercel.app/apir/notes');
-      // Corrected URL
-      setSearchResults(response.data.notes);
-      console.log(response.data.notes); 
-      props.showAlert('All notes fetched successfully!', 'success');
-    } catch (error) {
-      console.error('Error fetching all notes:', error);
-      props.showAlert('Error fetching all notes', 'danger');
-    }
-  };
+  
+  
   
 
   return (
@@ -148,6 +138,7 @@ function Textarea(props) {
           rows="8"
           style={{ resize: 'none' }}
           cols="30"
+          placeholder="Enter the text"
         ></textarea>
         <button onClick={handleUpClick} className="btn btn-primary mx-2 my-2">
           Convert to Uppercase
@@ -163,9 +154,6 @@ function Textarea(props) {
         </button>
         <button onClick={saveNoteAndGeneratePDF} className="btn btn-primary mx-2 my-2">
           Save Note and Generate PDF
-        </button>
-        <button onClick={fetchAllNotes} className="btn btn-primary mx-2 my-2">
-          Fetch
         </button>
       </div>
       <div className={`container ${style}`} style={{ color: props.mode === 'dark' ? 'white' : '#042743' }}>
