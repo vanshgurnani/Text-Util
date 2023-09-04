@@ -37,6 +37,9 @@ const NoteSchema = new mongoose.Schema({
 const Note = mongoose.model(COLLECTION_NAME, NoteSchema);
 
 
+
+
+
 // Define a route for the home route ("/")
 app.get('/', (req, res) => {
   res.send('Welcome to the Notepad API');
