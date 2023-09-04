@@ -29,11 +29,11 @@ mongoose.connect(`mongodb+srv://gurnanivansh57:iz64rqtBBQss8iQ7@cluster101.nuwew
   useUnifiedTopology: true,
 })
 .then(() => {
-  console.log('Connected to MongoDB');
-})
-.catch((err) => {
-  console.error('Error connecting to MongoDB:', err);
-});
+    console.log('Connected to MongoDB');
+  })
+  .catch((err) => {
+    console.error('Error connecting to MongoDB:', err);
+  });
 
 const NoteSchema = new mongoose.Schema({
   content: String,
@@ -52,7 +52,7 @@ app.get('/', (req, res) => {
 });
 
 // Create a new note
-app.post('/api/save-notes', async (req, res) => {
+app.post('/api/notes', async (req, res) => {
   try {
     const { content } = req.body;
     const newNote = new Note({ content });
@@ -64,7 +64,7 @@ app.post('/api/save-notes', async (req, res) => {
   }
 });
 // Get all notes
-app.get('/api/notes', async (req, res) => {
+app.get('/apir/notes', async (req, res) => {
   try {
     const notes = await Note.find(); // Fetch all notes from the database
     res.json(notes);

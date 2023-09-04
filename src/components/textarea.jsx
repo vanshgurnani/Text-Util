@@ -28,7 +28,7 @@ function Textarea(props) {
   const saveNoteAndGeneratePDF = async () => {
     try {
       // Save the note to the backend
-      const response = await axios.post('https://text-util-83cs.vercel.app/api/save-notes', { content: text });
+      const response = await axios.post('https://text-util-83cs.vercel.app/api/notes', { content: text });
       if (response.data.success) {
         props.showAlert('Note saved successfully!', 'success');
         loadNotes(); // Refresh the notes list after saving
@@ -64,7 +64,7 @@ function Textarea(props) {
   // Function to save note to the backend
   const saveNote = async () => {
     try {
-      const response = await axios.post('https://text-util-83cs.vercel.app/api/save-notes', { content: text });
+      const response = await axios.post('https://text-util-83cs.vercel.app/api/notes', { content: text });
       if (response.data.success) {
         props.showAlert('Note saved successfully!', 'success');
         loadNotes(); // Refresh the notes list after saving
@@ -103,20 +103,6 @@ function Textarea(props) {
       alert('Text-to-speech is not supported in this browser.');
     }
   };
-
-  // const fetchAllNotes = async () => {
-  //   try {
-  //     const response = await axios.get('https://text-util-83cs.vercel.app/api/fetch');
-  //     setSearchResults(response.data.notes);
-  //     props.showAlert('All notes fetched successfully!', 'success');
-  //   } catch (error) {
-  //     console.error('Error fetching all notes:', error);
-  //     props.showAlert('Error fetching all notes', 'danger');
-  //   }
-  // };
-  
-
-  
 
   return (
     <>
@@ -164,16 +150,13 @@ function Textarea(props) {
         <button onClick={saveNoteAndGeneratePDF} className="btn btn-primary mx-2 my-2">
           Save Note and Generate PDF
         </button>
-        <button onClick={loadNotes} className="btn btn-primary mx-2 my-2">
-          Fetch All Notes
-        </button>
       </div>
       <div className={`container ${style}`} style={{ color: props.mode === 'dark' ? 'white' : '#042743' }}>
       <p>Character Count: {text.split(/\s+/).filter((element) => element.length !== 0).length}</p>
       <p>Estimated Reading Time: {0.008 * text.split(' ').filter((element) => element.length !== 0).length} minutes</p>
       <p>{text}</p>
       {/* Display search results or all notes */}
-      {searchResults.length > 0 ? (
+      {searchResults && searchResults.length > 0 ? (
         <div>
           <h1>Search Results</h1>
           {searchResults.map((note,index) => (
