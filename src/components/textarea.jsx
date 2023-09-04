@@ -104,16 +104,16 @@ function Textarea(props) {
     }
   };
 
-  const fetchAllNotes = async () => {
-    try {
-      const response = await axios.get('https://text-util-83cs.vercel.app/apir/notes');
-      setSearchResults(response.data.notes);
-      props.showAlert('All notes fetched successfully!', 'success');
-    } catch (error) {
-      console.error('Error fetching all notes:', error);
-      props.showAlert('Error fetching all notes', 'danger');
-    }
-  };
+  // const fetchAllNotes = async () => {
+  //   try {
+  //     const response = await axios.get('https://text-util-83cs.vercel.app/api/fetch');
+  //     setSearchResults(response.data.notes);
+  //     props.showAlert('All notes fetched successfully!', 'success');
+  //   } catch (error) {
+  //     console.error('Error fetching all notes:', error);
+  //     props.showAlert('Error fetching all notes', 'danger');
+  //   }
+  // };
   
 
   
@@ -164,7 +164,7 @@ function Textarea(props) {
         <button onClick={saveNoteAndGeneratePDF} className="btn btn-primary mx-2 my-2">
           Save Note and Generate PDF
         </button>
-        <button onClick={fetchAllNotes} className="btn btn-primary mx-2 my-2">
+        <button onClick={loadNotes} className="btn btn-primary mx-2 my-2">
           Fetch All Notes
         </button>
       </div>
