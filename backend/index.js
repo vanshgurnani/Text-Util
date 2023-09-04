@@ -95,6 +95,18 @@ app.get('/api/search', async (req, res) => {
   }
 });
 
+app.get('/api/previous-notes', async (req, res) => {
+  try {
+    // Retrieve previous notes from your database, for example:
+    const previousNotes = await Note.find().sort({ createdAt: -1 }); // Sort by creation date in descending order
+    res.json({ notes: previousNotes });
+  } catch (error) {
+    console.error('Error fetching previous notes:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 // More routes for reading, updating, and deleting notes
 
 app.listen(PORT, () => {
