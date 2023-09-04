@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import './text.css';
 import axios from 'axios';
+import { generatePDF } from './pdf';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function Textarea(props) {
   const [text, setText] = useState('Enter the text 2');
@@ -21,7 +24,35 @@ function Textarea(props) {
     }
   };
 
+  // Function to save note to the backend and generate PDF
+  const saveNoteAndGeneratePDF = async () => {
+    try {
+      // Save the note to the backend
+      const response = await axios.post('https://text-util-83cs.vercel.app/api/notes', { content: text });
+      if (response.data.success) {
+        props.showAlert('Note saved successfully!', 'success');
+        loadNotes(); // Refresh the notes list after saving
+
+        // Generate PDF
+        const pdfDataURI = generatePDF(text); // Call the PDF generator function
+
+        // Trigger PDF download (you can use a download link or any other method)
+        const link = document.createElement('a');
+        link.href = pdfDataURI;
+        link.download = 'note.pdf';
+        link.click();
+      }
+    } catch (error) {
+      console.error('Error saving note:', error);
+      props.showAlert('Error saving note', 'danger');
+    }
+  };
+
   const searchNotes = async () => {
+    if (searchTerm.trim() === '') {
+      toast.error('Please enter a search item.');
+      return;
+    }
     try {
       const response = await axios.get(`https://text-util-83cs.vercel.app/api/search?searchTerm=${searchTerm}`);
       setSearchResults(response.data.notes);
@@ -73,6 +104,20 @@ function Textarea(props) {
     }
   };
 
+  const fetchAllNotes = async () => {
+    try {
+      const response = await axios.get('https://text-util-83cs.vercel.app/apir/notes');
+      setSearchResults(response.data.notes);
+      props.showAlert('All notes fetched successfully!', 'success');
+    } catch (error) {
+      console.error('Error fetching all notes:', error);
+      props.showAlert('Error fetching all notes', 'danger');
+    }
+  };
+  
+
+  
+
   return (
     <>
       <div className={`container ${style}`} style={{ color: props.mode === 'dark' ? 'white' : '#042743' }}>
@@ -116,6 +161,12 @@ function Textarea(props) {
         <button onClick={saveNote} className="btn btn-primary mx-2 my-2">
           Save Note
         </button>
+        <button onClick={saveNoteAndGeneratePDF} className="btn btn-primary mx-2 my-2">
+          Save Note and Generate PDF
+        </button>
+        <button onClick={fetchAllNotes} className="btn btn-primary mx-2 my-2">
+          Fetch All Notes
+        </button>
       </div>
       <div className={`container ${style}`} style={{ color: props.mode === 'dark' ? 'white' : '#042743' }}>
       <p>Character Count: {text.split(/\s+/).filter((element) => element.length !== 0).length}</p>
@@ -125,9 +176,9 @@ function Textarea(props) {
       {searchResults.length > 0 ? (
         <div>
           <h1>Search Results</h1>
-          {searchResults.map((note) => (
+          {searchResults.map((note,index) => (
             <div key={note._id}>
-              <p>{note.content}</p>
+              <p>{`${index + 1}. ${note.content}`}</p>
             </div>
           ))}
         </div>
