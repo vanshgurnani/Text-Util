@@ -99,7 +99,7 @@ app.get('/api/search', async (req, res) => {
 app.get('/api/previous-notes', async (req, res) => {
   try {
     // Retrieve all previous notes from your database
-    const previousNotes = await Note.findOne().sort({ _id: -1 }); // Sort by creation date in descending order to get the most recent first
+    const previousNotes = await Note.findOne().sort({ '_id': -1 }); // Sort by creation date in descending order to get the most recent first
     res.json({ previousNotes });
   } catch (error) {
     console.error('Error fetching previous notes:', error);
