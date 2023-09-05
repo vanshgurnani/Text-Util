@@ -8,6 +8,8 @@ function Textarea(props) {
   const [text, setText] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
+  const [expandedNotes, setExpandedNotes] = useState([]);
+
 
   useEffect(() => {
     // Load initial notes or perform any other necessary setup
@@ -22,6 +24,17 @@ function Textarea(props) {
       console.error('Error loading notes:', error);
     }
   };
+
+  const handleExpandNote = (noteId) => {
+  if (expandedNotes.includes(noteId)) {
+    // If note is expanded, collapse it
+    setExpandedNotes(expandedNotes.filter((id) => id !== noteId));
+  } else {
+    // If note is not expanded, expand it
+    setExpandedNotes([...expandedNotes, noteId]);
+  }
+};
+
 
   // Function to save note to the backend and generate PDF
   const saveNoteAndGeneratePDF = async () => {
@@ -54,10 +67,7 @@ function Textarea(props) {
   const searchNotes = async () => {
     if (searchTerm.trim() === '') {
       // return;
-      // loadNotes();
-      setTimeout(() => {
-        loadNotes();
-      }, 5000);
+      loadNotes();
     }
     try {
       const response = await axios.get(`https://text-util-83cs.vercel.app/api/search?searchTerm=${searchTerm}`);
@@ -160,12 +170,15 @@ function Textarea(props) {
           <input
             className="form-control me-2" type="search" aria-label="Search"
             placeholder="Search notes..."
-            style={{width: '100%'}}
+            style={{width: '70%'}}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <button onClick={searchNotes} className="btn btn-primary px-4 mx-2 my-2">
+          {/*<button onClick={searchNotes} className="btn btn-primary px-4 mx-2 my-2">
             Search
+  </button>*/}
+          <button onClick={searchNotes} className="btn btn-primary px-4 mx-2 my-2">
+            {searchTerm.trim() === '' ? 'Fetch all Notes' : 'Search'}
           </button>
         </div>
         <h1>{props.head}</h1>
@@ -204,29 +217,56 @@ function Textarea(props) {
       <p>{text}</p>
       {/* Display search results or all notes */}
       <h1>Search Results</h1>
-      {searchResults && searchResults.length > 0 ? (
-        <div className='d-flex flex-row'>
-          {searchResults.map((note, index) => (
 
-            <div key={note._id} className="card p-2 mx-2">
-              <div className="card-body">
-                <div className='d-flex justify-content-between'>
-                  <h5 className="card-title">{`${index + 1}. ${note.content}`}</h5>
-                  <FaTrash className='mx-2' style={{ cursor: 'pointer' }} onClick={() => handleDeleteNote(note._id)} />
-                  <FaShareSquare className='mx-2' style={{ cursor: 'pointer' }} onClick={() => handleShareNote(note)} />
+
+
+      {searchResults && searchResults.length > 0 ? (
+        <div className='container'>
+
+        <div className='row'>
+
+            {searchResults.map((note, index) => (
+              <div key={note._id} className="card mx-2 my-2" style={{width:'30%'}}>
+                <div className="card-body">
+                    <h5 className="card-title">
+                      {`${index + 1}. ${note.content.substring(0, 10)}`} {/* Display the first 100 characters */}
+                      {note.content.length > 10 && (
+                        <p style={{cursor:'pointer',fontWeight: 'normal',color: 'gray'}} onClick={() => handleExpandNote(note._id)}>
+                          {expandedNotes.includes(note._id) ? '....Read Less' : '....Read More'}
+                        </p>
+                      )}
+                    </h5>
+                    <FaTrash className='mx-2' style={{ cursor: 'pointer' }} onClick={() => handleDeleteNote(note._id)} />
+                    <FaShareSquare className='mx-2' style={{ cursor: 'pointer' }} onClick={() => handleShareNote(note)} />
+                  {expandedNotes.includes(note._id) ? (
+                    <div>
+                      <p className="card-text">{note.content}</p> {/* Display full content when expanded */}
+                      <p className="card-text">Timestamp: {new Date(note.timestamp).toLocaleString()}</p>
+                    </div>
+                  ) : (
+                    <p className="card-text">Timestamp: {new Date(note.timestamp).toLocaleString()}</p>
+                  )}
                 </div>
-                <p className="card-text">Timestamp: {new Date(note.timestamp).toLocaleString()}</p>
               </div>
-            </div>
-            
-            
-          ))}
+            ))}
+        </div>
+
+        
+        
+
+
+
+
         </div>
       ) : (
         <div>
           {searchTerm.length > 0 && <p>No matching notes found</p>}
         </div>
       )}
+
+
+
+      
       </div>
     </>
   );
