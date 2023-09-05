@@ -3,6 +3,21 @@ import './news.css';
 
 function NewsItem(props) {
   let { title, description, imageurl, newsUrl, author, date, source } = props;
+  const shareNews = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title,
+          text: description,
+          url: newsUrl,
+        });
+      } catch (error) {
+        console.error('Error sharing news:', error);
+      }
+    } else {
+      alert('Sharing is not supported in this browser.');
+    }
+  };
 
   return (
     <div className="card my-2" style={{ width: "20rem" }}>
@@ -13,6 +28,9 @@ function NewsItem(props) {
         <span className="badge text-bg-success">{source}</span>
         <p className="card-text"><small className="text-muted">By {!author ? "Unknown" : author} <br /> on {date}</small></p>
         <a href={newsUrl} className="btn btn-primary" target='_blank' rel="noopener noreferrer">Read More</a>
+        <button className="btn btn-dark mx-2" onClick={shareNews}>
+          Share
+        </button>
       </div>
     </div>
   );

@@ -52,7 +52,8 @@ function Textarea(props) {
   const searchNotes = async () => {
     if (searchTerm.trim() === '') {
       toast.error('Please enter a search item.');
-      return;
+      // return;
+      loadNotes();
     }
     try {
       const response = await axios.get(`https://text-util-83cs.vercel.app/api/search?searchTerm=${searchTerm}`);
@@ -106,6 +107,20 @@ function Textarea(props) {
       window.speechSynthesis.speak(speech);
     } else {
       alert('Text-to-speech is not supported in this browser.');
+    }
+  };
+
+  const handleDeleteNote = async (noteId) => {
+    try {
+      // Make an API call to delete the note by ID
+      await axios.delete(`https://text-util-83cs.vercel.app/api/notes/${noteId}`);
+      props.showAlert('Note deleted successfully!', 'success');
+      
+      // Reload the notes list after deletion
+      loadNotes();
+    } catch (error) {
+      console.error('Error deleting note:', error);
+      props.showAlert('Error deleting note', 'danger');
     }
   };
 
@@ -175,7 +190,7 @@ function Textarea(props) {
               <div className="card-body">
                 <div className='d-flex justify-content-between'>
                   <h5 className="card-title">{`${index + 1}. ${note.content}`}</h5>
-                  <FaTrash style={{ cursor: 'pointer' }} />
+                  <FaTrash style={{ cursor: 'pointer' }} onClick={() => handleDeleteNote(note._id)} />
                 </div>
                 <p className="card-text">Timestamp: {new Date(note.timestamp).toLocaleString()}</p>
               </div>
