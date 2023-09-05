@@ -37,6 +37,7 @@ mongoose.connect(`mongodb+srv://gurnanivansh57:iz64rqtBBQss8iQ7@cluster101.nuwew
 
 const NoteSchema = new mongoose.Schema({
   content: String,
+  category: String,
   timestamp: {
     type: Date,
     default: Date.now, // This sets the default value to the current date and time
@@ -58,8 +59,8 @@ app.get('/', (req, res) => {
 // Create a new note
 app.post('/api/notes', async (req, res) => {
   try {
-    const { content } = req.body;
-    const newNote = new Note({ content });
+    const { content, category } = req.body; // Include the category in the request
+    const newNote = new Note({ content, category }); // Save the category along with the note
     await newNote.save();
     res.json({ success: true });
   } catch (error) {
@@ -67,6 +68,7 @@ app.post('/api/notes', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 // Get all notes
 app.get('/api/fetch-notes', async (req, res) => {
   try {

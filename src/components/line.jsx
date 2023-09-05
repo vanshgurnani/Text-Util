@@ -48,6 +48,22 @@ function LineChart() {
           .x((d) => xScale(d.timestamp))
           .y((d) => yScale(d.content.length)); // Use the 'content' field for y values
 
+          // Append x-axis label
+          svg.append("text")
+          .attr("x", width / 2)
+          .attr("y", height + margin.top + 8)
+          .style("text-anchor", "middle")
+          .text("TimeStamp");
+
+      // Append y-axis label
+      svg.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("x", -height / 2)
+        .attr("y", -margin.left)
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text("Length of Content");
+
         // Append the line to the SVG
         svg.append('path')
           .datum(data)
@@ -70,7 +86,13 @@ function LineChart() {
       });
   }, []);
 
-  return <div ref={chartRef}></div>;
+  return(
+    <>
+    <h1 className='mx-5'>Line Chart</h1>
+    <h3 className='mx-5'>Length & Time Graph</h3>
+    <div ref={chartRef}></div>
+    </>
+  );
 }
 
 export default LineChart;

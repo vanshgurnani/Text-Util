@@ -9,6 +9,8 @@ function Textarea(props) {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [expandedNotes, setExpandedNotes] = useState([]);
+  const [category, setCategory] = useState('uncategorized');
+
 
 
   useEffect(() => {
@@ -44,7 +46,7 @@ function Textarea(props) {
         return;
       }
       // Save the note to the backend
-      const response = await axios.post('https://text-util-83cs.vercel.app/api/notes', { content: text });
+      const response = await axios.post('https://text-util-83cs.vercel.app/api/notes', { content: text, category: category });
       if (response.data.success) {
         props.showAlert('Note saved successfully!', 'success');
         loadNotes(); // Refresh the notes list after saving
@@ -88,7 +90,10 @@ function Textarea(props) {
         props.showAlert('Please enter some text before saving!', 'danger');
         return;
       }
-      const response = await axios.post('https://text-util-83cs.vercel.app/api/notes', { content: text });
+      const response = await axios.post('https://text-util-83cs.vercel.app/api/notes', {
+        content: text, 
+        category: category, 
+      });
       if (response.data.success) {
         props.showAlert('Note saved successfully!', 'success');
         loadNotes(); // Refresh the notes list after saving
@@ -104,11 +109,11 @@ function Textarea(props) {
     backgroundColor: 'black',
   });
 
-  const handleUpClick = () => {
-    let newText = text.toUpperCase();
-    setText(newText);
-    props.showAlert('Converted to Uppercase!', 'success');
-  };
+  // const handleUpClick = () => {
+  //   let newText = text.toUpperCase();
+  //   setText(newText);
+  //   props.showAlert('Converted to Uppercase!', 'success');
+  // };
 
   const handleUpChange = (event) => {
     setText(event.target.value);
@@ -196,6 +201,21 @@ function Textarea(props) {
           cols="30"
           placeholder="Enter the text"
         ></textarea>
+        <div className="mb-3">
+          <label htmlFor="category">Category:</label>
+          <select
+            id="category"
+            className="form-select"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            <option value="uncategorized">Uncategorized</option>
+            <option value="personal">Personal</option>
+            <option value="work">Work</option>
+            {/* Add more categories as needed */}
+          </select>
+        </div>
+
         {/*<button onClick={handleUpClick} className="btn btn-primary mx-2 my-2">
           Convert to Uppercase
   </button>*/}
@@ -237,6 +257,7 @@ function Textarea(props) {
                         </p>
                       )}
                     </h5>
+                    <p className="card-text">Category: {note.category}</p>
                     <FaTrash className='mx-2' style={{ cursor: 'pointer' }} onClick={() => handleDeleteNote(note._id)} />
                     <FaShareSquare className='mx-2' style={{ cursor: 'pointer' }} onClick={() => handleShareNote(note)} />
                   {expandedNotes.includes(note._id) ? (
