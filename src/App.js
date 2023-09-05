@@ -6,6 +6,7 @@ import About from '../src/components/about';
 import Navbar from '../src/components/navbar';
 import Alert from '../src/components/alert';
 import News from '../src/components/news';
+import Insight from '../src/components/insight';
 
 
 function App(props) {
@@ -51,6 +52,7 @@ function App(props) {
         <Route exact path='/science' element={<News key="science" heading="Science" apiKey={api}  pageSize={5} country="in" category="science" mode={mode} />}/>
         <Route exact path='/sports' element={<News key="sports" heading="Sports" apiKey={api}  pageSize={5} country="in" category="sports" mode={mode} />}/>
         <Route exact path='/technology' element={<News key="technology" apiKey={api} heading="Technology"  pageSize={5} country="in" category="technology" mode={mode} />}/>
+        <Route exact path='/insight' element={<Insight />}/>
         </Routes>
     </Router>
   );

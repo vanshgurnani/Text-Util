@@ -40,6 +40,9 @@ function navbar(props) {
           <li className="nav-item">
             <Link className="nav-link active" aria-current="page" to="/general">General</Link>
           </li>
+          <li className="nav-item">
+            <Link className="nav-link active" aria-current="page" to="/insight">Insight</Link>
+          </li>
         </ul>
         <div className={`mx-2 form-check form-switch text-${props.mode==='light'?'dark':'light'}`}>
           <input className="form-check-input" type="checkbox" onClick={props.toggleMode} role="switch" id="flexSwitchCheckDefault"/>
