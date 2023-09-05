@@ -3,7 +3,6 @@ import './text.css';
 import axios from 'axios';
 import { generatePDF } from './pdf';
 import { FaTrash, FaShareSquare } from 'react-icons/fa';
-import Update from './update';
 
 function Textarea(props) {
   const [text, setText] = useState('');
@@ -27,6 +26,10 @@ function Textarea(props) {
   // Function to save note to the backend and generate PDF
   const saveNoteAndGeneratePDF = async () => {
     try {
+      if (text.trim() === '') {
+        props.showAlert('Please enter some text before saving in PDF!', 'danger');
+        return;
+      }
       // Save the note to the backend
       const response = await axios.post('https://text-util-83cs.vercel.app/api/notes', { content: text });
       if (response.data.success) {
@@ -51,7 +54,10 @@ function Textarea(props) {
   const searchNotes = async () => {
     if (searchTerm.trim() === '') {
       // return;
-      loadNotes();
+      // loadNotes();
+      setTimeout(() => {
+        loadNotes();
+      }, 5000);
     }
     try {
       const response = await axios.get(`https://text-util-83cs.vercel.app/api/search?searchTerm=${searchTerm}`);
@@ -68,6 +74,10 @@ function Textarea(props) {
   // Function to save note to the backend
   const saveNote = async () => {
     try {
+      if (text.trim() === '') {
+        props.showAlert('Please enter some text before saving!', 'danger');
+        return;
+      }
       const response = await axios.post('https://text-util-83cs.vercel.app/api/notes', { content: text });
       if (response.data.success) {
         props.showAlert('Note saved successfully!', 'success');
@@ -206,7 +216,6 @@ function Textarea(props) {
                   <FaShareSquare className='mx-2' style={{ cursor: 'pointer' }} onClick={() => handleShareNote(note)} />
                 </div>
                 <p className="card-text">Timestamp: {new Date(note.timestamp).toLocaleString()}</p>
-                <Update />
               </div>
             </div>
             
