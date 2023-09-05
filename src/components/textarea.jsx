@@ -147,22 +147,20 @@ function Textarea(props) {
   return (
     <>
       <div className={`container ${style}`} style={{ color: props.mode === 'dark' ? 'white' : '#042743' }}>
-        <div className='d-flex justify-content-between'>
 
-          <h1>{props.head}</h1>
-          {/* Search input and button */}
-          <div className="mb-3 d-flex">
-            <input
-              className="form-control me-2" type="search" aria-label="Search"
-              placeholder="Search notes..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <button onClick={searchNotes} className="btn btn-primary px-4 mx-2 my-2">
-              Search
-            </button>
-          </div>
+        <div className="mb-3 d-flex">
+          <input
+            className="form-control me-2" type="search" aria-label="Search"
+            placeholder="Search notes..."
+            style={{width: '100%'}}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <button onClick={searchNotes} className="btn btn-primary px-4 mx-2 my-2">
+            Search
+          </button>
         </div>
+        <h1>{props.head}</h1>
 
 
         {/* Rest of your UI components */}
@@ -176,9 +174,9 @@ function Textarea(props) {
           cols="30"
           placeholder="Enter the text"
         ></textarea>
-        <button onClick={handleUpClick} className="btn btn-primary mx-2 my-2">
+        {/*<button onClick={handleUpClick} className="btn btn-primary mx-2 my-2">
           Convert to Uppercase
-        </button>
+  </button>*/}
         <button onClick={handleClear} className="btn btn-danger mx-2 my-2">
           Clear
         </button>
