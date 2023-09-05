@@ -212,6 +212,9 @@ function Textarea(props) {
             <option value="uncategorized">Uncategorized</option>
             <option value="personal">Personal</option>
             <option value="work">Work</option>
+            <option value="development">Development</option>
+            <option value="Study">Study</option>
+            <option value="General">General</option>
             {/* Add more categories as needed */}
           </select>
         </div>
