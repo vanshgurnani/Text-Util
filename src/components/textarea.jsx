@@ -4,7 +4,7 @@ import axios from 'axios';
 import { generatePDF } from './pdf';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { FaTrash } from 'react-icons/fa';
+import { FaTrash, FaShareSquare } from 'react-icons/fa';
 
 function Textarea(props) {
   const [text, setText] = useState('');
@@ -124,6 +124,22 @@ function Textarea(props) {
     }
   };
 
+  const handleShareNote = async (note) => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Shared Note',
+          text: note.content,
+        });
+      } catch (error) {
+        console.error('Error sharing note:', error);
+      }
+    } else {
+      alert('Sharing is not supported in this browser.');
+    }
+  };
+  
+
   
   
   
@@ -191,6 +207,7 @@ function Textarea(props) {
                 <div className='d-flex justify-content-between'>
                   <h5 className="card-title">{`${index + 1}. ${note.content}`}</h5>
                   <FaTrash style={{ cursor: 'pointer' }} onClick={() => handleDeleteNote(note._id)} />
+                  <FaShareSquare style={{ cursor: 'pointer' }} onClick={() => handleShareNote(note)} />
                 </div>
                 <p className="card-text">Timestamp: {new Date(note.timestamp).toLocaleString()}</p>
               </div>
