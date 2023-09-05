@@ -206,8 +206,8 @@ function Textarea(props) {
               <div className="card-body">
                 <div className='d-flex justify-content-between'>
                   <h5 className="card-title">{`${index + 1}. ${note.content}`}</h5>
-                  <FaTrash style={{ cursor: 'pointer' }} onClick={() => handleDeleteNote(note._id)} />
-                  <FaShareSquare style={{ cursor: 'pointer' }} onClick={() => handleShareNote(note)} />
+                  <FaTrash className='mx-2' style={{ cursor: 'pointer' }} onClick={() => handleDeleteNote(note._id)} />
+                  <FaShareSquare className='mx-2' style={{ cursor: 'pointer' }} onClick={() => handleShareNote(note)} />
                 </div>
                 <p className="card-text">Timestamp: {new Date(note.timestamp).toLocaleString()}</p>
               </div>
