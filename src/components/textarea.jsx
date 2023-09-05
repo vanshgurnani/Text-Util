@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import './text.css';
 import axios from 'axios';
 import { generatePDF } from './pdf';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import { FaTrash, FaShareSquare } from 'react-icons/fa';
+import Update from './update';
 
 function Textarea(props) {
   const [text, setText] = useState('');
@@ -51,7 +50,6 @@ function Textarea(props) {
 
   const searchNotes = async () => {
     if (searchTerm.trim() === '') {
-      toast.error('Please enter a search item.');
       // return;
       loadNotes();
     }
@@ -187,7 +185,7 @@ function Textarea(props) {
           Save Note
         </button>
         <button onClick={saveNoteAndGeneratePDF} className="btn btn-primary mx-2 my-2">
-          Save Note and Generate PDF
+          Generate PDF
         </button>
       </div>
       <div className={`container ${style}`} style={{ color: props.mode === 'dark' ? 'white' : '#042743' }}>
@@ -208,6 +206,7 @@ function Textarea(props) {
                   <FaShareSquare className='mx-2' style={{ cursor: 'pointer' }} onClick={() => handleShareNote(note)} />
                 </div>
                 <p className="card-text">Timestamp: {new Date(note.timestamp).toLocaleString()}</p>
+                <Update />
               </div>
             </div>
             
@@ -216,7 +215,6 @@ function Textarea(props) {
         </div>
       ) : (
         <div>
-          <h1>All Notes</h1>
           {searchTerm.length > 0 && <p>No matching notes found</p>}
         </div>
       )}

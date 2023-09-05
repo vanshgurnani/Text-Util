@@ -125,6 +125,33 @@ app.delete('/api/notes/:noteId', async (req, res) => {
 });
 
 
+// Define a route for updating a note
+app.put('/api/update/:noteId', async (req, res) => {
+  const { noteId } = req.params;
+  const { content } = req.body;
+
+  try {
+    // Find the note by ID
+    const note = await Note.findById(noteId);
+
+    if (!note) {
+      return res.status(404).json({ success: false, message: 'Note not found' });
+    }
+
+    // Update the note's content
+    note.content = content;
+    
+    // Save the updated note
+    await note.save();
+
+    res.status(200).json({ success: true, message: 'Note updated successfully' });
+  } catch (error) {
+    console.error('Error updating note:', error);
+    res.status(500).json({ success: false, message: 'Error updating note' });
+  }
+});
+
+
 
 
 // More routes for reading, updating, and deleting notes
