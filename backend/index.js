@@ -105,6 +105,25 @@ app.get('/api/previous-notes', async (req, res) => {
   }
 });
 
+// DELETE route to delete a note by its _id
+app.delete('/api/notes/:noteId', async (req, res) => {
+  try {
+    const { noteId } = req.params;
+
+    // Use the deleteOne method to delete the note by its _id
+    const result = await Note.deleteOne({ _id: noteId });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ success: false, message: 'Note not found' });
+    }
+
+    return res.status(200).json({ success: true, message: 'Note deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting note:', error);
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+});
+
 
 
 

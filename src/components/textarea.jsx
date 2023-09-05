@@ -166,17 +166,22 @@ function Textarea(props) {
       <p>Estimated Reading Time: {0.008 * text.split(' ').filter((element) => element.length !== 0).length} minutes</p>
       <p>{text}</p>
       {/* Display search results or all notes */}
+      <h1>Search Results</h1>
       {searchResults && searchResults.length > 0 ? (
-        <div>
-          <h1>Search Results</h1>
+        <div className='d-flex flex-row'>
           {searchResults.map((note, index) => (
-            <div key={note._id} className="card">
+
+            <div key={note._id} className="card p-2 mx-2">
               <div className="card-body">
-                <h5 className="card-title">{`${index + 1}. Note Content`}</h5>
+                <div className='d-flex justify-content-between'>
+                  <h5 className="card-title">{`${index + 1}. ${note.content}`}</h5>
+                  <FaTrash style={{ cursor: 'pointer' }} />
+                </div>
                 <p className="card-text">Timestamp: {new Date(note.timestamp).toLocaleString()}</p>
-                  <FaTrash /> Delete
               </div>
             </div>
+            
+            
           ))}
         </div>
       ) : (
