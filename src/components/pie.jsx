@@ -1,42 +1,17 @@
-import React, { useEffect, useRef, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
 function PieChart() {
   const chartRef = useRef(null);
-  const [data, setData] = useState([]);
 
   useEffect(() => {
-    // Fetch data from your API using Axios
-    axios.get('https://text-util-83cs.vercel.app/api/fetch-notes')
-      .then((response) => {
-        // Assuming the response data is an array of objects with a 'category' property
-        const notesData = response.data.notes;
-        const categoryCounts = {};
-
-        // Calculate category counts
-        notesData.forEach((note) => {
-          const category = note.category || 'Uncategorized'; // Default to 'Uncategorized' if no category is specified
-          categoryCounts[category] = (categoryCounts[category] || 0) + 1;
-        });
-
-        // Prepare data for the pie chart
-        const pieData = Object.entries(categoryCounts).map(([name, count]) => ({
-          name,
-          count,
-        }));
-
-        setData(pieData);
-      })
-      .catch((error) => {
-        console.error('Error fetching data:', error);
-      });
-  }, []);
-
-  useEffect(() => {
-    if (data.length === 0) {
-      return;
-    }
+    // Data for the pie chart (hardcoded)
+    const data = [
+      { name: 'Category 1', count: 10 },
+      { name: 'Category 2', count: 20 },
+      { name: 'Category 3', count: 15 },
+      // Add more data points as needed
+    ];
 
     // Create the pie chart
     const width = 300; // Width of the SVG container
@@ -71,15 +46,14 @@ function PieChart() {
       .attr('transform', (d) => `translate(${path.centroid(d)})`)
       .attr('dy', '0.35em')
       .text((d) => d.data.name);
-  }, [data]);
+  }, []);
 
-  return(
+  return (
     <>
-    <h1>Pie Chart</h1>
-    <div ref={chartRef}></div>
+      <h1 className='mx-5'>Hardcoded Pie Chart</h1>
+      <div ref={chartRef}></div>
     </>
-    
-    )
+  );
 }
 
 export default PieChart;
