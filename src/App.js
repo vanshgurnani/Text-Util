@@ -52,7 +52,7 @@ function App(props) {
         <Route exact path='/science' element={<News key="science" heading="Science" apiKey={api}  pageSize={5} country="in" category="science" mode={mode} />}/>
         <Route exact path='/sports' element={<News key="sports" heading="Sports" apiKey={api}  pageSize={5} country="in" category="sports" mode={mode} />}/>
         <Route exact path='/technology' element={<News key="technology" apiKey={api} heading="Technology"  pageSize={5} country="in" category="technology" mode={mode} />}/>
-        <Route exact path='/insight' element={<Insight />}/>
+        <Route exact path='/insight' element={<Insight mode={mode} />}/>
         </Routes>
     </Router>
   );
