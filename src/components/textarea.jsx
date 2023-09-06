@@ -248,7 +248,6 @@ function Textarea(props) {
         <div className='container'>
 
         <div className='row'>
-
             {searchResults.map((note, index) => (
               <div key={note._id} className="card mx-2 my-2" style={{width:'30%'}}>
                 <div className="card-body">
@@ -274,6 +273,8 @@ function Textarea(props) {
                 </div>
               </div>
             ))}
+
+
         </div>
 
         
