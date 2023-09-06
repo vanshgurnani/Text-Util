@@ -43,6 +43,19 @@ function navbar(props) {
           <li className="nav-item">
             <Link className="nav-link active" aria-current="page" to="/insight">Insight</Link>
           </li>
+
+          <li class="nav-item dropdown">
+            <Link class="nav-link dropdown-toggle" to="/general" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              News
+            </Link>
+            <ul class="dropdown-menu">
+              <li className="dropdown-item"><Link className="nav-link active" aria-current="page" to="/general">General</Link></li>
+              <li><a class="dropdown-item" href="#">Another action</a></li>
+              <li><hr class="dropdown-divider"/></li>
+              <li><a class="dropdown-item" href="#">Something else here</a></li>
+            </ul>
+          </li>
+
         </ul>
         <div className={`mx-2 form-check form-switch text-${props.mode==='light'?'dark':'light'}`}>
           <input className="form-check-input" type="checkbox" onClick={props.toggleMode} role="switch" id="flexSwitchCheckDefault"/>

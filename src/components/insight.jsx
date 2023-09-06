@@ -1,14 +1,14 @@
 import React from 'react';
 import Line from '../components/line';
 import Bar from '../components/bar';
-import Pie from '../components/pie';
+import Bar2 from '../components/bar2';
 
 function insight() {
   return (
     <div className='container'>
       <Line />
       <Bar />
-      <Pie />
+      <Bar2 />
     </div>
   )
 }
