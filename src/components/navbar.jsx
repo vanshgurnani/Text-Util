@@ -1,5 +1,6 @@
 import React from 'react'
 import {Link } from 'react-router-dom';
+import '../components/navbar.css';
 
 function navbar(props) {
   
@@ -19,48 +20,36 @@ function navbar(props) {
           <li className="nav-item">
             <Link className="nav-link active" aria-current="page" to="/about">About</Link>
           </li>
-          <li className="nav-item">
-            <Link className="nav-link active" aria-current="page" to="/business"> Business</Link>
-          </li>
-          <li className="nav-item">
-            <Link className="nav-link active" aria-current="page" to="/entertainment">Entertainment</Link>
-          </li>
-          <li className="nav-item">
-            <Link className="nav-link active" aria-current="page" to="/health">Health</Link>
-          </li>
-          <li className="nav-item">
-            <Link className="nav-link active" aria-current="page" to="/science">Science</Link>
-          </li>
-          <li className="nav-item">
-            <Link className="nav-link active" aria-current="page" to="/sports">Sports</Link>
-          </li>
-          <li className="nav-item">
-            <Link className="nav-link active" aria-current="page" to="/technology">Technology</Link>
-          </li>
-          <li className="nav-item">
-            <Link className="nav-link active" aria-current="page" to="/general">General</Link>
-          </li>
+          
+          
+          
           <li className="nav-item">
             <Link className="nav-link active" aria-current="page" to="/insight">Insight</Link>
           </li>
 
           <li class="nav-item dropdown">
-            <Link class="nav-link dropdown-toggle" to="/general" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <Link class="nav-link dropdown-toggle active" to="/general" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               News
             </Link>
-            <ul class="dropdown-menu">
-              <li className="dropdown-item"><Link className="nav-link active" aria-current="page" to="/general">General</Link></li>
-              <li><a class="dropdown-item" href="#">Another action</a></li>
-              <li><hr class="dropdown-divider"/></li>
-              <li><a class="dropdown-item" href="#">Something else here</a></li>
-            </ul>
-          </li>
+                <ul class={`dropdown-menu `} >
+                  <li className="item"><Link className="dropdown-item link" aria-current="page" to="/general">General</Link></li>
+                  <li className='item'><Link className="dropdown-item link" aria-current="page" to="/technology">Technology</Link></li>
+                  <li className='item'><Link className="dropdown-item link" aria-current="page" to="/sports">Sports</Link></li>
+                  <li className='item'><Link className="dropdown-item link" aria-current="page" to="/business"> Business</Link></li>
+                  <li className='item'><Link className="dropdown-item link" aria-current="page" to="/entertainment">Entertainment</Link></li>
+                  <li className='item'><Link className="dropdown-item link" aria-current="page" to="/health">Health</Link></li>
+                  <li className='item'><Link className="dropdown-item link" aria-current="page" to="/science">Science</Link></li>
+                </ul>
+              </li>
 
         </ul>
-        <div className={`mx-2 form-check form-switch text-${props.mode==='light'?'dark':'light'}`}>
+        <div className={`mx-2 form-check form-switch text-${props.mode === 'light' ? 'dark' : 'light'}`}>
           <input className="form-check-input" type="checkbox" onClick={props.toggleMode} role="switch" id="flexSwitchCheckDefault"/>
-          <label className="form-check-label" htmlFor="flexSwitchCheckDefault">Enable Dark Mode</label>
+          <label className="form-check-label" htmlFor="flexSwitchCheckDefault">
+            {props.mode === 'light' ? 'Enable Dark Mode' : 'Enable Light Mode'}
+          </label>
         </div>
+
  
       </div>
     </div>

@@ -1,0 +1,13 @@
+/* Custom hover styles */
+.item .link:hover {
+    background-color: #007bff; /* Change the background color */
+    color: #fff; /* Change the text color */
+  }
+  
+
+/* Dark mode styles for dropdown menu */
+.dark-mode .dropdown-item.link:hover {
+    background-color: #333; /* Change the background color */
+    color: #fff; /* Change the text color */
+  }
+  
