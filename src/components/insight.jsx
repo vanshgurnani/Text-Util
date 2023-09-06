@@ -7,8 +7,14 @@ function insight() {
   return (
     <div className='container'>
       <Line />
+      <br />
+      <br />
       <Bar />
+      <br />
+      <br />
       <Bar2 />
+      <br />
+      <br />
     </div>
   )
 }

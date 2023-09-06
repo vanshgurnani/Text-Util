@@ -62,6 +62,26 @@ function BarChart() {
       .domain([0, d3.max(data, (d) => d.totalCharacterCount)])
       .nice()
       .range([height - margin.bottom, margin.top]);
+    
+
+
+    // Add x-label
+    svg
+    .append('text')
+    .attr('x', width / 2)
+    .attr('y', height - margin.bottom / 2)
+    .attr('text-anchor', 'middle')
+    .text('Categories');
+
+  // Add y-label
+  svg
+    .append('text')
+    .attr('x', -height / 2)
+    .attr('y', margin.left / 2)
+    .attr('text-anchor', 'middle')
+    .attr('transform', 'rotate(-90)')
+    .text('Total Character Count');
+
 
     svg
       .selectAll('rect')
@@ -85,6 +105,7 @@ function BarChart() {
       .attr('transform', `translate(${margin.left},0)`)
       .call(d3.axisLeft(y).ticks(5));
 
+    
     svg.selectAll('.x-axis text').attr('transform', 'rotate(-45)').style('text-anchor', 'end');
   }, [data]);
 
