@@ -27,7 +27,7 @@ function navbar(props) {
             <Link className="nav-link active" aria-current="page" to="/insight">Insight</Link>
           </li>
           <li className="nav-item">
-            <Link className="nav-link active" aria-current="page" to="/chat">Chat</Link>
+            <Link className="nav-link active" aria-current="page" to="/summary">Summary</Link>
           </li>
 
           <li className="nav-item dropdown">

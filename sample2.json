@@ -1,416 +1,268 @@
 [
-    {
-      "_id": "64f7c8f1b7c7a7585a75857e",
-      "content": "Personal journal writing",
-      "timestamp": "2023-10-04T11:40:00.000Z",
-      "category": "Personal",
-      "__v": 0
-    },
-    {
-      "_id": "64f7c905b7c7a7585a75857f",
-      "content": "Optimizing database performance",
-      "timestamp": "2023-10-14T13:50:00.000Z",
-      "category": "Development",
-      "__v": 0
-    },
-    {
-      "_id": "64f7c919b7c7a7585a758580",
-      "content": "Client presentation preparation",
-      "timestamp": "2023-10-15T09:15:00.000Z",
-      "category": "Work",
-      "__v": 0
-    },
-    {
-      "_id": "64f7c92db7c7a7585a758581",
-      "content": "Advanced mathematics study group",
-      "timestamp": "2023-10-16T14:40:00.000Z",
-      "category": "Study",
-      "__v": 0
-    },
-    {
-      "_id": "64f7c941b7c7a7585a758582",
-      "content": "Exploring historical landmarks",
-      "timestamp": "2023-10-27T15:30:00.000Z",
-      "category": "General",
-      "__v": 0
-    },
-    {
-      "_id": "64f7c951b7c7a7585a758583",
-      "content": "Personal meditation and mindfulness",
-      "timestamp": "2023-10-28T18:45:00.000Z",
-      "category": "Personal",
-      "__v": 0
-    },
-    {
-      "_id": "64f7c961b7c7a7585a758584",
-      "content": "Code review and collaboration",
-      "timestamp": "2023-11-09T20:30:00.000Z",
-      "category": "Development",
-      "__v": 0
-    },
-    {
-      "_id": "64f7c971b7c7a7585a758585",
-      "content": "Group study session at the library",
-      "timestamp": "2023-11-10T20:55:00.000Z",
-      "category": "Study",
-      "__v": 0
-    },
-    {
-      "_id": "64f7c981b7c7a7585a758586",
-      "content": "Exploring new travel destinations",
-      "timestamp": "2023-11-11T21:20:00.000Z",
-      "category": "General",
-      "__v": 0
-    },
-    {
-      "_id": "64f7c991b7c7a7585a758587",
-      "content": "Cooking a special dinner for friends",
-      "timestamp": "2023-11-12T21:45:00.000Z",
-      "category": "Personal",
-      "__v": 0
-    },
-    {
-      "_id": "64f7c9a1b7c7a7585a758588",
-      "content": "Client presentation and proposal",
-      "timestamp": "2023-11-13T22:10:00.000Z",
-      "category": "Work",
-      "__v": 0
-    },
-    {
-      "_id": "64f7c9b1b7c7a7585a758589",
-      "content": "Coding a complex algorithm",
-      "timestamp": "2023-11-14T22:35:00.000Z",
-      "category": "Development",
-      "__v": 0
-    },
-    {
-      "_id": "64f7c9c1b7c7a7585a75858a",
-      "content": "Late-night study group for programming",
-      "timestamp": "2023-11-15T23:00:00.000Z",
-      "category": "Study",
-      "__v": 0
-    },
-    {
-      "_id": "64f7c9d1b7c7a7585a75858b",
-      "content": "Exploring local art galleries",
-      "timestamp": "2023-11-16T23:25:00.000Z",
-      "category": "General",
-      "__v": 0
-    },
-    {
-      "_id": "64f7c9e1b7c7a7585a75858c",
-      "content": "Personal fitness workout",
-      "timestamp": "2023-11-17T23:50:00.000Z",
-      "category": "Personal",
-      "__v": 0
-    },
-    {
-      "_id": "64f7c9f1b7c7a7585a75858d",
-      "content": "Team project status update",
-      "timestamp": "2023-11-18T00:15:00.000Z",
-      "category": "Work",
-      "__v": 0
-    },
-    {
-      "_id": "64f7ca01b7c7a7585a75858e",
-      "content": "Debugging and code optimization",
-      "timestamp": "2023-11-19T00:40:00.000Z",
-      "category": "Development",
-      "__v": 0
-    },
-    {
-      "_id": "64f7ca11b7c7a7585a75858f",
-      "content": "Late-night study session for exams",
-      "timestamp": "2023-11-20T01:05:00.000Z",
-      "category": "Study",
-      "__v": 0
-    },
-    {
-      "_id": "64f7ca21b7c7a7585a758590",
-      "content": "Exploring new technology trends",
-      "timestamp": "2023-11-21T01:30:00.000Z",
-      "category": "General",
-      "__v": 0
-    },
-    {
-      "_id": "64f7ca31b7c7a7585a758591",
-      "content": "Personal journal writing",
-      "timestamp": "2023-11-22T01:55:00.000Z",
-      "category": "Personal",
-      "__v": 0
-    },
-    {
-      "_id": "64f7ca41b7c7a7585a758592",
-      "content": "Client feedback and improvement",
-      "timestamp": "2023-11-23T02:20:00.000Z",
-      "category": "Work",
-      "__v": 0
-    },
-    {
-      "_id": "64f7ca51b7c7a7585a758593",
-      "content": "Coding a new mobile app feature",
-      "timestamp": "2023-11-24T02:45:00.000Z",
-      "category": "Development",
-      "__v": 0
-    },
-    {
-      "_id": "64f7ca61b7c7a7585a758594",
-      "content": "Late-night study group for chemistry",
-      "timestamp": "2023-11-25T03:10:00.000Z",
-      "category": "Study",
-      "__v": 0
-    },
-    {
-      "_id": "64f7ca71b7c7a7585a758595",
-      "content": "Exploring hiking trails in the mountains",
-      "timestamp": "2023-11-26T03:35:00.000Z",
-      "category": "General",
-      "__v": 0
-    },
-    {
-      "_id": "64f7ca81b7c7a7585a758596",
-      "content": "Personal goal setting and planning",
-      "timestamp": "2023-11-27T04:00:00.000Z",
-      "category": "Personal",
-      "__v": 0
-    },
-    {
-      "_id": "64f7ca91b7c7a7585a758597",
-      "content": "Team building activities at work",
-      "timestamp": "2023-11-28T04:25:00.000Z",
-      "category": "Work",
-      "__v": 0
-    },
-    {
-      "_id": "64f7caa1b7c7a7585a758598",
-      "content": "Code refactoring and cleanup",
-      "timestamp": "2023-11-29T04:50:00.000Z",
-      "category": "Development",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cab1b7c7a7585a758599",
-      "content": "Study group meeting for a project",
-      "timestamp": "2023-11-30T05:15:00.000Z",
-      "category": "Study",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cac1b7c7a7585a75859a",
-      "content": "Exploring new art exhibitions",
-      "timestamp": "2023-12-01T05:40:00.000Z",
-      "category": "General",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cad1b7c7a7585a75859b",
-      "content": "Cooking a new recipe from a cookbook",
-      "timestamp": "2023-12-02T06:05:00.000Z",
-      "category": "Personal",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cae1b7c7a7585a75859c",
-      "content": "Client feedback implementation",
-      "timestamp": "2023-12-03T06:30:00.000Z",
-      "category": "Work",
-      "__v": 0
-    },
-    {
-      "_id": "64f7caf1b7c7a7585a75859d",
-      "content": "Testing software compatibility",
-      "timestamp": "2023-12-04T06:55:00.000Z",
-      "category": "Development",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cb01b7c7a7585a75859e",
-      "content": "Group study for a programming competition",
-      "timestamp": "2023-12-05T07:20:00.000Z",
-      "category": "Study",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cb11b7c7a7585a75859f",
-      "content": "Exploring a new hiking trail",
-      "timestamp": "2023-12-06T07:45:00.000Z",
-      "category": "General",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cb21b7c7a7585a7585a0",
-      "content": "Personal fitness training session",
-      "timestamp": "2023-12-07T08:10:00.000Z",
-      "category": "Personal",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cb31b7c7a7585a7585a1",
-      "content": "Team project kick-off meeting",
-      "timestamp": "2023-12-08T08:35:00.000Z",
-      "category": "Work",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cb41b7c7a7585a7585a2",
-      "content": "Personal art project",
-      "timestamp": "2023-12-09T09:00:00.000Z",
-      "category": "Personal",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cb51b7c7a7585a7585a3",
-      "content": "Software testing and QA",
-      "timestamp": "2023-12-10T09:25:00.000Z",
-      "category": "Development",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cb61b7c7a7585a7585a4",
-      "content": "Client meeting for project updates",
-      "timestamp": "2023-12-11T09:50:00.000Z",
-      "category": "Work",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cb71b7c7a7585a7585a5",
-      "content": "Preparing for upcoming exams",
-      "timestamp": "2023-12-12T10:15:00.000Z",
-      "category": "Study",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cb81b7c7a7585a7585a6",
-      "content": "Exploring historical landmarks",
-      "timestamp": "2023-12-13T10:40:00.000Z",
-      "category": "General",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cb91b7c7a7585a7585a7",
-      "content": "Personal meditation and mindfulness",
-      "timestamp": "2023-12-14T11:05:00.000Z",
-      "category": "Personal",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cba1b7c7a7585a7585a8",
-      "content": "Code review and collaboration",
-      "timestamp": "2023-12-15T11:30:00.000Z",
-      "category": "Development",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cbb1b7c7a7585a7585a9",
-      "content": "Team brainstorming session",
-      "timestamp": "2023-12-16T11:55:00.000Z",
-      "category": "Work",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cbc1b7c7a7585a7585aa",
-      "content": "Researching scientific breakthroughs",
-      "timestamp": "2023-12-17T12:20:00.000Z",
-      "category": "Study",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cbd1b7c7a7585a7585ab",
-      "content": "Attending a local art exhibition",
-      "timestamp": "2023-12-18T12:45:00.000Z",
-      "category": "General",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cbe1b7c7a7585a7585ac",
-      "content": "Personal creative writing project",
-      "timestamp": "2023-12-19T13:10:00.000Z",
-      "category": "Personal",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cbf1b7c7a7585a7585ad",
-      "content": "Optimizing software performance",
-      "timestamp": "2023-12-20T13:35:00.000Z",
-      "category": "Development",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cc01b7c7a7585a7585ae",
-      "content": "Project status update meeting",
-      "timestamp": "2023-12-21T14:00:00.000Z",
-      "category": "Work",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cc11b7c7a7585a7585af",
-      "content": "Exploring advanced physics concepts",
-      "timestamp": "2023-12-22T14:25:00.000Z",
-      "category": "Study",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cc21b7c7a7585a7585b0",
-      "content": "Photographing natural landscapes",
-      "timestamp": "2023-12-23T14:50:00.000Z",
-      "category": "General",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cc31b7c7a7585a7585b1",
-      "content": "Yoga and meditation session",
-      "timestamp": "2023-12-24T15:15:00.000Z",
-      "category": "Personal",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cc41b7c7a7585a7585b2",
-      "content": "Debugging and error fixing",
-      "timestamp": "2023-12-25T15:40:00.000Z",
-      "category": "Development",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cc51b7c7a7585a7585b3",
-      "content": "Late-night study session for finals",
-      "timestamp": "2023-12-26T16:05:00.000Z",
-      "category": "Study",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cc61b7c7a7585a7585b4",
-      "content": "Exploring a new city",
-      "timestamp": "2023-12-27T16:30:00.000Z",
-      "category": "General",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cc71b7c7a7585a7585b5",
-      "content": "Personal finance management",
-      "timestamp": "2023-12-28T16:55:00.000Z",
-      "category": "Personal",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cc81b7c7a7585a7585b6",
-      "content": "Client presentation and proposal",
-      "timestamp": "2023-12-29T17:20:00.000Z",
-      "category": "Work",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cc91b7c7a7585a7585b7",
-      "content": "Coding a new machine learning model",
-      "timestamp": "2023-12-30T17:45:00.000Z",
-      "category": "Development",
-      "__v": 0
-    },
-    {
-      "_id": "64f7cca1b7c7a7585a7585b8",
-      "content": "Late-night study group for mathematics",
-      "timestamp": "2023-12-31T18:10:00.000Z",
-      "category": "Study",
-      "__v": 0
-    }
-  ]
-  
+  {
+    "_id": "64f7d0a5b7c7a7585a7585b9",
+    "content": "Starting a new programming project",
+    "timestamp": "2023-12-31T18:35:00.000Z",
+    "category": "Development",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d0b5b7c7a7585a7585ba",
+    "content": "Morning yoga and meditation",
+    "timestamp": "2023-12-31T19:00:00.000Z",
+    "category": "Personal",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d0c5b7c7a7585a7585bb",
+    "content": "Team meeting for project planning",
+    "timestamp": "2023-12-31T19:25:00.000Z",
+    "category": "Work",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d0d5b7c7a7585a7585bc",
+    "content": "Coding and debugging",
+    "timestamp": "2023-12-31T19:50:00.000Z",
+    "category": "Development",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d0e5b7c7a7585a7585bd",
+    "content": "Study group for computer science",
+    "timestamp": "2023-12-31T20:15:00.000Z",
+    "category": "Study",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d0f5b7c7a7585a7585be",
+    "content": "Exploring new coding frameworks",
+    "timestamp": "2023-12-31T20:40:00.000Z",
+    "category": "Development",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d105b7c7a7585a7585bf",
+    "content": "Personal journaling time",
+    "timestamp": "2023-12-31T21:05:00.000Z",
+    "category": "Personal",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d115b7c7a7585a7585c0",
+    "content": "Client feedback and improvements",
+    "timestamp": "2023-12-31T21:30:00.000Z",
+    "category": "Work",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d125b7c7a7585a7585c1",
+    "content": "Designing user interfaces",
+    "timestamp": "2023-12-31T21:55:00.000Z",
+    "category": "Development",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d135b7c7a7585a7585c2",
+    "content": "Late-night study group for physics",
+    "timestamp": "2023-12-31T22:20:00.000Z",
+    "category": "Study",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d145b7c7a7585a7585c3",
+    "content": "Reading tech news and articles",
+    "timestamp": "2023-12-31T22:45:00.000Z",
+    "category": "General",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d155b7c7a7585a7585c4",
+    "content": "Cooking dinner for family",
+    "timestamp": "2023-12-31T23:10:00.000Z",
+    "category": "Personal",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d165b7c7a7585a7585c5",
+    "content": "Project review and planning",
+    "timestamp": "2023-12-31T23:35:00.000Z",
+    "category": "Work",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d175b7c7a7585a7585c6",
+    "content": "Coding a complex algorithm",
+    "timestamp": "2024-01-01T00:00:00.000Z",
+    "category": "Development",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d185b7c7a7585a7585c7",
+    "content": "Late-night study group for biology",
+    "timestamp": "2024-01-01T00:25:00.000Z",
+    "category": "Study",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d195b7c7a7585a7585c8",
+    "content": "Exploring new art galleries",
+    "timestamp": "2024-01-01T00:50:00.000Z",
+    "category": "General",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d1a5b7c7a7585a7585c9",
+    "content": "Personal fitness workout",
+    "timestamp": "2024-01-01T01:15:00.000Z",
+    "category": "Personal",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d1b5b7c7a7585a7585ca",
+    "content": "Team project status update",
+    "timestamp": "2024-01-01T01:40:00.000Z",
+    "category": "Work",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d1c5b7c7a7585a7585cb",
+    "content": "Debugging and code optimization",
+    "timestamp": "2024-01-01T02:05:00.000Z",
+    "category": "Development",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d1d5b7c7a7585a7585cc",
+    "content": "Late-night study session for exams",
+    "timestamp": "2024-01-01T02:30:00.000Z",
+    "category": "Study",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d1e5b7c7a7585a7585cd",
+    "content": "Exploring new technology trends",
+    "timestamp": "2024-01-01T02:55:00.000Z",
+    "category": "General",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d1f5b7c7a7585a7585ce",
+    "content": "Personal journal writing",
+    "timestamp": "2024-01-01T03:20:00.000Z",
+    "category": "Personal",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d205b7c7a7585a7585cf",
+    "content": "Client feedback and improvement",
+    "timestamp": "2024-01-01T03:45:00.000Z",
+    "category": "Work",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d215b7c7a7585a7585d0",
+    "content": "Coding a new mobile app feature",
+    "timestamp": "2024-01-01T04:10:00.000Z",
+    "category": "Development",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d225b7c7a7585a7585d1",
+    "content": "Late-night study group for chemistry",
+    "timestamp": "2024-01-01T04:35:00.000Z",
+    "category": "Study",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d235b7c7a7585a7585d2",
+    "content": "Exploring hiking trails in the mountains",
+    "timestamp": "2024-01-01T05:00:00.000Z",
+    "category": "General",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d245b7c7a7585a7585d3",
+    "content": "Personal goal setting and planning",
+    "timestamp": "2024-01-01T05:25:00.000Z",
+    "category": "Personal",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d255b7c7a7585a7585d4",
+    "content": "Team building activities at work",
+    "timestamp": "2024-01-01T05:50:00.000Z",
+    "category": "Work",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d265b7c7a7585a7585d5",
+    "content": "Code refactoring and cleanup",
+    "timestamp": "2024-01-01T06:15:00.000Z",
+    "category": "Development",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d275b7c7a7585a7585d6",
+    "content": "Study group meeting for a project",
+    "timestamp": "2024-01-01T06:40:00.000Z",
+    "category": "Study",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d285b7c7a7585a7585d7",
+    "content": "Exploring new art exhibitions",
+    "timestamp": "2024-01-01T07:05:00.000Z",
+    "category": "General",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d295b7c7a7585a7585d8",
+    "content": "Cooking a new recipe from a cookbook",
+    "timestamp": "2024-01-01T07:30:00.000Z",
+    "category": "Personal",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d2a5b7c7a7585a7585d9",
+    "content": "Client feedback implementation",
+    "timestamp": "2024-01-01T07:55:00.000Z",
+    "category": "Work",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d2b5b7c7a7585a7585da",
+    "content": "Testing software compatibility",
+    "timestamp": "2024-01-01T08:20:00.000Z",
+    "category": "Development",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d2c5b7c7a7585a7585db",
+    "content": "Group study for a programming competition",
+    "timestamp": "2024-01-01T08:45:00.000Z",
+    "category": "Study",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d2d5b7c7a7585a7585dc",
+    "content": "Exploring a new hiking trail",
+    "timestamp": "2024-01-01T09:10:00.000Z",
+    "category": "General",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d2e5b7c7a7585a7585dd",
+    "content": "Personal fitness training session",
+    "timestamp": "2024-01-01T09:35:00.000Z",
+    "category": "Personal",
+    "__v": 0
+  },
+  {
+    "_id": "64f7d2f5b7c7a7585a7585de",
+    "content": "Team project kick-off meeting",
+    "timestamp": "2024-01-01T10:00:00.000Z",
+    "category": "Work",
+    "__v": 0
+  }
+]

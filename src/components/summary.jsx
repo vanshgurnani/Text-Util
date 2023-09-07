@@ -21,24 +21,29 @@ function App() {
   };
 
   return (
-    <div className="App">
-      <h1>Text Summarizer</h1>
-      <div className="input-container">
-        <textarea
-          placeholder="Enter text to summarize..."
-          rows="10"
-          value={text}
-          onChange={handleTextChange}
-        />
-        <button onClick={summarizeText}>Summarize</button>
+    <>
+    <center>
+    <h1>Text Summarizer</h1>
+    <textarea
+      placeholder="Enter text to summarize..."
+      rows="8"
+      cols="50"
+      style={{ resize: 'none' }}
+      value={text}
+      onChange={handleTextChange}
+    ></textarea>
+    <br />
+    <button className='btn btn-primary' onClick={summarizeText}>Summarize</button>
+    {summary && (
+      <div className="mt-5 summary-container">
+        <h2>Summary:</h2>
+        <p>{summary}</p>
       </div>
-      {summary && (
-        <div className="summary-container">
-          <h2>Summary:</h2>
-          <p>{summary}</p>
-        </div>
-      )}
-    </div>
+    )}
+  </center>
+  
+
+    </>
   );
 }
 
