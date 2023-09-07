@@ -32,7 +32,8 @@ const Chat = () => {
   };
 
   return (
-    <div>
+    <>
+    <div className='d-flex justify-content-center'>
       <form onSubmit={handleSubmit}>
         <input
           type="text"
@@ -45,7 +46,8 @@ const Chat = () => {
           Clear
         </button>
       </form>
-      <div className="chat">
+    </div>
+    <div className='d-flex justify-content-center'>
         {messages.map((message, index) => (
           <div
             key={index}
@@ -55,7 +57,7 @@ const Chat = () => {
           </div>
         ))}
       </div>
-    </div>
+    </>
   );
 };
 
