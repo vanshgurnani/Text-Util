@@ -198,7 +198,7 @@ function Textarea(props) {
           id="myBox"
           rows="8"
           style={{ resize: 'none' }}
-          cols="30"
+          cols="20"
           placeholder="Enter the text"
         ></textarea>
         <div className="mb-3">

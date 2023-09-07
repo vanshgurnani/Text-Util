@@ -31,7 +31,7 @@ function navbar(props) {
             <Link class="nav-link dropdown-toggle active" to="/general" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               News
             </Link>
-                <ul class={`dropdown-menu `} >
+                <ul className={`dropdown-menu `} >
                   <li className="item"><Link className="dropdown-item link" aria-current="page" to="/general">General</Link></li>
                   <li className='item'><Link className="dropdown-item link" aria-current="page" to="/technology">Technology</Link></li>
                   <li className='item'><Link className="dropdown-item link" aria-current="page" to="/sports">Sports</Link></li>
