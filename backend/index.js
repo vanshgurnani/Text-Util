@@ -9,7 +9,8 @@ const PORT = process.env.PORT || 5000;
 const allowedOrigins = [
     'http://localhost:3000',
     'https://text-util-rosy.vercel.app',
-    'https://python-jugp.vercel.app/',
+    'https://python-jugp.vercel.app',
+    'https://python-jugp.vercel.app/get_response',
   // Replace with your Vercel frontend URL
   ];
   
