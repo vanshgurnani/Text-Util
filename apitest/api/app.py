@@ -36,20 +36,16 @@ pairs = [
 chatbot = Chat(pairs, reflections)
 
 # Define a route for the root directory ("/")
-@app.route('/about')
+@app.route('/')
 def hello_world():
     return 'Hello, World!'
 
 # Define the /get_response endpoint to accept both GET and POST requests
-@app.route('/get_response', methods=['GET', 'POST'])
+@app.route('/get_response', methods=['POST'])
 def get_response():
-    if request.method == 'POST':
-        user_message = request.json.get('message')
-        response = chatbot.respond(user_message)
-        return jsonify({"response": response})
-    elif request.method == 'GET':
-        # Handle GET requests here (if needed)
-        return 'GET request received'
+    user_message = request.json.get('message')
+    response = chatbot.respond(user_message)
+    return jsonify({"response": response})
 
 if __name__ == '__main__':
     nltk.download('punkt')  # Download NLTK data (if not already downloaded)

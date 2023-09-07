@@ -34,7 +34,7 @@ const Chat = () => {
   return (
     <>
     <div className='d-flex justify-content-center'>
-      <form onSubmit={handleSubmit}>
+      <form method='post' onSubmit={handleSubmit}>
         <input
           type="text"
           value={input}
