@@ -7,6 +7,9 @@ app = Flask(__name__)
 @app.route('/')
 def hello_world():
     return 'Hello, World!'
+@app.route('/about')
+def hello():
+    return 'Hello!'
 
 if __name__ == '__main__':
     # Run the Flask app on the local development server
