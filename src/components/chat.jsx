@@ -1,67 +1,45 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const Chat = () => {
-  const [input, setInput] = useState('');
-  const [messages, setMessages] = useState([]);
+function App() {
+  const [text, setText] = useState('');
   const [summary, setSummary] = useState('');
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    // Add user message to the chat
-    setMessages([...messages, { text: input, user: 'user' }]);
-    setInput('');
-
-    // Send the user message to the server for a response
-    try {
-      const response = await axios.post('https://text-util-c6tr.vercel.app/get_summary', { text: input });
-      const botResponse = response.data.summary;
-
-      // Add bot response (summary) to the chat
-      setMessages([...messages, { text: botResponse, user: 'bot' }]);
-      setSummary(botResponse); // Update the summary state
-    } catch (error) {
-      console.error('Error sending message:', error);
-    }
+  const handleTextChange = (e) => {
+    setText(e.target.value);
   };
 
-  const handleClear = () => {
-    // Clear the chat messages and summary
-    setMessages([]);
-    setSummary('');
+  const summarizeText = () => {
+    // Send a POST request to your Flask API
+    axios.post('/get_summary', { text })
+      .then((response) => {
+        setSummary(response.data.summary);
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
   };
 
   return (
-    <div className='d-flex justify-content-center'>
-      <form method='post' onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Type a message..."
+    <div className="App">
+      <h1>Text Summarizer</h1>
+      <div className="input-container">
+        <textarea
+          placeholder="Enter text to summarize..."
+          rows="10"
+          value={text}
+          onChange={handleTextChange}
         />
-        <button type="submit">Send</button>
-        <button type="button" onClick={handleClear}>
-          Clear
-        </button>
-      </form>
-      <div className="summary">
-        <h3>Summary:</h3>
-        <p>{summary}</p>
+        <button onClick={summarizeText}>Summarize</button>
       </div>
-      <div className="chat">
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            className={`message ${message.user === 'user' ? 'user' : 'bot'}`}
-          >
-            {message.text}
-          </div>
-        ))}
-      </div>
+      {summary && (
+        <div className="summary-container">
+          <h2>Summary:</h2>
+          <p>{summary}</p>
+        </div>
+      )}
     </div>
   );
-};
+}
 
-export default Chat;
+export default App;
