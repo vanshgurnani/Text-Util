@@ -1,8 +1,11 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import nltk
 from nltk.chat.util import Chat, reflections
 
 app = Flask(__name__)
+
+CORS(app)  # Enable CORS for your Flask app
 
 # Define the chatbot responses
 pairs = [
