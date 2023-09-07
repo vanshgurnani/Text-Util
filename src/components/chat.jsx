@@ -16,7 +16,7 @@ const Chat = () => {
 
     // Send the user message to the server for a response
     try {
-      const response = await axios.post('https://python-jugp.vercel.app/get_response', { message: input });
+      const response = await axios.post('/get_response', { message: input });
       const botResponse = response.data.response;
 
       // Add bot response to the chat
