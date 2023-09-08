@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-function App() {
+function App(props) {
   const [text, setText] = useState('');
   const [summary, setSummary] = useState('');
 
@@ -20,10 +20,15 @@ function App() {
       });
   };
 
+  const clearText = () => {
+    // Clear the text and summary states
+    setText('');
+    setSummary('');
+  };
+
   return (
-    <>
-    <center>
-    <h1>Text Summarizer</h1>
+    <div className='container'>
+    <h1 style={{ color: props.mode === 'dark' ? 'white' : '#042743' }}>Text Summarizer</h1>
     <textarea
       placeholder="Enter text to summarize..."
       rows="8"
@@ -33,17 +38,19 @@ function App() {
       onChange={handleTextChange}
     ></textarea>
     <br />
-    <button className='btn btn-primary' onClick={summarizeText}>Summarize</button>
+    <div className="d-flex">
+        <button className='btn btn-primary mx-3' onClick={summarizeText}>Summarize</button>
+        <button className='btn btn-danger mx-3' onClick={clearText}>Clear</button>
+    </div>
     {summary && (
-      <div className="mt-5 summary-container">
+      <div className="mt-5 summary-container" style={{ color: props.mode === 'dark' ? 'white' : '#042743' }}>
         <h2>Summary:</h2>
         <p>{summary}</p>
       </div>
     )}
-  </center>
   
 
-    </>
+    </div>
   );
 }
 
