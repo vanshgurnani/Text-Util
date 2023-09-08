@@ -52,7 +52,7 @@ const Note = mongoose.model(COLLECTION_NAME, NoteSchema);
 
 app.get('/run-python', (req, res) => {
   // Run the Python script as a child process
-  exec('./app.py', (error, stdout, stderr) => {
+  exec('backend/app.py', (error, stdout, stderr) => {
     if (error) {
       console.error(`Error executing Python script: ${error}`);
       return res.status(500).send('Internal Server Error');
