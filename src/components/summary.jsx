@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import Spinner from './Spinner'
 
 function App(props) {
   const [text, setText] = useState('');
   const [summary, setSummary] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleTextChange = (e) => {
     setText(e.target.value);
   };
 
   const summarizeText = () => {
+
+    setIsLoading(true);
     // Send a POST request to your Flask API
     axios.post('https://flask-production-71e4.up.railway.app/get_summary', { text })
       .then((response) => {
@@ -17,6 +21,9 @@ function App(props) {
       })
       .catch((error) => {
         console.error('Error:', error);
+      })
+      .finally(()=>{
+        setIsLoading(false);
       });
   };
 
@@ -43,11 +50,15 @@ function App(props) {
         <button className='btn btn-primary mx-3' onClick={summarizeText}>Summarize</button>
         <button className='btn btn-danger mx-3' onClick={clearText}>Clear</button>
     </div>
-    {summary && (
-      <div className="mt-5 summary-container" style={{ color: props.mode === 'dark' ? 'white' : '#042743' }}>
-        <h2>Summary:</h2>
-        <p>{summary}</p>
-      </div>
+    {isLoading ? (
+      <Spinner />
+    ) : (
+      summary && (
+        <div className="mt-5 summary-container" style={{ color: props.mode === 'dark' ? 'white' : '#042743' }}>
+          <h2>Summary:</h2>
+          <p>{summary}</p>
+        </div>
+      )
     )}
   
 
