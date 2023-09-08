@@ -2,7 +2,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const { exec } = require('child_process');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -49,18 +48,6 @@ const NoteSchema = new mongoose.Schema({
 // Use the provided collection name in the model
 const Note = mongoose.model(COLLECTION_NAME, NoteSchema);
 
-
-app.get('/run-python', (req, res) => {
-  // Run the Python script as a child process
-  exec('python backend/app.py', (error, stdout, stderr) => {
-    if (error) {
-      console.error(`Error executing Python script: ${error}`);
-      return res.status(500).send('Internal Server Error');
-    }
-    console.log(`Python script output: ${stdout}`);
-    res.send('Python script executed successfully');
-  });
-});
 
 
 // Define a route for the home route ("/")
