@@ -30,9 +30,10 @@ function App(props) {
     <div className='container'>
     <h1 style={{ color: props.mode === 'dark' ? 'white' : '#042743' }}>Text Summarizer</h1>
     <textarea
+      className="form-control"
       placeholder="Enter text to summarize..."
       rows="8"
-      cols="50"
+      cols="20"
       style={{ resize: 'none' }}
       value={text}
       onChange={handleTextChange}
