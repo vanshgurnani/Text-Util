@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import Spinner from './Spinner'
+import Spinner from './spinner'
 
 function App(props) {
   const [text, setText] = useState('');
