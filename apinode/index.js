@@ -13,7 +13,7 @@ app.use(cors());
 natural.Lexicon.stopwords = new Set(natural.stopwords);
 
 app.get('/', (req, res) => {
-  res.send('Hello, World!');
+  res.send('Welcome to Text Summarization!');
 });
 
 app.post('/get_summary', (req, res) => {
