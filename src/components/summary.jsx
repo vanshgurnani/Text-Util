@@ -11,7 +11,7 @@ function App(props) {
 
   const summarizeText = () => {
     // Send a POST request to your Flask API
-    axios.post('/get_summary', { text })
+    axios.post('https://flask-production-71e4.up.railway.app/get_summary', { text })
       .then((response) => {
         setSummary(response.data.summary);
       })
