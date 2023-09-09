@@ -105,8 +105,6 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// Middleware to verify JWT token
-app.use(verifyToken);
 
 
 
@@ -219,7 +217,8 @@ app.put('/api/update/:noteId', async (req, res) => {
 });
 
 
-
+// Middleware to verify JWT token
+app.use(verifyToken);
 
 // More routes for reading, updating, and deleting notes
 
