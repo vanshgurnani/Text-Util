@@ -4,9 +4,9 @@ import Line from '../components/line';
 import Bar2 from '../components/bar2';
 import Bar3 from '../components/bar3';
 
-function insight() {
+function insight(props) {
   return (
-    <div className='container'>
+    <div className='container' style={{ color: props.mode === 'dark' ? 'white' : '#042743' }}>
       <Line />
       <br />
       <br />

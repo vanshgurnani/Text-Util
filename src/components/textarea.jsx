@@ -10,6 +10,7 @@ function Textarea(props) {
   const [searchResults, setSearchResults] = useState([]);
   const [expandedNotes, setExpandedNotes] = useState([]);
   const [category, setCategory] = useState('uncategorized');
+  const [isListening, setIsListening] = useState(false);
 
 
 
@@ -26,6 +27,46 @@ function Textarea(props) {
       console.error('Error loading notes:', error);
     }
   };
+
+  const startListening = () => {
+    setIsListening(true);
+  
+    const recognition = new window.webkitSpeechRecognition();
+  
+    // Set additional options, such as language and continuous listening
+    recognition.lang = 'en-US'; // Set the recognition language
+    recognition.continuous = true; // Enable continuous listening
+  
+    // Initialize a timer to stop recognition after a certain duration (e.g., 10 seconds)
+    let recognitionTimer;
+  
+    recognition.onstart = () => {
+      // Recognition has started, initialize the timer
+      recognitionTimer = setTimeout(() => {
+        recognition.stop();
+      }, 10000); // Stop recognition after 10 seconds (adjust as needed)
+    };
+  
+    recognition.onresult = (event) => {
+      // User spoke, reset the timer
+      clearTimeout(recognitionTimer);
+  
+      const transcript = event.results[0][0].transcript;
+      setText(transcript);
+  
+      // Restart the timer to give more time to speak
+      recognitionTimer = setTimeout(() => {
+        recognition.stop();
+      }, 10000); // Reset the timer for 10 more seconds (adjust as needed)
+    };
+  
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+  
+    recognition.start();
+  };
+  
 
   const handleExpandNote = (noteId) => {
   if (expandedNotes.includes(noteId)) {
@@ -232,6 +273,9 @@ function Textarea(props) {
         </button>
         <button onClick={saveNoteAndGeneratePDF} className="btn btn-primary mx-2 my-2">
           Generate PDF
+        </button>
+        <button onClick={startListening} className='btn btn-warning mx-2'>
+          {isListening ? 'Listening...' : 'Start Listening'}
         </button>
       </div>
       <div className={`container ${style}`} style={{ color: props.mode === 'dark' ? 'white' : '#042743' }}>

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
-function LineChart() {
+function LineChart(props) {
   const chartRef = useRef(null);
 
   useEffect(() => {
@@ -90,7 +90,7 @@ function LineChart() {
     <>
     <h1 className='mx-5'>Line Chart</h1>
     <h3 className='mx-5'>Length & Time Graph</h3>
-    <div ref={chartRef}></div>
+    <div ref={chartRef} ></div>
     </>
   );
 }
