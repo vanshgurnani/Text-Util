@@ -2,6 +2,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const Note = require('../backend/notes/noteModel');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -23,8 +24,6 @@ app.use(express.json());
 
 // Define database and collection names
 const DB_NAME = 'Notepad';
-const COLLECTION_NAME = 'notes';
-
 // Connect to MongoDB
 mongoose.connect(`mongodb+srv://gurnanivansh57:iz64rqtBBQss8iQ7@cluster101.nuwewcc.mongodb.net/${DB_NAME}?retryWrites=true&w=majority`, {
 
@@ -37,18 +36,6 @@ mongoose.connect(`mongodb+srv://gurnanivansh57:iz64rqtBBQss8iQ7@cluster101.nuwew
   .catch((err) => {
     console.error('Error connecting to MongoDB:', err);
   });
-
-const NoteSchema = new mongoose.Schema({
-  content: String,
-  category: String,
-  timestamp: {
-    type: Date,
-    default: Date.now, // This sets the default value to the current date and time
-  },
-});
-
-// Use the provided collection name in the model
-const Note = mongoose.model(COLLECTION_NAME, NoteSchema);
 
 
 
