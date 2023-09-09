@@ -37,6 +37,7 @@ function RegistrationForm() {
 
   return (
     <div className="container">
+    {responseMessage && <div className="mt-3 alert alert-info">{responseMessage}</div>}
       <h1>Register</h1>
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
@@ -77,7 +78,6 @@ function RegistrationForm() {
         </div>
         <button type="submit" className="btn btn-primary">Register</button>
       </form>
-      {responseMessage && <div className="mt-3 alert alert-info">{responseMessage}</div>}
     </div>
   );
 }
