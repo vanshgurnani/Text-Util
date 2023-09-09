@@ -8,7 +8,7 @@ function BarChart() {
 
   useEffect(() => {
     // Fetch data from your API using Axios
-    axios.get('https://text-util-83cs.vercel.app/fetch-notes')
+    axios.get('https://text-util-ykfu.vercel.app/fetch-notes')
       .then((response) => {
         setData(response.data);
       })

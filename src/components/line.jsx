@@ -6,7 +6,7 @@ function LineChart() {
 
   useEffect(() => {
     // Fetch data from your server
-    fetch('https://text-util-83cs.vercel.app/api/fetch-notes')
+    fetch('https://text-util-ykfu.vercel.app/api/fetch-notes')
       .then((response) => response.json())
       .then((data) => {
         // Parse date strings into Date objects
