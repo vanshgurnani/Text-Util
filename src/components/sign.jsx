@@ -1,18 +1,14 @@
-import React,{useState} from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 
-function RegisterForm() {
+function RegistrationForm() {
   const [formData, setFormData] = useState({
-    name: '',
+    username: '',
     email: '',
     password: '',
   });
 
-  const [formErrors, setFormErrors] = useState({
-    name: '',
-    email: '',
-    password: '',
-  });
+  const [responseMessage, setResponseMessage] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -23,42 +19,67 @@ function RegisterForm() {
   };
 
   const handleSubmit = async (e) => {
+    e.preventDefault();
 
     try {
-      // Send the registration data to the server using Axios POST request
       const response = await axios.post('https://text-util-83cs.vercel.app/api/register', formData);
 
       if (response.data.success) {
-        // Registration successful, you can redirect or show a success message here
-        console.log('Registration successful');
+        setResponseMessage('User registered successfully');
       } else {
-        // Handle registration errors from the server
-        console.error('Registration failed:', response.data.error);
+        setResponseMessage(response.data.error);
       }
     } catch (error) {
       console.error('Error registering user:', error);
+      setResponseMessage('Internal server error');
     }
   };
+
   return (
     <div className="container">
       <h1>Register</h1>
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
-          <label htmlFor="name" className="form-label">Name</label>
-          <input type="text" className="form-control" id="name" />
+          <label htmlFor="username" className="form-label">Username</label>
+          <input
+            type="text"
+            className="form-control"
+            id="username"
+            name="username"
+            value={formData.username}
+            onChange={handleInputChange}
+            required
+          />
         </div>
         <div className="mb-3">
           <label htmlFor="email" className="form-label">Email address</label>
-          <input type="email" className="form-control" id="email" aria-describedby="emailHelp" />
+          <input
+            type="email"
+            className="form-control"
+            id="email"
+            name="email"
+            value={formData.email}
+            onChange={handleInputChange}
+            required
+          />
         </div>
         <div className="mb-3">
           <label htmlFor="password" className="form-label">Password</label>
-          <input type="password" className="form-control" id="password" />
+          <input
+            type="password"
+            className="form-control"
+            id="password"
+            name="password"
+            value={formData.password}
+            onChange={handleInputChange}
+            required
+          />
         </div>
         <button type="submit" className="btn btn-primary">Register</button>
       </form>
+      {responseMessage && <div className="mt-3 alert alert-info">{responseMessage}</div>}
     </div>
   );
 }
 
-export default RegisterForm;
+export default RegistrationForm;
