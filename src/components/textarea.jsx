@@ -83,17 +83,15 @@ function Textarea(props) {
     }
   };
 
-  // Function to save note to the backend
+
   const saveNote = async () => {
     try {
       if (text.trim() === '') {
-        props.showAlert('Please enter some text before saving!', 'danger');
+        props.showAlert('Please enter some text before saving in PDF!', 'danger');
         return;
       }
-      const response = await axios.post('https://text-util-83cs.vercel.app/api/notes', {
-        content: text, 
-        category: category, 
-      });
+      // Save the note to the backend
+      const response = await axios.post('https://text-util-83cs.vercel.app/api/notes', { content: text, category: category });
       if (response.data.success) {
         props.showAlert('Note saved successfully!', 'success');
         loadNotes(); // Refresh the notes list after saving
@@ -103,6 +101,7 @@ function Textarea(props) {
       props.showAlert('Error saving note', 'danger');
     }
   };
+  
 
   const [style, setStyle] = useState({
     color: 'white',
