@@ -71,31 +71,29 @@ app.post('/api/register', async (req, res) => {
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    
-    // Find the user by email
-    const user = await User.findOne({ email });
+
+    // Find the user by email and select only the necessary fields (e.g., _id and password)
+    const user = await User.findOne({ email }).select('_id password');
 
     if (!user) {
       return res.status(400).json({ error: 'User not found' });
     }
 
-    // Check if the password is correct
-    const isPasswordValid = await user.comparePassword(password);
-
-    if (!isPasswordValid) {
+    // Check if the password is correct using a simple if statement
+    if (password !== user.password) {
       return res.status(401).json({ error: 'Invalid password' });
     }
 
-    // Generate a JWT token for the user
-    const token = user.generateAuthToken();
+    // You can generate a JWT token here if needed
 
-    // Send the token in the response
-    res.status(200).json({ success: true, token });
+    // Send a success response
+    res.status(200).json({ success: true });
   } catch (error) {
     console.error('Error logging in:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 
 
