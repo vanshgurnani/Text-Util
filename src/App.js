@@ -45,7 +45,7 @@ function App(props) {
     <Navbar head="NotePad" mode={mode} toggleMode={toggleMode} />
     <Alert alert={alert}/>
       <Routes>
-        <Route exact path='/notepad' element={<TextArea showAlert={showAlert} head="Welcome to NotePad" mode={mode} />}/>
+        <Route exact path='/' element={<TextArea showAlert={showAlert} head="Welcome to NotePad" mode={mode} />}/>
         <Route exact path='/about' element={<About mode={mode} />}/>
         <Route exact path='/general' element={<News key="general" heading="General" apiKey={api}  pageSize={5} country="in" category="general" mode={mode} />}/>
         <Route exact path='/business' element={<News key="business" heading="Business" apiKey={api}  pageSize={5} country="in" category="business" mode={mode} />}/>

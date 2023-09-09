@@ -91,18 +91,11 @@ function Textarea(props) {
         return;
       }
   
-      const authToken = localStorage.getItem('token');
-  
       const response = await axios.post(
-        '/api/notes',
+        'https://text-util-83cs.vercel.app/api/notes',
         {
           content: text,
           category: category,
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${authToken}`, // Replace with your actual authentication token
-          },
         }
       );
   
