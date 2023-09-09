@@ -90,28 +90,19 @@ function Textarea(props) {
         props.showAlert('Please enter some text before saving!', 'danger');
         return;
       }
-  
-      const response = await axios.post(
-        'https://text-util-83cs.vercel.app/api/notes',
-        {
-          content: text,
-          category: category,
-        }
-      );
-  
-      if (response.status === 201) { // Check for a 201 Created status code (or another appropriate success code)
+      const response = await axios.post('https://text-util-83cs.vercel.app/api/notes', {
+        content: text, 
+        category: category, 
+      });
+      if (response.data.success) {
         props.showAlert('Note saved successfully!', 'success');
         loadNotes(); // Refresh the notes list after saving
-      } else {
-        console.error('Error saving note. Status:', response.status, 'Data:', response.data);
-        props.showAlert('Error saving note', 'danger');
       }
     } catch (error) {
       console.error('Error saving note:', error);
       props.showAlert('Error saving note', 'danger');
     }
   };
-  
 
   const [style, setStyle] = useState({
     color: 'white',
