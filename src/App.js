@@ -8,8 +8,6 @@ import Alert from '../src/components/alert';
 import News from '../src/components/news';
 import Insight from '../src/components/insight';
 import Summary from '../src/components/summary';
-import Login from "../src/components/login";
-import Signup from "../src/components/sign";
 
 
 function App(props) {
@@ -40,20 +38,11 @@ function App(props) {
       console.log(api)
     }
   }
-  // Function to conditionally render the Navbar component
-  const renderNavbar = () => {
-    // Check if the current route is '/login' or '/signup'
-    const currentPath = window.location.pathname;
-    if (currentPath === '/' || currentPath === '/signup') {
-      return null; // Don't render Navbar for login or signup pages
-    }
-    return <Navbar head="NotePad" mode={mode} toggleMode={toggleMode} />;
-  };
 
   return (
     <>
     <Router>
-    {renderNavbar()}
+    <Navbar head="NotePad" mode={mode} toggleMode={toggleMode} />
     <Alert alert={alert}/>
       <Routes>
         <Route exact path='/notepad' element={<TextArea showAlert={showAlert} head="Welcome to NotePad" mode={mode} />}/>
@@ -68,9 +57,6 @@ function App(props) {
         <Route exact path='/technology' element={<News key="technology" apiKey={api} heading="Technology"  pageSize={5} country="in" category="technology" mode={mode} />}/>
         <Route exact path='/insight' element={<Insight mode={mode} />}/>
         <Route exact path='/summary' element={<Summary mode={mode} />} />
-
-        <Route exact path="/" element={<Login showAlert={showAlert} />} />
-        <Route exact path="/signup" element={<Signup showAlert={showAlert} />} />
 
         </Routes>
     </Router>
