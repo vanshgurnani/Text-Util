@@ -115,6 +115,9 @@ app.get('/', (req, res) => {
   res.send('Welcome to the Notepad API');
 });
 
+// Middleware to verify JWT token
+app.use(verifyToken);
+
 // Create a new note (authenticated route)
 app.post('/api/notes', async (req, res) => {
   try {

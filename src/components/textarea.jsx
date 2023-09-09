@@ -102,6 +102,7 @@ function Textarea(props) {
       }
 
       const authToken = localStorage.getItem('token');
+      console.log('Token:', authToken);
 
       const response = await axios.post(
         'https://text-util-83cs.vercel.app/api/notes',
