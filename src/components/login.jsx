@@ -21,7 +21,7 @@ function LoginForm() {
     e.preventDefault();
 
     try {
-      const response = await axios.post('https://text-util-83cs.vercel.app/api/register/api/login', formData);
+      const response = await axios.post('https://text-util-83cs.vercel.app/api/login', formData);
 
       if (response.data.success) {
         // Handle successful login (e.g., store user token, redirect)
