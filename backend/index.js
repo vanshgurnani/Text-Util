@@ -65,6 +65,37 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
+// Login route
+app.post('/api/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    // Find the user by email
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ error: 'User not found' });
+    }
+
+    // Check if the password is correct
+    const isPasswordValid = await user.comparePassword(password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: 'Invalid password' });
+    }
+
+    // Generate a JWT token for the user
+    const token = user.generateAuthToken();
+
+    // Send the token in the response
+    res.status(200).json({ success: true, token });
+  } catch (error) {
+    console.error('Error logging in:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 
 // Define a route for the home route ("/")
 app.get('/', (req, res) => {
