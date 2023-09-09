@@ -105,7 +105,7 @@ function Textarea(props) {
       console.log('Token:', authToken);
 
       const response = await axios.post(
-        'https://text-util-83cs.vercel.app/api/notes',
+        '/api/notes',
         {
           content: text,
           category: category,

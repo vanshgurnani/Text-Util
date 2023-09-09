@@ -19,13 +19,13 @@ const allowedOrigins = [
     // 'https://python-jugp.vercel.app',
   // Replace with your Vercel frontend URL
   ];
-  
-  app.use(cors({
-    origin: allowedOrigins,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
-  }));
-// app.use(cors());
+
+app.use(cors({
+  origin: allowedOrigins,
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+}));
+
 app.use(express.json());
 
 // Define database and collection names
@@ -43,37 +43,34 @@ mongoose.connect(`mongodb+srv://gurnanivansh57:iz64rqtBBQss8iQ7@cluster101.nuwew
     console.error('Error connecting to MongoDB:', err);
   });
 
+// Registration route
+app.post('/api/register', async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
 
+    // Check if the email is already registered
+    const existingUser = await User.findOne({ email });
 
-  // Registration route
-  app.post('/api/register', async (req, res) => {
-    try {
-      const { username, email, password } = req.body;
-  
-      // Check if the email is already registered
-      const existingUser = await User.findOne({ email });
-  
-      if (existingUser) {
-        return res.status(400).json({ error: 'Email already registered' });
-      }
-  
-      // Hash the password
-      const saltRounds = 10;
-      const hashedPassword = await bcrypt.hash(password, saltRounds);
-  
-      // Create a new user instance with hashed password
-      const newUser = new User({ username, email, password: hashedPassword });
-  
-      // Save the new user to the database
-      await newUser.save();
-  
-      res.status(201).json({ success: true, message: 'User registered successfully' });
-    } catch (error) {
-      console.error('Error registering user:', error);
-      res.status(500).json({ error: 'Internal server error' });
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email already registered' });
     }
-  });
-  
+
+    // Hash the password
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    // Create a new user instance with hashed password
+    const newUser = new User({ username, email, password: hashedPassword });
+
+    // Save the new user to the database
+    await newUser.save();
+
+    res.status(201).json({ success: true, message: 'User registered successfully' });
+  } catch (error) {
+    console.error('Error registering user:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 // Login route
 app.post('/api/login', async (req, res) => {
@@ -104,9 +101,6 @@ app.post('/api/login', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-
-
-
 
 // Define a route for the home route ("/")
 app.get('/', (req, res) => {
@@ -143,7 +137,6 @@ app.get('/api/my-notes', async (req, res) => {
   }
 });
 
-
 app.get('/api/search', async (req, res) => {
   try {
     const { searchTerm } = req.query; // Get the search term from the query parameter
@@ -157,7 +150,6 @@ app.get('/api/search', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-
 
 app.get('/api/previous-notes', async (req, res) => {
   try {
@@ -189,7 +181,6 @@ app.delete('/api/notes/:noteId', async (req, res) => {
   }
 });
 
-
 // Define a route for updating a note
 app.put('/api/update/:noteId', async (req, res) => {
   const { noteId } = req.params;
@@ -215,10 +206,6 @@ app.put('/api/update/:noteId', async (req, res) => {
     res.status(500).json({ success: false, message: 'Error updating note' });
   }
 });
-
-
-// Middleware to verify JWT token
-app.use(verifyToken);
 
 // More routes for reading, updating, and deleting notes
 
