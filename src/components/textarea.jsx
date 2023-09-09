@@ -20,7 +20,7 @@ function Textarea(props) {
 
   const loadNotes = async () => {
     try {
-      const response = await axios.get('https://text-util-83cs.vercel.app/api/my-notes');
+      const response = await axios.get('https://text-util-83cs.vercel.app/api/fetch-notes');
       setSearchResults(response.data.notes);
     } catch (error) {
       console.error('Error loading notes:', error);
