@@ -66,37 +66,23 @@ app.post('/api/register', async (req, res) => {
 });
 
 
-app.post('/api/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
+app.post('/api/login', (req, res) => {
+  const { email, password } = req.body;
 
-    // Check if the user exists in the database
-    const user = await User.findOne({ email });
+  // Find the user by email (replace with database query)
+  const user = User.find((user) => user.email === email);
 
-    if (!user) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
-
-    // Compare the provided password with the hashed password stored in the database
-    const passwordMatch = await bcrypt.compare(password, user.password);
-
-    if (!passwordMatch) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
-
-    // If the credentials are valid, generate a JSON Web Token (JWT)
-    const token = jwt.sign(
-      { userId: user._id, email: user.email },
-      'JPHSab@1234', // Replace with your actual secret key
-      { expiresIn: '1h' } // Set the token expiration time
-    );
-
-    // Send the token and user information in the response
-    res.status(200).json({ success: true, token, user: { _id: user._id, email: user.email } });
-  } catch (error) {
-    console.error('Error logging in:', error);
-    res.status(500).json({ error: 'Internal server error' });
+  if (!user) {
+    return res.status(401).json({ error: 'Invalid credentials' });
   }
+
+  // Compare the provided password with the user's password
+  if (user.password !== password) {
+    return res.status(401).json({ error: 'Invalid credentials' });
+  }
+
+  // Authentication successful
+  res.status(200).json({ success: true, message: 'Login successful' });
 });
 
 
