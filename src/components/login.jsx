@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { Link } from "react-router-dom";
 
 function LoginForm() {
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -23,8 +25,12 @@ function LoginForm() {
     try {
       const response = await axios.post('https://text-util-83cs.vercel.app/api/login', formData);
 
+      // Store the JWT token securely (e.g., in localStorage)
+      localStorage.setItem('token', response.data.token);
+
       if (response.data.success) {
         setResponseMessage('Login successful');
+        window.location.href = '/notepad';
       } else {
         setResponseMessage(response.data.error);
       }
@@ -68,6 +74,9 @@ function LoginForm() {
         </div>
         <button type="submit" className="btn btn-primary">
           Login
+        </button>
+        <button type="submit" className="btn btn-danger mx-3">
+          <Link style={{ textDecoration: 'none', color: 'white' }} to="signup">Signup</Link>
         </button>
       </form>
       {responseMessage && (

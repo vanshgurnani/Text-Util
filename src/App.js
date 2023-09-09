@@ -1,5 +1,5 @@
 import React,{useState} from 'react'
-import { BrowserRouter as Router, Routes, Route, Outlet} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route} from "react-router-dom";
 // import Home from '../src/components/home';
 import TextArea from '../src/components/textarea';
 import About from '../src/components/about';
@@ -44,7 +44,7 @@ function App(props) {
   const renderNavbar = () => {
     // Check if the current route is '/login' or '/signup'
     const currentPath = window.location.pathname;
-    if (currentPath === '/login' || currentPath === '/signup') {
+    if (currentPath === '/' || currentPath === '/signup') {
       return null; // Don't render Navbar for login or signup pages
     }
     return <Navbar head="NotePad" mode={mode} toggleMode={toggleMode} />;
@@ -56,7 +56,7 @@ function App(props) {
     {renderNavbar()}
     <Alert alert={alert}/>
       <Routes>
-        <Route exact path='' element={<TextArea showAlert={showAlert} head="Welcome to NotePad" mode={mode} />}/>
+        <Route exact path='/notepad' element={<TextArea showAlert={showAlert} head="Welcome to NotePad" mode={mode} />}/>
         <Route exact path='/about' element={<About mode={mode} />}/>
         <Route exact path='/general' element={<News key="general" heading="General" apiKey={api}  pageSize={5} country="in" category="general" mode={mode} />}/>
         <Route exact path='/business' element={<News key="business" heading="Business" apiKey={api}  pageSize={5} country="in" category="business" mode={mode} />}/>
@@ -69,7 +69,7 @@ function App(props) {
         <Route exact path='/insight' element={<Insight mode={mode} />}/>
         <Route exact path='/summary' element={<Summary mode={mode} />} />
 
-        <Route exact path="/login" element={<Login showAlert={showAlert} />} />
+        <Route exact path="/" element={<Login showAlert={showAlert} />} />
         <Route exact path="/signup" element={<Signup showAlert={showAlert} />} />
 
         </Routes>

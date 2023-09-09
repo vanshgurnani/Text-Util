@@ -4,6 +4,9 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const Note = require('../backend/notes/noteModel');
 const User = require('../backend/notes/userModel');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const verifyToken = require('../backend/middleware/authMiddleware');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -42,58 +45,68 @@ mongoose.connect(`mongodb+srv://gurnanivansh57:iz64rqtBBQss8iQ7@cluster101.nuwew
 
 
 
-// Registration route
-app.post('/api/register', async (req, res) => {
-  try {
-    const { username, email, password } = req.body;
-    
-    // Check if the email is already registered
-    const existingUser = await User.findOne({ email });
-
-    if (existingUser) {
-      return res.status(400).json({ error: 'Email already registered' });
+  // Registration route
+  app.post('/api/register', async (req, res) => {
+    try {
+      const { username, email, password } = req.body;
+  
+      // Check if the email is already registered
+      const existingUser = await User.findOne({ email });
+  
+      if (existingUser) {
+        return res.status(400).json({ error: 'Email already registered' });
+      }
+  
+      // Hash the password
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+  
+      // Create a new user instance with hashed password
+      const newUser = new User({ username, email, password: hashedPassword });
+  
+      // Save the new user to the database
+      await newUser.save();
+  
+      res.status(201).json({ success: true, message: 'User registered successfully' });
+    } catch (error) {
+      console.error('Error registering user:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
-
-    // Create a new user instance
-    const newUser = new User({ username, email, password });
-    
-    // Save the new user to the database
-    await newUser.save();
-    
-    res.status(201).json({ success: true, message: 'User registered successfully' });
-  } catch (error) {
-    console.error('Error registering user:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+  });
+  
 
 // Login route
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Find the user by email and select only the necessary fields (e.g., _id and password)
-    const user = await User.findOne({ email }).select('_id password');
+    // Find the user by email
+    const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(400).json({ error: 'User not found' });
     }
 
-    // Check if the password is correct using a simple if statement
-    if (password !== user.password) {
+    // Check if the password is correct
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
       return res.status(401).json({ error: 'Invalid password' });
     }
 
-    // You can generate a JWT token here if needed
+    // Generate a JWT token for the user
+    const token = jwt.sign({ userId: user._id }, 'JPHSab@1234', { expiresIn: '1h' });
 
-    // Send a success response
-    res.status(200).json({ success: true });
+    // Send the token in the response
+    res.status(200).json({ success: true, token });
   } catch (error) {
     console.error('Error logging in:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
+// Middleware to verify JWT token
+app.use(verifyToken);
 
 
 
@@ -102,11 +115,13 @@ app.get('/', (req, res) => {
   res.send('Welcome to the Notepad API');
 });
 
-// Create a new note
+// Create a new note (authenticated route)
 app.post('/api/notes', async (req, res) => {
   try {
-    const { content, category } = req.body; // Include the category in the request
-    const newNote = new Note({ content, category }); // Save the category along with the note
+    const { content, category } = req.body;
+    const userId = req.user.userId; // Get user ID from the JWT token
+
+    const newNote = new Note({ content, category, userId });
     await newNote.save();
     res.json({ success: true });
   } catch (error) {
@@ -115,10 +130,11 @@ app.post('/api/notes', async (req, res) => {
   }
 });
 
-// Get all notes
-app.get('/api/fetch-notes', async (req, res) => {
+// Get user's own notes (authenticated route)
+app.get('/api/my-notes', async (req, res) => {
   try {
-    const notes = await Note.find(); // Fetch all notes from the database
+    const userId = req.user.userId; // Get user ID from the JWT token
+    const notes = await Note.find({ userId }); // Fetch notes of the authenticated user
     res.json(notes);
   } catch (error) {
     console.error(error);
