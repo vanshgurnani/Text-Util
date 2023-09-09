@@ -69,8 +69,8 @@ function App(props) {
         <Route exact path='/insight' element={<Insight mode={mode} />}/>
         <Route exact path='/summary' element={<Summary mode={mode} />} />
 
-        <Route exact path="/login" element={<Login />} />
-        <Route exact path="/signup" element={<Signup />} />
+        <Route exact path="/login" element={<Login showAlert={showAlert} />} />
+        <Route exact path="/signup" element={<Signup showAlert={showAlert} />} />
 
         </Routes>
     </Router>

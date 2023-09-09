@@ -3,6 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const Note = require('../backend/notes/noteModel');
+const User = require('../backend/notes/userModel');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -36,6 +37,33 @@ mongoose.connect(`mongodb+srv://gurnanivansh57:iz64rqtBBQss8iQ7@cluster101.nuwew
   .catch((err) => {
     console.error('Error connecting to MongoDB:', err);
   });
+
+
+
+// Registration route
+app.post('/api/register', async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+    
+    // Check if the email is already registered
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email already registered' });
+    }
+
+    // Create a new user instance
+    const newUser = new User({ username, email, password });
+    
+    // Save the new user to the database
+    await newUser.save();
+    
+    res.status(201).json({ success: true, message: 'User registered successfully' });
+  } catch (error) {
+    console.error('Error registering user:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 
 
