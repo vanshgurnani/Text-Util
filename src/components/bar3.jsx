@@ -9,7 +9,7 @@ function BarGraph() {
   useEffect(() => {
     // Fetch data from the provided API endpoint using Axios
     axios
-      .get('https://text-util-83cs.vercel.app/api/fetch-notes')
+      .get('https://text-util-83cs.vercel.app/api/my-notes')
       .then((response) => {
         const notesData = response.data;
 
