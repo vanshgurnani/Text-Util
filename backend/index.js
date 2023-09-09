@@ -12,7 +12,7 @@ const allowedOrigins = [
     'http://localhost:3000',
     'https://text-util-rosy.vercel.app',
     'https://text-util-jo2r.vercel.app',
-    'https://text-util-83cs.vercel.app',
+    'https://text-util-83cs.vercel.app/fetch-notes',
     'https://flask-production-71e4.up.railway.app',
     // 'https://python-jugp.vercel.app',
   // Replace with your Vercel frontend URL
