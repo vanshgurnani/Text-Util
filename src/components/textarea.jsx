@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './text.css';
 import axios from 'axios';
 import { generatePDF } from './pdf';
-import { FaTrash, FaShareSquare } from 'react-icons/fa';
+import { FaTrash, FaShareSquare, FaVolumeUp } from 'react-icons/fa';
 
 function Textarea(props) {
   const [text, setText] = useState('');
@@ -10,7 +10,6 @@ function Textarea(props) {
   const [searchResults, setSearchResults] = useState([]);
   const [expandedNotes, setExpandedNotes] = useState([]);
   const [category, setCategory] = useState('uncategorized');
-  const [isListening, setIsListening] = useState(false);
 
 
 
@@ -26,45 +25,6 @@ function Textarea(props) {
     } catch (error) {
       console.error('Error loading notes:', error);
     }
-  };
-
-  const startListening = () => {
-    setIsListening(true);
-  
-    const recognition = new window.webkitSpeechRecognition();
-  
-    // Set additional options, such as language and continuous listening
-    recognition.lang = 'en-US'; // Set the recognition language
-    recognition.continuous = true; // Enable continuous listening
-  
-    // Initialize a timer to stop recognition after a certain duration (e.g., 10 seconds)
-    let recognitionTimer;
-  
-    recognition.onstart = () => {
-      // Recognition has started, initialize the timer
-      recognitionTimer = setTimeout(() => {
-        recognition.stop();
-      }, 10000); // Stop recognition after 10 seconds (adjust as needed)
-    };
-  
-    recognition.onresult = (event) => {
-      // User spoke, reset the timer
-      clearTimeout(recognitionTimer);
-  
-      const transcript = event.results[0][0].transcript;
-      setText(transcript);
-  
-      // Restart the timer to give more time to speak
-      recognitionTimer = setTimeout(() => {
-        recognition.stop();
-      }, 10000); // Reset the timer for 10 more seconds (adjust as needed)
-    };
-  
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-  
-    recognition.start();
   };
   
 
@@ -164,7 +124,7 @@ function Textarea(props) {
     setText(newText);
   };
 
-  const handleTextToSpeech = () => {
+  const handleTextToSpeech = (text) => {
     if ('speechSynthesis' in window) {
       const speech = new SpeechSynthesisUtterance(text);
       window.speechSynthesis.speak(speech);
@@ -265,17 +225,14 @@ function Textarea(props) {
         <button onClick={handleClear} className="btn btn-danger mx-2 my-2">
           Clear
         </button>
-        <button onClick={handleTextToSpeech} className="btn btn-success mx-2 my-2">
+        {/*<button onClick={handleTextToSpeech} className="btn btn-success mx-2 my-2">
           Text to Speech
-        </button>
+</button>*/}
         <button onClick={saveNote} className="btn btn-primary mx-2 my-2">
           Save Note
         </button>
         <button onClick={saveNoteAndGeneratePDF} className="btn btn-primary mx-2 my-2">
           Generate PDF
-        </button>
-        <button onClick={startListening} className='btn btn-warning mx-2'>
-          {isListening ? 'Listening...' : 'Start Listening'}
         </button>
       </div>
       <div className={`container ${style}`} style={{ color: props.mode === 'dark' ? 'white' : '#042743' }}>
@@ -290,32 +247,37 @@ function Textarea(props) {
       {searchResults && searchResults.length > 0 ? (
         <div className='container'>
 
-        <div className='row'>
-            {searchResults.map((note, index) => (
-              <div key={note._id} className="card mx-2 my-2" style={{width:'30%'}}>
-                <div className="card-body">
-                    <h5 className="card-title">
-                      {`${index + 1}. ${note.content.substring(0, 10)}`} {/* Display the first 100 characters */}
-                      {note.content.length > 10 && (
-                        <p style={{cursor:'pointer',fontWeight: 'normal',color: 'gray'}} onClick={() => handleExpandNote(note._id)}>
-                          {expandedNotes.includes(note._id) ? '....Read Less' : '....Read More'}
-                        </p>
-                      )}
-                    </h5>
-                    <p className="card-text">Category: {note.category}</p>
-                    <FaTrash className='mx-2' style={{ cursor: 'pointer' }} onClick={() => handleDeleteNote(note._id)} />
-                    <FaShareSquare className='mx-2' style={{ cursor: 'pointer' }} onClick={() => handleShareNote(note)} />
-                  {expandedNotes.includes(note._id) ? (
-                    <div>
-                      <p className="card-text">{note.content}</p> {/* Display full content when expanded */}
-                      <p className="card-text">Timestamp: {new Date(note.timestamp).toLocaleString()}</p>
-                    </div>
-                  ) : (
-                    <p className="card-text">Timestamp: {new Date(note.timestamp).toLocaleString()}</p>
-                  )}
-                </div>
+        <div className='row mx-auto'>
+        {searchResults.map((note, index) => (
+          <div className='col-md-4 mb-4'>
+          
+          <div key={note._id} className="card mx-2 my-2" style={{width:'18rem'}}>
+          <div className="card-body">
+              <h5 className="card-title">
+                {`${index + 1}. ${note.content.substring(0, 10)}`} {/* Display the first 100 characters */}
+                {note.content.length > 10 && (
+                  <p style={{cursor:'pointer',fontWeight: 'normal',color: 'gray'}} onClick={() => handleExpandNote(note._id)}>
+                    {expandedNotes.includes(note._id) ? '....Read Less' : '....Read More'}
+                  </p>
+                )}
+              </h5>
+              <p className="card-text">Category: {note.category}</p>
+              <FaTrash className='mx-2' style={{ cursor: 'pointer' }} onClick={() => handleDeleteNote(note._id)} />
+              <FaShareSquare className='mx-2' style={{ cursor: 'pointer' }} onClick={() => handleShareNote(note)} />
+              <FaVolumeUp className='mx-2' style={{ cursor: 'pointer' }} onClick={() => handleTextToSpeech(note.content)} />
+            {expandedNotes.includes(note._id) ? (
+              <div>
+                <p className="card-text">{note.content}</p> {/* Display full content when expanded */}
+                <p className="card-text">Timestamp: {new Date(note.timestamp).toLocaleString()}</p>
               </div>
-            ))}
+            ) : (
+              <p className="card-text">Timestamp: {new Date(note.timestamp).toLocaleString()}</p>
+            )}
+          </div>
+        </div>
+          
+          </div>
+        ))}
 
 
         </div>
