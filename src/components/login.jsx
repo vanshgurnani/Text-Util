@@ -32,8 +32,7 @@ function LoginForm() {
     } catch (error) {
       console.error('Error logging in:', error);
       setResponseMessage('Internal server error');
-    }
-  };
+    }  };
 
   return (
     <div className="container">
