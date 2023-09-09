@@ -70,7 +70,7 @@ app.post('/api/login', (req, res) => {
   const { email, password } = req.body;
 
   // Find the user by email (replace with database query)
-  const user = User.find((user) => user.email === email);
+  const user = User.findOne({ email });
 
   if (!user) {
     return res.status(401).json({ error: 'Invalid credentials' });
@@ -84,6 +84,7 @@ app.post('/api/login', (req, res) => {
   // Authentication successful
   res.status(200).json({ success: true, message: 'Login successful' });
 });
+
 
 
 

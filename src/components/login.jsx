@@ -7,7 +7,7 @@ function LoginForm() {
     password: '',
   });
 
-  const [responseMessage, setResponseMessage] = useState(null);
+  const [responseMessage, setResponseMessage] = useState('');
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -24,7 +24,6 @@ function LoginForm() {
       const response = await axios.post('https://text-util-83cs.vercel.app/api/login', formData);
 
       if (response.data.success) {
-        // Handle successful login (e.g., store user token, redirect)
         setResponseMessage('Login successful');
       } else {
         setResponseMessage(response.data.error);
@@ -32,15 +31,17 @@ function LoginForm() {
     } catch (error) {
       console.error('Error logging in:', error);
       setResponseMessage('Internal server error');
-    }  };
+    }
+  };
 
   return (
     <div className="container">
-    {responseMessage && <div className="mt-3 alert alert-info">{responseMessage}</div>}
       <h1>Login</h1>
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
-          <label htmlFor="email" className="form-label">Email address</label>
+          <label htmlFor="email" className="form-label">
+            Email address
+          </label>
           <input
             type="email"
             className="form-control"
@@ -52,7 +53,9 @@ function LoginForm() {
           />
         </div>
         <div className="mb-3">
-          <label htmlFor="password" className="form-label">Password</label>
+          <label htmlFor="password" className="form-label">
+            Password
+          </label>
           <input
             type="password"
             className="form-control"
@@ -63,8 +66,13 @@ function LoginForm() {
             required
           />
         </div>
-        <button type="submit" className="btn btn-primary">Login</button>
+        <button type="submit" className="btn btn-primary">
+          Login
+        </button>
       </form>
+      {responseMessage && (
+        <div className="mt-3 alert alert-info">{responseMessage}</div>
+      )}
     </div>
   );
 }
