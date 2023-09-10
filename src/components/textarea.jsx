@@ -152,7 +152,7 @@ function Textarea(props) {
       try {
         await navigator.share({
           title: 'Shared Note',
-          text: 'Hey All,\n\nI wanted to share some information with you from my notepad:\n\n${content}\n\nFeel free to reach out if you have any questions or need further details.\n\n',
+          text: `Hey All,\n\nI wanted to share some information with you from my notepad:\n\n${note.content}\n\nFeel free to reach out if you have any questions or need further details.\n\n`,
         });
       } catch (error) {
         console.error('Error sharing note:', error);
