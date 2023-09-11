@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './text.css';
 import axios from 'axios';
 import { generatePDF } from './pdf';
-import { FaTrash, FaShareSquare, FaVolumeUp } from 'react-icons/fa';
+import { FaTrash, FaShareSquare, FaVolumeUp,FaFilePdf } from 'react-icons/fa';
 
 function Textarea(props) {
   const [text, setText] = useState('');
@@ -39,33 +39,29 @@ function Textarea(props) {
 };
 
 
-  // Function to save note to the backend and generate PDF
-  const saveNoteAndGeneratePDF = async () => {
-    try {
-      if (text.trim() === '') {
-        props.showAlert('Please enter some text before saving in PDF!', 'danger');
-        return;
-      }
-      // Save the note to the backend
-      const response = await axios.post('https://text-util-ykfu.vercel.app/api/notes', { content: text, category: category });
-      if (response.data.success) {
-        props.showAlert('Note saved successfully!', 'success');
-        loadNotes(); // Refresh the notes list after saving
+const saveNoteAndGeneratePDF = async (text, category) => {
+  try {
+    // Save the note to the backend
+    const response = await axios.post('https://text-util-ykfu.vercel.app/api/notes', { content: text, category: category });
+    if (response.data.success) {
+      props.showAlert('Note saved successfully!', 'success');
+      loadNotes(); // Refresh the notes list after saving
 
-        // Generate PDF
-        const pdfDataURI = generatePDF(text); // Call the PDF generator function
+      // Generate PDF
+      const pdfDataURI = generatePDF(text, category); // Call the PDF generator function
 
-        // Trigger PDF download (you can use a download link or any other method)
-        const link = document.createElement('a');
-        link.href = pdfDataURI;
-        link.download = 'note.pdf';
-        link.click();
-      }
-    } catch (error) {
-      console.error('Error saving note:', error);
-      props.showAlert('Error saving note', 'danger');
+      // Trigger PDF download (you can use a download link or any other method)
+      const link = document.createElement('a');
+      link.href = pdfDataURI;
+      link.download = 'note.pdf';
+      link.click();
     }
-  };
+  } catch (error) {
+    console.error('Error saving note:', error);
+    props.showAlert('Error saving note', 'danger');
+  }
+};
+
 
   const searchNotes = async () => {
     if (searchTerm.trim() === '') {
@@ -265,6 +261,8 @@ function Textarea(props) {
               <FaTrash className='mx-2' style={{ cursor: 'pointer' }} onClick={() => handleDeleteNote(note._id)} />
               <FaShareSquare className='mx-2' style={{ cursor: 'pointer' }} onClick={() => handleShareNote(note)} />
               <FaVolumeUp className='mx-2' style={{ cursor: 'pointer' }} onClick={() => handleTextToSpeech(note.content)} />
+              <FaFilePdf className='mx-2' style={{ cursor: 'pointer' }} onClick={() => saveNoteAndGeneratePDF(note.content, note.category)} />
+
             {expandedNotes.includes(note._id) ? (
               <div>
                 <p className="card-text">{note.content}</p> {/* Display full content when expanded */}
