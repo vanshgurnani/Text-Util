@@ -40,26 +40,16 @@ function Textarea(props) {
 
 
 const saveNoteAndGeneratePDF = async (text, category) => {
-  try {
-    // Save the note to the backend
-    const response = await axios.post('https://text-util-ykfu.vercel.app/api/notes', { content: text, category: category });
-    if (response.data.success) {
-      props.showAlert('Note saved successfully!', 'success');
-      loadNotes(); // Refresh the notes list after saving
+  const pdfDataURI = generatePDF(text, category); // Call the PDF generator function
 
-      // Generate PDF
-      const pdfDataURI = generatePDF(text, category); // Call the PDF generator function
+  // Trigger PDF download (you can use a download link or any other method)
+  const link = document.createElement('a');
+  link.href = pdfDataURI;
+  link.download = 'note.pdf';
+  link.click();
 
-      // Trigger PDF download (you can use a download link or any other method)
-      const link = document.createElement('a');
-      link.href = pdfDataURI;
-      link.download = 'note.pdf';
-      link.click();
-    }
-  } catch (error) {
-    console.error('Error saving note:', error);
-    props.showAlert('Error saving note', 'danger');
-  }
+  props.showAlert('PDF created Successfully!', 'success');
+
 };
 
 
