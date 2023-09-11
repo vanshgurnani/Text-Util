@@ -8,6 +8,8 @@ import Alert from '../src/components/alert';
 import News from '../src/components/news';
 import Insight from '../src/components/insight';
 import Summary from '../src/components/summary';
+import Login from '../src/components/login';
+import Register from '../src/components/register';
 
 
 function App(props) {
@@ -39,10 +41,19 @@ function App(props) {
     }
   }
 
+  const renderNavbar = () => {
+    const currentPath = window.location.pathname;
+    if (currentPath === '/register' || currentPath === '/login') {
+      return null; // Don't render Navbar for register and login paths
+    }
+    return <Navbar head="NotePad" mode={mode} toggleMode={toggleMode} />;
+  };
+  
+
   return (
     <>
     <Router>
-    <Navbar head="NotePad" mode={mode} toggleMode={toggleMode} />
+    {renderNavbar()}
     <Alert alert={alert}/>
       <Routes>
         <Route exact path='/' element={<TextArea showAlert={showAlert} head="Welcome to NotePad" mode={mode} />}/>
@@ -57,6 +68,10 @@ function App(props) {
         <Route exact path='/technology' element={<News key="technology" apiKey={api} heading="Technology"  pageSize={5} country="in" category="technology" mode={mode} />}/>
         <Route exact path='/insight' element={<Insight mode={mode} />}/>
         <Route exact path='/summary' element={<Summary mode={mode} />} />
+
+
+        <Route exact path='/login' element={<Login mode={mode} />} />
+        <Route exact path='/register' element={<Register mode={mode} />} />
 
         </Routes>
     </Router>
