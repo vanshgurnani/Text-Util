@@ -3,14 +3,12 @@ from nltk.tokenize import sent_tokenize
 from nltk.corpus import stopwords
 from nltk.probability import FreqDist
 from nltk.tokenize import word_tokenize
-from nltk import sent_tokenize
 import nltk
 import heapq
-from flask_cors import CORS  # Import CORS
+from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)  # Initialize CORS with your Flask app
-
+CORS(app)
 nltk.download('stopwords')
 
 @app.route('/')
@@ -49,7 +47,27 @@ def get_summary():
     # Generate the summary
     summary = ' '.join(summary_sentences)
 
-    return jsonify({"summary": summary})
+    # Calculate accuracy by comparing generated summary with original text input
+    accuracy = calculate_accuracy(text, summary)
+
+    return jsonify({"summary": summary, "accuracy": accuracy})
+
+def calculate_accuracy(original_text, generated_summary):
+    # Implement your custom accuracy calculation logic here
+    # You can compare the similarity or overlap between the original text and the generated summary
+    # For example, you can use a text similarity metric like cosine similarity or Jaccard similarity
+    # The exact calculation depends on your specific requirements
+
+    # As a placeholder, this example calculates accuracy based on the ratio of shared words
+    original_words = set(original_text.lower().split())
+    summary_words = set(generated_summary.lower().split())
+    
+    shared_words = original_words.intersection(summary_words)
+    
+    # Calculate accuracy as the ratio of shared words to the total words in the original text
+    accuracy = len(shared_words) / len(original_words)
+    
+    return accuracy
 
 if __name__ == '__main__':
     app.run(debug=True)
