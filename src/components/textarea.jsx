@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import './text.css';
 import axios from 'axios';
 import { generatePDF } from './pdf';
 import { FaTrash, FaShareSquare, FaVolumeUp,FaFilePdf } from 'react-icons/fa';

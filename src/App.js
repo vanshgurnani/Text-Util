@@ -1,4 +1,4 @@
-import React,{useState} from 'react'
+import React,{useState,useEffect} from 'react'
 import { BrowserRouter as Router, Routes, Route} from "react-router-dom";
 // import Home from '../src/components/home';
 import TextArea from '../src/components/textarea';
@@ -18,6 +18,13 @@ function App(props) {
   
     const api = process.env.REACT_APP_NEWS_API;
     // const api="3e69e2dc8d9241889ee2d1372eafa6e7";
+
+  // Default background color based on the mode
+  const backgroundColor = mode === 'light' ? '#D2B48C' : '#0A3A5E';
+  useEffect(() => {
+    document.body.style.backgroundColor = backgroundColor; // Set default background color
+  }, [mode, backgroundColor]);
+
   
   const showAlert=(message,type)=>{
       setAlert({
@@ -34,7 +41,6 @@ function App(props) {
     }
     else{
       setMode('light');
-      document.body.style.backgroundColor='#D2B48C';
       showAlert("Light Mode has been enabled","warning");
       document.title="Notepad Light Mode";
       console.log(api)
