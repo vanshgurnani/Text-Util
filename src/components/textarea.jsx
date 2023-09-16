@@ -26,6 +26,16 @@ function Textarea(props) {
       console.error('Error loading notes:', error);
     }
   };
+
+  function getRandomLightColor() {
+    const letters = 'ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 3; i++) {
+      color += letters[Math.floor(Math.random() * 6)]; // Use letters A-F
+    }
+    return color;
+  }
+  
   
 
   const handleExpandNote = (noteId) => {
@@ -237,7 +247,7 @@ const saveNoteAndGeneratePDF = async (text, category) => {
         {searchResults.map((note, index) => (
           <div className='col-md-4 mb-4'>
           
-          <div key={note._id} className="card mx-2 my-2" style={{width:'18rem'}}>
+          <div key={note._id} className="card mx-2 my-2" style={{width:'18rem', backgroundColor: getRandomLightColor()}}>
           <div className="card-body">
               <h5 className="card-title">
                 {`${index + 1}. ${note.content.substring(0, 10)}`} {/* Display the first 100 characters */}
