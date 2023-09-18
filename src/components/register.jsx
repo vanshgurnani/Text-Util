@@ -2,41 +2,48 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 const Registration = () => {
-  const [formData, setFormData] = useState({
+  const [userData, setUserData] = useState({
     username: '',
     email: '',
     password: '',
   });
 
-  const [alert, setAlert] = useState({ type: '', message: '' });
+  const [response, setResponse] = useState(null); // State variable for response message
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    setUserData({ ...userData, [name]: value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      const response = await axios.post('/api/register', formData);
-      setAlert({ type: 'success', message: 'Registration successful!' });
-      // Redirect to login page or perform other actions after successful registration
+      const response = await axios.post('https://text-util-ykfu.vercel.app/api/register', userData);
+      console.log(response.data);
+
+      // Set the response message for success
+      setResponse('Registration Successful!');
+      
+      // Clear form fields on successful registration
+      setUserData({
+        username: '',
+        email: '',
+        password: '',
+      });
     } catch (error) {
-      console.error('Error registering user:', error);
-      setAlert({ type: 'error', message: 'Registration failed. Please try again.' });
+      console.error(error);
+
+      // Set the response message for error
+      setResponse('Registration failed. Please try again.');
     }
   };
 
   return (
     <div className="container">
       <h2>Registration</h2>
-      {alert.type && (
-        <div className={`alert alert-${alert.type}`} role="alert">
-          {alert.message}
+      {response && ( // Display response message if response is not null
+        <div className={`alert ${response.includes('Successful') ? 'alert-success' : 'alert-danger'}`} role="alert">
+          {response}
         </div>
       )}
       <form onSubmit={handleSubmit}>
@@ -44,10 +51,10 @@ const Registration = () => {
           <label>Username</label>
           <input
             type="text"
-            className="form-control"
             name="username"
-            value={formData.username}
+            value={userData.username}
             onChange={handleChange}
+            className="form-control"
             required
           />
         </div>
@@ -55,10 +62,10 @@ const Registration = () => {
           <label>Email</label>
           <input
             type="email"
-            className="form-control"
             name="email"
-            value={formData.email}
+            value={userData.email}
             onChange={handleChange}
+            className="form-control"
             required
           />
         </div>
@@ -66,14 +73,16 @@ const Registration = () => {
           <label>Password</label>
           <input
             type="password"
-            className="form-control"
             name="password"
-            value={formData.password}
+            value={userData.password}
             onChange={handleChange}
+            className="form-control"
             required
           />
         </div>
-        <button type="submit" className="btn btn-primary">Register</button>
+        <button type="submit" className="btn btn-primary">
+          Register
+        </button>
       </form>
     </div>
   );
