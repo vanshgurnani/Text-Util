@@ -59,7 +59,7 @@ app.post('/api/register', async (req, res) => {
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email , password });
     if (user) {
       res.status(200).json({ message: 'Login successful' });
     } else {
