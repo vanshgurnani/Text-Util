@@ -214,20 +214,12 @@ const saveNoteAndGeneratePDF = async (text, category) => {
           </select>
         </div>
 
-        {/*<button onClick={handleUpClick} className="btn btn-primary mx-2 my-2">
-          Convert to Uppercase
-  </button>*/}
+        
         <button onClick={handleClear} className="btn btn-danger mx-2 my-2">
           Clear
         </button>
-        {/*<button onClick={handleTextToSpeech} className="btn btn-success mx-2 my-2">
-          Text to Speech
-</button>*/}
         <button onClick={saveNote} className="btn btn-primary mx-2 my-2">
           Save Note
-        </button>
-        <button onClick={saveNoteAndGeneratePDF} className="btn btn-primary mx-2 my-2">
-          Generate PDF
         </button>
       </div>
       <div className={`container ${style}`} style={{ color: props.mode === 'dark' ? 'white' : '#042743' }}>

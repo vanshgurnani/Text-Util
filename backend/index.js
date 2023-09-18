@@ -3,8 +3,9 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const Note = require ('./models/notesmodel');
-const jwt = require('jsonwebtoken')
-const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const Summary = require('./models/summarymodel');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -143,6 +144,26 @@ app.put('/api/update/:noteId', async (req, res) => {
     res.status(500).json({ success: false, message: 'Error updating note' });
   }
 });
+
+
+// Summary information
+
+app.post('/saveSummary', async (req, res) => {
+  try {
+    const { text, summary, accuracy } = req.body;
+    const newSummary = new Summary({
+      text,
+      summary,
+      accuracy,
+    });
+    await newSummary.save();
+    res.json({ message: 'Summary saved successfully!' });
+  } catch (error) {
+    console.error('Error saving summary:', error);
+    res.status(500).json({ error: 'An error occurred while saving the summary.' });
+  }
+});
+
 
 
 

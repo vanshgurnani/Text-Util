@@ -35,6 +35,7 @@ function App(props) {
   };
 
   return (
+    <>
     <div className='container'>
       <h1 style={{ color: props.mode === 'dark' ? 'white' : '#042743' }}>Text Summarizer</h1>
       <textarea
@@ -68,6 +69,8 @@ function App(props) {
         )
       )}
     </div>
+
+  </>
   );
 }
 
