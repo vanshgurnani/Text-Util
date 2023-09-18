@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { generatePDF } from './pdf';
 import { FaTrash, FaShareSquare, FaVolumeUp,FaFilePdf } from 'react-icons/fa';
+// import Quil from '../components/quil';
 
 function Textarea(props) {
   const [text, setText] = useState('');
