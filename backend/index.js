@@ -3,6 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const Note = require ('./models/notesmodel');
+const User = require('./models/usersmodel');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const Summary = require('./models/summarymodel');
@@ -42,6 +43,32 @@ mongoose.connect(`mongodb+srv://gurnanivansh57:iz64rqtBBQss8iQ7@cluster101.nuwew
   });
 
 
+// Registration endpoint
+app.post('/api/register', async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+    const user = new User({ username, email, password });
+    await user.save();
+    res.status(201).json({ message: 'Registration successful' });
+  } catch (error) {
+    res.status(400).json({ error: 'Registration failed' });
+  }
+});
+
+// Login endpoint
+app.post('/api/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email, password });
+    if (user) {
+      res.status(200).json({ message: 'Login successful' });
+    } else {
+      res.status(401).json({ error: 'Invalid credentials' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
 // Define a route for the home route ("/")
 app.get('/', (req, res) => {
