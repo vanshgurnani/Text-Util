@@ -7,6 +7,34 @@ function App(props) {
   const [summary, setSummary] = useState('');
   const [accuracy, setAccuracy] = useState(null); // Initialize accuracy as null
   const [isLoading, setIsLoading] = useState(false);
+  const [summaryHistory, setSummaryHistory] = useState([]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState({});
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+
+    // Fetch summary history when the sidebar is opened
+    if (!isSidebarOpen) {
+      fetchSummaryHistory();
+    }
+
+    setTimeout(() => {
+      fetchSummaryHistory();
+    }, 500); // Fetch notes after a 500ms delay (adjust as needed)
+  };
+
+  const fetchSummaryHistory = () => {
+    // Fetch summary history from the backend
+    axios
+      .get('https://text-util-ykfu.vercel.app/getSummaryHistory') // Replace with your backend endpoint
+      .then((response) => {
+        setSummaryHistory(response.data.summaryHistory);
+      })
+      .catch((error) => {
+        console.error('Error fetching summary history:', error);
+      });
+  };
 
   const handleTextChange = (e) => {
     setText(e.target.value);
@@ -50,14 +78,21 @@ function App(props) {
       });
   };
 
+  const toggleExpansion = (index) => {
+    setIsExpanded((prevState) => ({
+      ...prevState,
+      [index]: !prevState[index],
+    }));
+  };
+
   return (
     <>
     <div className='container'>
-      <h1 style={{ color: props.mode === 'dark' ? 'white' : '#042743' }}>Text Summarizer</h1>
+      <h1 className='mx-3 mb-4' style={{ color: props.mode === 'dark' ? 'white' : '#042743' }}>Text Summarizer</h1>
       <textarea
-        className="form-control"
+        className="form-control mx-3"
         placeholder="Enter text to summarize..."
-        rows="8"
+        rows="12"
         cols="20"
         style={{ resize: 'none' }}
         value={text}
@@ -67,10 +102,7 @@ function App(props) {
       <div className="d-flex">
         <button className='btn btn-primary mx-3' onClick={summarizeText}>Summarize</button>
         <button className='btn btn-danger mx-3' onClick={clearText}>Clear</button>
-        <button type="button" class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#myOffcanvas">
-  Open Sidebar
-</button>
-
+        <button type="button" class="btn btn-primary mx-3" data-bs-toggle="offcanvas" data-bs-target="#myOffcanvas" onClick={toggleSidebar}>History</button>
       </div>
       {isLoading ? (
         <Spinner />
@@ -91,19 +123,49 @@ function App(props) {
     </div>
 
 
-    <div class="offcanvas offcanvas-start" tabindex="-1" id="myOffcanvas">
-  <div class="offcanvas-header">
-    <h5 class="offcanvas-title">History</h5>
-    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-  </div>
-  <div class="offcanvas-body">
-    <ul class="list-group">
-      <li class="list-group-item">Item 1</li>
-      <li class="list-group-item">Item 2</li>
-      <li class="list-group-item">Item 3</li>
-    </ul>
-  </div>
-</div>
+    <div className={`offcanvas offcanvas-start ${isSidebarOpen ? 'show' : ''}`} tabIndex="-1" id="myOffcanvas">
+        <div className="offcanvas-header">
+          <h5 className="offcanvas-title">History</h5>
+          <button type="button" className="btn-close text-reset" onClick={toggleSidebar} aria-label="Close"></button>
+        </div>
+        <div className="offcanvas-body">
+        {isLoading ? (
+          <Spinner />
+        ) : (
+          <ul className="list-group">
+  {summaryHistory.map((item, index) => (
+    <li className="list-group-item" key={index}>
+      {isExpanded[index] ? (
+        <div>
+          {item}
+          <br />
+          <button
+            className="btn btn-link btn-sm"
+            onClick={() => toggleExpansion(index)}
+          >
+            Read Less
+          </button>
+        </div>
+      ) : (
+        <div>
+          {item.slice(0, 100)} {/* Display the first 100 characters */}
+          {item.length > 100 && (
+            <button
+              className="btn btn-link btn-sm"
+              onClick={() => toggleExpansion(index)}
+            >
+              Read More
+            </button>
+          )}
+        </div>
+      )}
+    </li>
+  ))}
+</ul>
+
+        )}
+        </div>
+      </div>
 
 
   </>
