@@ -164,6 +164,22 @@ app.post('/saveSummary', async (req, res) => {
   }
 });
 
+// Endpoint to get the summary history
+app.get('/getSummaryHistory', async (req, res) => {
+  try {
+    // Fetch all summaries from MongoDB
+    const summaries = await Summary.find({}, 'summary'); // Modify the query as needed
+
+    // Extract the summary text from the results
+    const summaryHistory = summaries.map((summary) => summary.summary);
+
+    res.json({ summaryHistory });
+  } catch (error) {
+    console.error('Error fetching summary history:', error);
+    res.status(500).json({ error: 'An error occurred while fetching the summary history.' });
+  }
+});
+
 
 
 

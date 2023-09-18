@@ -19,6 +19,9 @@ function App(props) {
       .then((response) => {
         setSummary(response.data.summary);
         setAccuracy(response.data.accuracy); // Set accuracy from the API response
+
+        // Save the summary to the backend
+        saveSummaryToBackend(response.data.summary, response.data.accuracy);
       })
       .catch((error) => {
         console.error('Error:', error);
@@ -32,6 +35,19 @@ function App(props) {
     setText('');
     setSummary('');
     setAccuracy(null); // Clear accuracy when clearing text
+  };
+
+
+  // Function to save the summary to the backend
+  const saveSummaryToBackend = (summary, accuracy) => {
+    axios
+      .post('https://text-util-ykfu.vercel.app/saveSummary', { text, summary, accuracy }) // Replace with your backend endpoint
+      .then((response) => {
+        console.log('Summary saved successfully:', response.data.message);
+      })
+      .catch((error) => {
+        console.error('Error saving summary:', error);
+      });
   };
 
   return (
@@ -51,6 +67,10 @@ function App(props) {
       <div className="d-flex">
         <button className='btn btn-primary mx-3' onClick={summarizeText}>Summarize</button>
         <button className='btn btn-danger mx-3' onClick={clearText}>Clear</button>
+        <button type="button" class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#myOffcanvas">
+  Open Sidebar
+</button>
+
       </div>
       {isLoading ? (
         <Spinner />
@@ -69,6 +89,22 @@ function App(props) {
         )
       )}
     </div>
+
+
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="myOffcanvas">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title">History</h5>
+    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+    <ul class="list-group">
+      <li class="list-group-item">Item 1</li>
+      <li class="list-group-item">Item 2</li>
+      <li class="list-group-item">Item 3</li>
+    </ul>
+  </div>
+</div>
+
 
   </>
   );
