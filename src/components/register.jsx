@@ -80,8 +80,11 @@ const Registration = () => {
             required
           />
         </div>
-        <button type="submit" className="btn btn-primary">
+        <button type="submit" className="btn btn-primary mt-3">
           Register
+        </button>
+        <button type="button" className="btn btn-danger mt-3 mx-3">
+          <a href="/" className='text-white' style={{textDecoration:'none'}}>Login</a>
         </button>
       </form>
     </div>

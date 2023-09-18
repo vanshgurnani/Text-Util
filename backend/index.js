@@ -47,7 +47,11 @@ mongoose.connect(`mongodb+srv://gurnanivansh57:iz64rqtBBQss8iQ7@cluster101.nuwew
 app.post('/api/register', async (req, res) => {
   try {
     const { username, email, password } = req.body;
-    const user = new User({ username, email, password });
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10); // 10 is the number of salt rounds
+
+    const user = new User({ username, email, password: hashedPassword });
     await user.save();
     res.status(201).json({ message: 'Registration successful' });
   } catch (error) {
@@ -59,9 +63,19 @@ app.post('/api/register', async (req, res) => {
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email , password });
+
+    // Find the user by email
+    const user = await User.findOne({ email });
+
     if (user) {
-      res.status(200).json({ message: 'Login successful' });
+      // Compare the hashed password with the provided password
+      const passwordMatch = await bcrypt.compare(password, user.password);
+
+      if (passwordMatch) {
+        res.status(200).json({ message: 'Login successful' });
+      } else {
+        res.status(401).json({ error: 'Invalid credentials' });
+      }
     } else {
       res.status(401).json({ error: 'Invalid credentials' });
     }

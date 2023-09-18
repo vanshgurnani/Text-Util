@@ -49,7 +49,7 @@ function App(props) {
 
   const renderNavbar = () => {
     const currentPath = window.location.pathname;
-    if (currentPath === '/register' || currentPath === '/login') {
+    if (currentPath === '/register' || currentPath === '/') {
       return null; // Don't render Navbar for register and login paths
     }
     return <Navbar head="NotePad" mode={mode} toggleMode={toggleMode} />;
@@ -62,7 +62,7 @@ function App(props) {
     {renderNavbar()}
     <Alert alert={alert}/>
       <Routes>
-        <Route exact path='/' element={<TextArea showAlert={showAlert} head="Welcome to NotePad" mode={mode} />}/>
+        <Route exact path='/notes' element={<TextArea showAlert={showAlert} head="Welcome to NotePad" mode={mode} />}/>
         <Route exact path='/about' element={<About mode={mode} />}/>
         <Route exact path='/general' element={<News key="general" heading="General" apiKey={api}  pageSize={5} country="in" category="general" mode={mode} />}/>
         <Route exact path='/business' element={<News key="business" heading="Business" apiKey={api}  pageSize={5} country="in" category="business" mode={mode} />}/>
@@ -76,7 +76,7 @@ function App(props) {
         <Route exact path='/summary' element={<Summary mode={mode} />} />
 
 
-        <Route exact path='/login' element={<Login mode={mode} />} />
+        <Route exact path='/' element={<Login mode={mode} />} />
         <Route exact path='/register' element={<Register mode={mode} />} />
 
         </Routes>

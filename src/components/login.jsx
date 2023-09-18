@@ -1,87 +1,65 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const Login = () => {
-  const [loginData, setLoginData] = useState({
-    email: '',
-    password: '',
-  });
+function LoginForm() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [response, setResponse] = useState(''); // State variable for response message
 
-  const [response, setResponse] = useState(null); // State variable for response message
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setLoginData({ ...loginData, [name]: value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleLogin = async () => {
     try {
-      const response = await axios.post('https://text-util-ykfu.vercel.app/api/login', loginData);
-      console.log(response.data);
-
-      // Check if login is successful
-      if (response.status === 200 && response.data.success) {
-        // Set the response message for success
-        setResponse('Login Successful!');
-        
-        // Clear form fields on successful login
-        setLoginData({
-          email: '',
-          password: '',
-        });
-
-        window.location.href = '/';
+      const response = await axios.post('https://text-util-ykfu.vercel.app/api/login', { email, password });
+      if (response.status === 200) {
+        // Handle successful login
+        console.log('Login successful');
+        setResponse('Login successful'); // Set the response message for success
+        window.location.href = '/notes';
       } else {
-        // Set the response message for unsuccessful login
-        setResponse('Login failed. Please check your credentials and try again.');
+        setError('Invalid credentials');
       }
     } catch (error) {
-      console.error(error);
-
-      // Set the response message for error
-      setResponse('Login failed. Please check your credentials and try again.');
+      setError('Server error');
     }
   };
 
   return (
     <div className="container">
       <h2>Login</h2>
+      {error && <p>{error}</p>}
       {response && ( // Display response message if response is not null
-        <div className={`alert ${response.includes('Successful') ? 'alert-success' : 'alert-danger'}`} role="alert">
-          {response}
-        </div>
-      )}
-      <form onSubmit={handleSubmit}>
+      <div className={`alert ${response.includes('Successful') ? 'alert-danger' : 'alert-success'}`} role="alert">
+        {response}
+      </div>
+    )}
+      <form>
         <div className="form-group">
-          <label>Email</label>
+          <label>Email:</label>
           <input
             type="email"
-            name="email"
-            value={loginData.email}
-            onChange={handleChange}
             className="form-control"
-            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
         </div>
         <div className="form-group">
-          <label>Password</label>
+          <label>Password:</label>
           <input
             type="password"
-            name="password"
-            value={loginData.password}
-            onChange={handleChange}
             className="form-control"
-            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
         </div>
-        <button type="submit" className="btn btn-primary">
+        <button type="button" className="btn btn-primary mt-3" onClick={handleLogin}>
           Login
+        </button>
+        <button type="button" className="btn btn-danger mt-3 mx-3">
+          <a className='text-white' href="/register" style={{textDecoration:'none'}}>register</a>
         </button>
       </form>
     </div>
   );
-};
+}
 
-export default Login;
-
+export default LoginForm;
