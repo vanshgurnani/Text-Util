@@ -9,6 +9,8 @@ function Textarea(props) {
   const [searchResults, setSearchResults] = useState([]);
   const [expandedNotes, setExpandedNotes] = useState([]);
   const [category, setCategory] = useState('uncategorized');
+  const [noteColors, setNoteColors] = useState({}); // State variable to store note colors
+
 
 
 
@@ -36,16 +38,21 @@ function Textarea(props) {
   }
   
   
+  
 
   const handleExpandNote = (noteId) => {
-  if (expandedNotes.includes(noteId)) {
-    // If note is expanded, collapse it
-    setExpandedNotes(expandedNotes.filter((id) => id !== noteId));
-  } else {
-    // If note is not expanded, expand it
-    setExpandedNotes([...expandedNotes, noteId]);
-  }
-};
+    if (expandedNotes.includes(noteId)) {
+      // If note is expanded, collapse it
+      setExpandedNotes(expandedNotes.filter((id) => id !== noteId));
+    } else {
+      // If note is not expanded, expand it and set a color
+      const color = getRandomLightColor();
+      setExpandedNotes([...expandedNotes, noteId]);
+      setNoteColors({ ...noteColors, [noteId]: color });
+    }
+  };
+  
+  
 
 
 const saveNoteAndGeneratePDF = async (text, category) => {
@@ -238,7 +245,10 @@ const saveNoteAndGeneratePDF = async (text, category) => {
         {searchResults.map((note, index) => (
           <div className='col-md-4 mb-4'>
           
-          <div key={note._id} className="card mx-2 my-2" style={{width:'18rem', backgroundColor: getRandomLightColor()}}>
+          <div key={note._id} className="card mx-2 my-2" style={{
+            width: '18rem',
+            backgroundColor: noteColors[note._id] || getRandomLightColor(),
+          }}>
           <div className="card-body">
               <h5 className="card-title">
                 {`${index + 1}. ${note.content.substring(0, 10)}`} {/* Display the first 100 characters */}
