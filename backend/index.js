@@ -7,6 +7,7 @@ const User = require('./models/usersmodel');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const Summary = require('./models/summarymodel');
+const authenticateUser = require('./middleware/authenticateUser');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -91,11 +92,37 @@ app.get('/', (req, res) => {
   res.send('Welcome to the Notepad API');
 });
 
-// Create a new note
-app.post('/api/notes', async (req, res) => {
+// // Create a new note
+// app.post('/api/notes', async (req, res) => {
+//   try {
+//     const { content, category } = req.body; // Include the category in the request
+//     const newNote = new Note({ content, category }); // Save the category along with the note
+//     await newNote.save();
+//     res.json({ success: true });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// });
+
+// // Get all notes
+// app.get('/api/fetch-notes', async (req, res) => {
+//   try {
+//     const notes = await Note.find(); // Fetch all notes from the database
+//     res.json(notes);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// });
+
+// Create a new note associated with the authenticated user
+app.post('/api/notes', authenticateUser, async (req, res) => {
   try {
-    const { content, category } = req.body; // Include the category in the request
-    const newNote = new Note({ content, category }); // Save the category along with the note
+    const { content, category } = req.body;
+    const userId = req.user.userId; // Extract user ID from the authenticated token
+
+    const newNote = new Note({ content, category, user: userId }); // Associate the note with the user
     await newNote.save();
     res.json({ success: true });
   } catch (error) {
@@ -104,16 +131,18 @@ app.post('/api/notes', async (req, res) => {
   }
 });
 
-// Get all notes
-app.get('/api/fetch-notes', async (req, res) => {
+// Fetch all notes associated with the authenticated user
+app.get('/api/fetch-notes', authenticateUser, async (req, res) => {
   try {
-    const notes = await Note.find(); // Fetch all notes from the database
+    const userId = req.user.userId; // Extract user ID from the authenticated token
+    const notes = await Note.find({ user: userId }); // Fetch notes associated with the user
     res.json(notes);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 
 app.get('/api/search', async (req, res) => {
