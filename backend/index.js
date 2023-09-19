@@ -119,8 +119,7 @@ app.get('/', (req, res) => {
 app.post('/api/notes', async (req, res) => {
   try {
     const { content, category } = req.body; // Include the category in the request
-    const userId = req.user.id;
-    const newNote = new Note({ content, category, user: userId }); // Save the category along with the note
+    const newNote = new Note({ content, category }); // Save the category along with the note
     await newNote.save();
     res.json({ success: true });
   } catch (error) {
@@ -132,9 +131,7 @@ app.post('/api/notes', async (req, res) => {
 // Get all notes
 app.get('/api/fetch-notes', async (req, res) => {
   try {
-    const userId = req.user.id;
-
-    const notes = await Note.find({ user: userId }); // Fetch all notes from the database
+    const notes = await Note.find(); // Fetch all notes from the database
     res.json(notes);
   } catch (error) {
     console.error(error);
@@ -145,11 +142,10 @@ app.get('/api/fetch-notes', async (req, res) => {
 
 app.get('/api/search', async (req, res) => {
   try {
-    const userId = req.user.id;
     const { searchTerm } = req.query; // Get the search term from the query parameter
 
     // Use MongoDB or your database of choice to search for notes based on the search term
-    const matchedNotes = await Note.find({ content: { $regex: searchTerm, $options: 'i' },user:userId, });
+    const matchedNotes = await Note.find({ content: { $regex: searchTerm, $options: 'i' } });
 
     res.json({ notes: matchedNotes });
   } catch (error) {
@@ -157,8 +153,6 @@ app.get('/api/search', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-
-
 
 
 // DELETE route to delete a note by its _id

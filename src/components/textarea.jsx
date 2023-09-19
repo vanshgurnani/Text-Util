@@ -11,7 +11,6 @@ function Textarea(props) {
   const [expandedNotes, setExpandedNotes] = useState([]);
   const [category, setCategory] = useState('uncategorized');
   const [noteColors, setNoteColors] = useState({}); // State variable to store note colors
-  const [userId, setUserId] = useState(null); // Add user ID state
 
 
 
@@ -19,15 +18,11 @@ function Textarea(props) {
   useEffect(() => {
     // Load initial notes or perform any other necessary setup
     loadNotes();
-  }, [userId]);
+  }, []);
 
   const loadNotes = async () => {
     try {
-      const response = await axios.get('https://text-util-ykfu.vercel.app/api/fetch-notes',{
-        params: {
-          user: userId, // Include the user's ID here
-        },
-      });
+      const response = await axios.get('https://text-util-ykfu.vercel.app/api/fetch-notes');
       setSearchResults(response.data.notes);
     } catch (error) {
       console.error('Error loading notes:', error);
@@ -81,11 +76,7 @@ const saveNoteAndGeneratePDF = async (text, category) => {
       loadNotes();
     }
     try {
-      const response = await axios.get(`https://text-util-ykfu.vercel.app/api/search?searchTerm=${searchTerm}`,{
-        params: {
-          user: userId, // Include the user's ID here
-        },
-      });
+      const response = await axios.get(`https://text-util-ykfu.vercel.app/api/search?searchTerm=${searchTerm}`);
       // setSearchResults(response.data.notes);
       // Sort the search results by timestamp in descending order
       const sortedResults = response.data.notes.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
@@ -104,12 +95,7 @@ const saveNoteAndGeneratePDF = async (text, category) => {
         return;
       }
       // Save the note to the backend
-      const response = await axios.post('https://text-util-ykfu.vercel.app/api/notes', { 
-        content: text, 
-        category: category,
-        user: userId, // Include the user's ID here
-      
-      });
+      const response = await axios.post('https://text-util-ykfu.vercel.app/api/notes', { content: text, category: category });
       if (response.data.success) {
         props.showAlert('Note saved successfully!', 'success');
         loadNotes(); // Refresh the notes list after saving
@@ -148,11 +134,7 @@ const saveNoteAndGeneratePDF = async (text, category) => {
   const handleDeleteNote = async (noteId) => {
     try {
       // Make an API call to delete the note by ID
-      await axios.delete(`https://text-util-ykfu.vercel.app/api/notes/${noteId}`,{
-        params: {
-          user: userId, // Include the user's ID here
-        },
-      });
+      await axios.delete(`https://text-util-ykfu.vercel.app/api/notes/${noteId}`);
       props.showAlert('Note deleted successfully!', 'success');
       
       // Reload the notes list after deletion
