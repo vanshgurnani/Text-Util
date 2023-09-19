@@ -95,7 +95,7 @@ const saveNoteAndGeneratePDF = async (text, category) => {
         return;
       }
       // Save the note to the backend
-      const response = await axios.post('https://text-util-ykfu.vercel.app/api/notes', { content: text, category: category });
+      const response = await axios.post('/api/notes', { content: text, category: category });
       if (response.data.success) {
         props.showAlert('Note saved successfully!', 'success');
         loadNotes(); // Refresh the notes list after saving

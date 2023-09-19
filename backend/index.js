@@ -91,24 +91,18 @@ app.get('/', (req, res) => {
   res.send('Welcome to the Notepad API');
 });
 
+// Create a new note
 app.post('/api/notes', async (req, res) => {
   try {
-    const { content, category } = req.body;
-
-    if (!content || !category) {
-      // Check if required fields are missing
-      return res.status(400).json({ error: 'Content and category are required' });
-    }
-
-    const newNote = new Note({ content, category });
+    const { content, category } = req.body; // Include the category in the request
+    const newNote = new Note({ content, category }); // Save the category along with the note
     await newNote.save();
-    res.json({ success: true, message: 'Note saved successfully' });
+    res.json({ success: true });
   } catch (error) {
-    console.error('Error saving note:', error);
+    console.error(error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-
 
 // Get all notes
 app.get('/api/fetch-notes', async (req, res) => {
