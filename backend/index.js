@@ -7,7 +7,6 @@ const User = require('./models/usersmodel');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const Summary = require('./models/summarymodel');
-// const authenticateUser = require('./middleware/authenticateUser');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
