@@ -112,11 +112,6 @@ const saveNoteAndGeneratePDF = async (text, category) => {
     backgroundColor: 'black',
   });
 
-  // const handleUpClick = () => {
-  //   let newText = text.toUpperCase();
-  //   setText(newText);
-  //   props.showAlert('Converted to Uppercase!', 'success');
-  // };
 
   const handleUpChange = (event) => {
     setText(event.target.value);
@@ -183,9 +178,6 @@ const saveNoteAndGeneratePDF = async (text, category) => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          {/*<button onClick={searchNotes} className="btn btn-primary px-4 mx-2 my-2">
-            Search
-  </button>*/}
           <button onClick={searchNotes} className="btn btn-primary px-4 mx-2 my-2">
             {searchTerm.trim() === '' ? 'Fetch all Notes' : 'Search'}
           </button>
