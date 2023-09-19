@@ -10,10 +10,13 @@ function LoginForm() {
   const handleLogin = async () => {
     try {
       const response = await axios.post('https://text-util-ykfu.vercel.app/api/login', { email, password });
+      const { token } = response.data;
       if (response.status === 200) {
         // Handle successful login
         console.log('Login successful');
         setResponse('Login successful'); // Set the response message for success
+        // Store the token in local storage
+        localStorage.setItem('token', token);
         window.location.href = '/notes';
       } else {
         setError('Invalid credentials');

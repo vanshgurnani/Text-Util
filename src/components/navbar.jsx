@@ -1,8 +1,26 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react';
 import {Link } from 'react-router-dom';
 import '../components/navbar.css';
+import jwt_decode from 'jwt-decode';
 
-function navbar(props) {
+function Navbar(props) {
+
+  const [username, setUsername] = useState('');
+
+  useEffect(() => {
+    // Retrieve the token from local storage
+    const token = localStorage.getItem('token');
+
+    if (token) {
+      // Decode the token to get user information
+      const decodedToken = jwt_decode(token);
+
+      if (decodedToken.username) {
+        // Set the username in the state
+        setUsername(decodedToken.username);
+      }
+    }
+  }, []);
   
   return (
     <>
@@ -53,12 +71,22 @@ function navbar(props) {
           </label>
         </div>
 
+        {username && (
+          <span className="navbar-text">
+            Welcome, {username}
+          </span>
+      )}
+
+        
+
  
       </div>
     </div>
+
+
   </nav>
     </>
   )
 }
 
-export default navbar;
+export default Navbar;
