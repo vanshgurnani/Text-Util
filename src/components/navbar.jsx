@@ -73,7 +73,7 @@ function Navbar(props) {
 
         {username && (
           <span className="navbar-text">
-            Welcome, {username}
+            <Link to='/user'>Welcome, {username}</Link>
           </span>
       )}
 
