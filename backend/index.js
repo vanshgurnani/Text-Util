@@ -59,30 +59,6 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// Login endpoint
-// app.post('/api/login', async (req, res) => {
-//   try {
-//     const { email, password } = req.body;
-
-//     // Find the user by email
-//     const user = await User.findOne({ email });
-
-//     if (user) {
-//       // Compare the hashed password with the provided password
-//       const passwordMatch = await bcrypt.compare(password, user.password);
-
-//       if (passwordMatch) {
-//         res.status(200).json({ message: 'Login successful' });
-//       } else {
-//         res.status(401).json({ error: 'Invalid credentials' });
-//       }
-//     } else {
-//       res.status(401).json({ error: 'Invalid credentials' });
-//     }
-//   } catch (error) {
-//     res.status(500).json({ error: 'Server error' });
-//   }
-// });
 app.post('/api/login', async (req, res) => {
   try {
     const { email, password } = req.body;
