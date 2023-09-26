@@ -11,7 +11,7 @@ function LoginForm() {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post('https://text-util-ykfu.vercel.app/api/login', { email, password });
+      const response = await axios.post('/api/login', { email, password });
       const { token } = response.data;
   
       if (response.status === 200) {

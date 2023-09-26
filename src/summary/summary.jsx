@@ -44,7 +44,7 @@ function App(props) {
     }
 
     axios
-      .get(`https://text-util-ykfu.vercel.app/api/summaries/${userId}`)
+      .get(`/api/summaries/${userId}`)
       .then((response) => {
         const summaries = response.data.summaries;
         console.log('Summaries for the user:', summaries);
@@ -95,7 +95,7 @@ function App(props) {
 
   const saveSummaryToBackend = (summary, accuracy) => {
     axios
-      .post('https://text-util-ykfu.vercel.app/api/summaries', { text, summary, accuracy, userId })
+      .post('/api/summaries', { text, summary, accuracy, userId })
       .then((response) => {
         console.log('Summary saved successfully:', response.data.message);
       })

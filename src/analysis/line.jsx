@@ -6,7 +6,7 @@ function LineChart(props) {
 
   useEffect(() => {
     // Fetch data from your server
-    fetch('https://text-util-ykfu.vercel.app/api/fetch-notes')
+    fetch('/api/fetch-notes')
       .then((response) => response.json())
       .then((data) => {
         // Parse date strings into Date objects

@@ -9,7 +9,7 @@ function BarChart() {
   useEffect(() => {
     // Fetch data from the provided API endpoint using Axios
     axios
-      .get('https://text-util-ykfu.vercel.app/api/fetch-notes')
+      .get('cel.app/api/fetch-notes')
       .then((response) => {
         const notesData = response.data; // Assuming data is an array of objects with 'category' and 'characterCount' properties
 

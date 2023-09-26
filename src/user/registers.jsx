@@ -18,7 +18,7 @@ const Registration = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('https://text-util-ykfu.vercel.app/api/register', userData);
+      const response = await axios.post('/api/register', userData);
       console.log(response.data);
 
       // Set the response message for success
