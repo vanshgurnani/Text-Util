@@ -17,7 +17,7 @@ const allowedOrigins = [
     'https://notenews.onrender.com',
     'https://flask-production-71e4.up.railway.app',
     'https://text-util-five.vercel.app',
-    'https://text-util-i235.vercel.app'
+    'https://text-util-dj8q.vercel.app'
     // 'https://python-jugp.vercel.app',
   // Replace with your Vercel frontend URL
   ];
