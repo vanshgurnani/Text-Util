@@ -21,6 +21,15 @@ function Navbar(props) {
       }
     }
   }, []);
+
+  const handleLogout = () => {
+    // Clear local storage
+    localStorage.removeItem('token');
+    localStorage.removeItem('userId');
+
+    // Redirect to the login page
+    window.location.href = '/';
+  };
   
   return (
     <>
@@ -76,6 +85,10 @@ function Navbar(props) {
             Welcome, {username}
           </span>
       )}
+
+      <button className='btn btn-danger mx-3' onClick={handleLogout}>
+        Logout
+      </button>
 
         
 
