@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import NewsItem from '../components/newsitem';
-import Loader from './spinner';
+import NewsItem from './newsitem';
+import Loader from '../components/spinner';
 import PropTypes from 'prop-types';
 
 function News(props) {

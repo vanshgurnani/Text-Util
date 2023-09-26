@@ -1,7 +1,7 @@
 import React from 'react';
-import Line from '../components/line';
-import Bar2 from '../components/bar2';
-import Bar3 from '../components/bar3';
+import Line from '../analysis/line';
+import Bar2 from '../analysis/bar2';
+import Bar3 from '../analysis/bar3';
 
 function insight(props) {
   return (

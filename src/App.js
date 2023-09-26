@@ -5,11 +5,11 @@ import TextArea from '../src/components/textarea';
 import About from '../src/components/about';
 import Navbar from '../src/components/navbar';
 import Alert from '../src/components/alert';
-import News from '../src/components/news';
+import News from './news/news';
 import Insight from '../src/components/insight';
-import Summary from '../src/components/summary';
-import Login from '../src/components/login';
-import Register from '../src/components/register';
+import Summary from './summary/summary';
+import Login from './user/login';
+import Register from './user/registers';
 
 
 function App(props) {
