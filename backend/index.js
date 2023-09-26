@@ -94,8 +94,14 @@ app.get('/', (req, res) => {
 // Create a new note
 app.post('/api/notes', async (req, res) => {
   try {
-    const { content, category } = req.body; // Include the category in the request
-    const newNote = new Note({ content, category }); // Save the category along with the note
+    const { content, category,userId } = req.body; // Include the category in the request
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    const newNote = new Note({ content, category,owner: user._id }); // Save the category along with the note
     await newNote.save();
     res.json({ success: true });
   } catch (error) {
@@ -105,10 +111,12 @@ app.post('/api/notes', async (req, res) => {
 });
 
 // Get all notes
-app.get('/api/fetch-notes', async (req, res) => {
+app.get('/api/fetch-notes/:userId', async (req, res) => {
   try {
-    const notes = await Note.find(); // Fetch all notes from the database
-    res.json(notes);
+    const userId = req.params.userId;
+
+    const notes = await Note.find({ owner: userId }); // Fetch all notes from the database
+    res.json({notes});
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal server error' });
@@ -116,12 +124,15 @@ app.get('/api/fetch-notes', async (req, res) => {
 });
 
 
-app.get('/api/search', async (req, res) => {
+app.get('/api/search/:userId', async (req, res) => {
   try {
+
+    const userId = req.params.userId;
+
     const { searchTerm } = req.query; // Get the search term from the query parameter
 
     // Use MongoDB or your database of choice to search for notes based on the search term
-    const matchedNotes = await Note.find({ content: { $regex: searchTerm, $options: 'i' } });
+    const matchedNotes = await Note.find({ content: { $regex: searchTerm, $options: 'i' }, owner: userId });
 
     res.json({ notes: matchedNotes });
   } catch (error) {

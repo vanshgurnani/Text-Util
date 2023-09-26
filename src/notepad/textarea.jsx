@@ -11,23 +11,46 @@ function Textarea(props) {
   const [expandedNotes, setExpandedNotes] = useState([]);
   const [category, setCategory] = useState('uncategorized');
   const [noteColors, setNoteColors] = useState({}); // State variable to store note colors
+  const [userId, setUserId] = useState('');
 
+  useEffect(() => {
+    // Retrieve userId from local storage on component mount
+    const storedUserId = localStorage.getItem('userId');
+    if (storedUserId) {
+      setUserId(storedUserId);
+    }
+  }, []);
+
+
+  const loadNotes = async () => {
+    if (!userId) {
+      console.error('userId is not available.');
+      return;
+    }
+  
+    try {
+      const response = await axios.get(`/api/fetch-notes/${userId}`);
+      const notes = response.data.notes;
+  
+      if (notes && Array.isArray(notes)) {
+        console.log('Notes for the user:', notes);
+        setSearchResults(notes);
+      } else {
+        console.error('Invalid notes data received:', notes);
+      }
+    } catch (error) {
+      console.error('Error fetching notes:', error);
+    }
+  };
+  
 
 
 
   useEffect(() => {
-    // Load initial notes or perform any other necessary setup
-    loadNotes();
-  }, []);
-
-  const loadNotes = async () => {
-    try {
-      const response = await axios.get('/api/fetch-notes');
-      setSearchResults(response.data.notes);
-    } catch (error) {
-      console.error('Error loading notes:', error);
+    if (userId) {
+      loadNotes();
     }
-  };
+  }, [userId]);
 
   function getRandomLightColor() {
     const letters = 'ABCDEF';
@@ -70,22 +93,20 @@ const saveNoteAndGeneratePDF = async (text, category) => {
 };
 
 
-  const searchNotes = async () => {
-    if (searchTerm.trim() === '') {
-      // return;
-      loadNotes();
-    }
+const searchNotes = async () => {
+  if (searchTerm.trim() === '') {
+    loadNotes(); // Load all notes for the user if the search term is empty
+  } else {
     try {
-      const response = await axios.get(`/api/search?searchTerm=${searchTerm}`);
-      // setSearchResults(response.data.notes);
-      // Sort the search results by timestamp in descending order
+      const response = await axios.get(`/api/search/${userId}?searchTerm=${searchTerm}`);
       const sortedResults = response.data.notes.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-      
       setSearchResults(sortedResults);
     } catch (error) {
       console.error('Error searching for notes:', error);
     }
-  };
+  }
+};
+
 
 
   const saveNote = async () => {
@@ -95,7 +116,7 @@ const saveNoteAndGeneratePDF = async (text, category) => {
         return;
       }
       // Save the note to the backend
-      const response = await axios.post('/api/notes', { content: text, category: category });
+      const response = await axios.post('/api/notes', { content: text, category: category, userId : userId });
       if (response.data.success) {
         props.showAlert('Note saved successfully!', 'success');
         loadNotes(); // Refresh the notes list after saving
@@ -236,7 +257,7 @@ const saveNoteAndGeneratePDF = async (text, category) => {
 
         <div className='row mx-auto'>
         {searchResults.map((note, index) => (
-          <div className='col-md-4 mb-4'>
+          <div className='col-md-4 mb-4' key={note._id}>
           
           <div key={note._id} className="card mx-2 my-2" style={{
             width: '18rem',

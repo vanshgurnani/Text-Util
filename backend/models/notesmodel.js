@@ -7,6 +7,11 @@ const noteSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  owner: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User', // Reference to the User model
+    required: true,
+  },
 });
 
 const Note = mongoose.model('notes', noteSchema);
