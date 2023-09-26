@@ -4,14 +4,28 @@ import axios from 'axios';
 
 function BarChart() {
   const chartRef = useRef(null);
+  const [userId, setUserId] = useState('');
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    // Fetch data from the provided API endpoint using Axios
+    // Retrieve userId from local storage on component mount
+    const storedUserId = localStorage.getItem('userId');
+    if (storedUserId) {
+      setUserId(storedUserId);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!userId) {
+      // No user ID available, so return early
+      return;
+    }
+
+    // Fetch data from your server using the userId
     axios
-      .get('cel.app/api/fetch-notes')
+      .get(`https://text-util-five.vercel.app/api/fetch-notes/${userId}`)
       .then((response) => {
-        const notesData = response.data; // Assuming data is an array of objects with 'category' and 'characterCount' properties
+        const notesData = response.data.notes; // Assuming data is an array of objects with 'category' and 'characterCount' properties
 
         // Calculate total character count for each category
         const categoryCounts = {};
@@ -37,7 +51,7 @@ function BarChart() {
       .catch((error) => {
         console.error('Error fetching data:', error);
       });
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     if (data.length === 0) {
@@ -62,26 +76,23 @@ function BarChart() {
       .domain([0, d3.max(data, (d) => d.totalCharacterCount)])
       .nice()
       .range([height - margin.bottom, margin.top]);
-    
-
 
     // Add x-label
     svg
-    .append('text')
-    .attr('x', width / 2)
-    .attr('y', height - margin.bottom / 2)
-    .attr('text-anchor', 'middle')
-    .text('Categories');
+      .append('text')
+      .attr('x', width / 2)
+      .attr('y', height - margin.bottom / 2)
+      .attr('text-anchor', 'middle')
+      .text('Categories');
 
-  // Add y-label
-  svg
-    .append('text')
-    .attr('x', -height / 2)
-    .attr('y', margin.left / 2)
-    .attr('text-anchor', 'middle')
-    .attr('transform', 'rotate(-90)')
-    .text('Total Character Count');
-
+    // Add y-label
+    svg
+      .append('text')
+      .attr('x', -height / 2)
+      .attr('y', margin.left / 2)
+      .attr('text-anchor', 'middle')
+      .attr('transform', 'rotate(-90)')
+      .text('Total Character Count');
 
     svg
       .selectAll('rect')
@@ -105,7 +116,6 @@ function BarChart() {
       .attr('transform', `translate(${margin.left},0)`)
       .call(d3.axisLeft(y).ticks(5));
 
-    
     svg.selectAll('.x-axis text').attr('transform', 'rotate(-45)').style('text-anchor', 'end');
   }, [data]);
 
