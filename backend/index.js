@@ -72,7 +72,7 @@ app.post('/api/login', async (req, res) => {
 
       if (passwordMatch) {
         // Generate a JWT token with the user's information
-        const token = jwt.sign({ username: user.username }, 'your-secret-key');
+        const token = jwt.sign({userId: user._id, username: user.username }, 'your-secret-key');
 
         res.status(200).json({ message: 'Login successful', token });
       } else {
@@ -178,16 +178,24 @@ app.put('/api/update/:noteId', async (req, res) => {
 });
 
 
-// Summary information
-
-app.post('/saveSummary', async (req, res) => {
+// Create a new summary
+app.post('/api/summaries', async (req, res) => {
   try {
-    const { text, summary, accuracy } = req.body;
+    const { text, summary, accuracy, userId } = req.body;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
     const newSummary = new Summary({
       text,
       summary,
       accuracy,
+      owner: user._id, // Set the owner of the summary to the user's objectId
     });
+
     await newSummary.save();
     res.json({ message: 'Summary saved successfully!' });
   } catch (error) {
@@ -196,21 +204,23 @@ app.post('/saveSummary', async (req, res) => {
   }
 });
 
-// Endpoint to get the summary history
-app.get('/getSummaryHistory', async (req, res) => {
+// Define a route for fetching summaries for a specific user
+app.get('/api/summaries/:userId', async (req, res) => {
   try {
-    // Fetch all summaries from MongoDB
-    const summaries = await Summary.find({}, 'summary'); // Modify the query as needed
+    const userId = req.params.userId; // Get the userId from the URL parameter
 
-    // Extract the summary text from the results
-    const summaryHistory = summaries.map((summary) => summary.summary);
+    // Use the userId to fetch summaries associated with that user
+    const summaries = await Summary.find({ owner: userId });
 
-    res.json({ summaryHistory });
+    res.json({ summaries });
   } catch (error) {
-    console.error('Error fetching summary history:', error);
-    res.status(500).json({ error: 'An error occurred while fetching the summary history.' });
+    console.error('Error fetching user summaries:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+
+
 
 
 
