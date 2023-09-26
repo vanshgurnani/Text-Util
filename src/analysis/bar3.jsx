@@ -25,7 +25,15 @@ function BarGraph() {
     axios
       .get(`https://text-util-five.vercel.app/api/fetch-notes/${userId}`)
       .then((response) => {
-        const notesData = response.data;
+        const responseData = response.data;
+
+        if (!responseData || !Array.isArray(responseData.notes)) {
+          // Handle the case where the API response does not contain the expected data structure
+          console.error('Invalid data format in API response:', responseData);
+          return;
+        }
+
+        const notesData = responseData.notes;
 
         // Group notes into intervals of 10 and calculate total character count for each interval
         const intervalSize = 10;
