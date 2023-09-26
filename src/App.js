@@ -1,12 +1,12 @@
 import React,{useState,useEffect} from 'react'
 import { BrowserRouter as Router, Routes, Route} from "react-router-dom";
 // import Home from '../src/components/home';
-import TextArea from '../src/components/textarea';
-import About from '../src/components/about';
-import Navbar from '../src/components/navbar';
+import TextArea from './notepad/textarea';
+import About from './about/about';
+import Navbar from './navbar/navbar';
 import Alert from '../src/components/alert';
 import News from './news/news';
-import Insight from '../src/components/insight';
+import Insight from './analysis/insight';
 import Summary from './summary/summary';
 import Login from './user/login';
 import Register from './user/registers';

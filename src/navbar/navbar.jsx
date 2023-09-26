@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {Link } from 'react-router-dom';
-import '../components/navbar.css';
+import './navbar.css';
 import jwt_decode from 'jwt-decode';
 
 function Navbar(props) {
