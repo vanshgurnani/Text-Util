@@ -12,9 +12,9 @@ function insight(props) {
       <Bar2 />
       <br />
       <br />
-      {/*<Bar3 />
+      <Bar3 />
       <br />
-  <br />*/}
+      <br />
     </div>
   )
 }

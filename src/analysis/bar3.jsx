@@ -5,11 +5,25 @@ import axios from 'axios';
 function BarGraph() {
   const chartRef = useRef(null);
   const [data, setData] = useState([]);
+  const [userId, setUserId] = useState('');
 
   useEffect(() => {
-    // Fetch data from the provided API endpoint using Axios
+    // Retrieve userId from local storage on component mount
+    const storedUserId = localStorage.getItem('userId');
+    if (storedUserId) {
+      setUserId(storedUserId);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!userId) {
+      // No user ID available, so return early
+      return;
+    }
+
+    // Fetch data from your server using the userId
     axios
-      .get('https://text-util-five.vercel.app/api/fetch-notes')
+      .get(`https://text-util-five.vercel.app/api/fetch-notes/${userId}`)
       .then((response) => {
         const notesData = response.data;
 
@@ -30,7 +44,7 @@ function BarGraph() {
       .catch((error) => {
         console.error('Error fetching data:', error);
       });
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     if (data.length === 0) {
