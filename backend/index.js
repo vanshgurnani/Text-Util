@@ -117,12 +117,24 @@ app.post('/api/notes', async (req, res) => {
   }
 });
 
-// Get all notes
+// Get notes by id
 app.get('/api/fetch-notes/:userId', async (req, res) => {
   try {
     const userId = req.params.userId;
 
     const notes = await Note.find({ owner: userId }); // Fetch all notes from the database
+    res.json({notes});
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Get all notes
+app.get('/api/fetch', async (req, res) => {
+  try {
+
+    const notes = await Note.find({}); // Fetch all notes from the database
     res.json({notes});
   } catch (error) {
     console.error(error);
