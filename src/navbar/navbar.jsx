@@ -80,8 +80,10 @@ function Navbar(props) {
           </label>
         </div>
 
+        <img className='mx-2' src="/images/contact.png" alt="Contact" style={{width:'50px',borderRadius:'50%'}} />
+
         {username && (
-          <span className="navbar-text">
+          <span className="navbar-text mx-2">
             Welcome, {username}
           </span>
       )}
