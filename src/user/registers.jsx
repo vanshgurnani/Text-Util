@@ -18,7 +18,7 @@ const Registration = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('https://text-util-five.vercel.app/api/register', userData);
+      const response = await axios.post('https://text-util-five.vercel.app/api/registers', userData);
       console.log(response.data);
 
       // Set the response message for success

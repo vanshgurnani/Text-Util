@@ -46,7 +46,7 @@ mongoose.connect(`mongodb+srv://gurnanivansh57:iz64rqtBBQss8iQ7@cluster101.nuwew
 
 
 // Registration endpoint
-app.post('/api/register', async (req, res) => {
+app.post('/api/registers', async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
