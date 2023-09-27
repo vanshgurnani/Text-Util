@@ -46,17 +46,22 @@ mongoose.connect(`mongodb+srv://gurnanivansh57:iz64rqtBBQss8iQ7@cluster101.nuwew
 
 
 // Registration endpoint
-app.post('/api/registers', async (req, res) => {
+app.post('/registers', async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
     // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10); // 10 is the number of salt rounds
+    const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Create a new user
     const user = new User({ username, email, password: hashedPassword });
+
+    // Save the user to the database
     await user.save();
+
     res.status(201).json({ message: 'Registration successful' });
   } catch (error) {
+    console.error(error.message);
     res.status(400).json({ error: 'Registration failed' });
   }
 });

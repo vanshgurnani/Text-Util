@@ -8,7 +8,7 @@ const Registration = () => {
     password: '',
   });
 
-  const [response, setResponse] = useState(null); // State variable for response message
+  const [response, setResponse] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -17,74 +17,86 @@ const Registration = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const response = await axios.post('https://text-util-five.vercel.app/api/registers', userData);
-      console.log(response.data);
 
-      // Set the response message for success
-      setResponse('Registration Successful!');
-      
-      // Clear form fields on successful registration
-      setUserData({
-        username: '',
-        email: '',
-        password: '',
-      });
+    try {
+      const response = await axios.post('https://text-util-five.vercel.app/registers', userData);
+
+      if (response.status === 201) {
+        setResponse('Registration Successful!');
+        setUserData({
+          username: '',
+          email: '',
+          password: '',
+        });
+      } else {
+        console.error(`Unexpected status code: ${response.status}`);
+        setResponse('Registration failed. Please try again.');
+      }
     } catch (error) {
       console.error(error);
 
-      // Set the response message for error
-      setResponse('Registration failed. Please try again.');
+      if (error.response) {
+        console.error(error.response.data);
+        setResponse(`Registration failed: ${error.response.data.message}`);
+      } else {
+        setResponse('Registration failed. Please check your network connection.');
+      }
     }
   };
 
   return (
-    <div className="container">
+    <div className="container mt-5">
       <h2>Registration</h2>
-      {response && ( // Display response message if response is not null
+      {response && (
         <div className={`alert ${response.includes('Successful') ? 'alert-success' : 'alert-danger'}`} role="alert">
           {response}
         </div>
       )}
       <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Username</label>
+        <div className="mb-3">
+          <label htmlFor="username" className="form-label">
+            Username
+          </label>
           <input
             type="text"
             name="username"
             value={userData.username}
             onChange={handleChange}
             className="form-control"
+            id="username"
             required
           />
         </div>
-        <div className="form-group">
-          <label>Email</label>
+        <div className="mb-3">
+          <label htmlFor="email" className="form-label">
+            Email
+          </label>
           <input
             type="email"
             name="email"
             value={userData.email}
             onChange={handleChange}
             className="form-control"
+            id="email"
             required
           />
         </div>
-        <div className="form-group">
-          <label>Password</label>
+        <div className="mb-3">
+          <label htmlFor="password" className="form-label">
+            Password
+          </label>
           <input
             type="password"
             name="password"
             value={userData.password}
             onChange={handleChange}
             className="form-control"
+            id="password"
             required
           />
         </div>
-        <button type="submit" className="btn btn-primary mt-3">
+        <button type="submit" className="btn btn-primary">
           Register
-        </button>
-        <button type="button" className="btn btn-danger mt-3 mx-3">
-          <a href="/" className='text-white' style={{textDecoration:'none'}}>Login</a>
         </button>
       </form>
     </div>
