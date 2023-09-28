@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from "react-router-dom";
 import axios from 'axios';
 import { generatePDF } from './pdf';
 import { FaTrash, FaShareSquare, FaVolumeUp,FaFilePdf } from 'react-icons/fa';
+import BookmarkIcon from './bookmark';
 // import Quil from '../components/quil';
+// https://text-util-five.vercel.app
 
 function Textarea(props) {
   const [text, setText] = useState('');
@@ -180,9 +183,12 @@ const searchNotes = async () => {
       alert('Sharing is not supported in this browser.');
     }
   };
+
+  
   
 
   
+
   
   
 
@@ -203,10 +209,12 @@ const searchNotes = async () => {
             {searchTerm.trim() === '' ? 'Fetch all Notes' : 'Search'}
           </button>
         </div>
-        <h1>{props.head}</h1>
-
-
-        {/* Rest of your UI components */}
+        
+        
+        <div className="mb-3 d-flex justify-content-between">
+          <h1>{props.head}</h1>
+          <Link to='/bookmark'><img style={{width:'50px',borderRadius:'50%',cursor:'pointer'}} src="images/icon1.png" alt="icon" /></Link>
+        </div>
         <textarea
           className="form-control"
           onChange={handleUpChange}
@@ -217,6 +225,8 @@ const searchNotes = async () => {
           cols="20"
           placeholder="Enter the text"
         ></textarea>
+
+
         <div className="mb-3">
           <label htmlFor="category">Category:</label>
           <select
@@ -272,6 +282,7 @@ const searchNotes = async () => {
                   </p>
                 )}
               </h5>
+              <BookmarkIcon />
               <p className="card-text">Category: {note.category}</p>
               <FaTrash className='mx-2' style={{ cursor: 'pointer' }} onClick={() => handleDeleteNote(note._id)} />
               <FaShareSquare className='mx-2' style={{ cursor: 'pointer' }} onClick={() => handleShareNote(note)} />
