@@ -12,6 +12,10 @@ const noteSchema = new mongoose.Schema({
     ref: 'User', // Reference to the User model
     required: true,
   },
+  bookmarked: {
+    type: Boolean,
+    default: false, // Default to false if not provided
+  },
 });
 
 const Note = mongoose.model('notes', noteSchema);

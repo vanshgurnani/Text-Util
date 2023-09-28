@@ -108,7 +108,7 @@ app.post('/api/notes', async (req, res) => {
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
-    const newNote = new Note({ content, category,owner: user._id }); // Save the category along with the note
+    const newNote = new Note({ content, category,owner: user._id, bookmarked: false }); // Save the category along with the note
     await newNote.save();
     res.json({ success: true });
   } catch (error) {
@@ -248,6 +248,52 @@ app.get('/api/summaries/:userId', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+
+app.post('/api/notes/bookmark/:noteId', async (req, res) => {
+  try {
+    const { noteId } = req.params;
+
+    // Check if noteId is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(noteId)) {
+      return res.status(400).json({ error: 'Invalid noteId' });
+    }
+
+    // Find the note by ID and update the 'bookmarked' field to true
+    const result = await Note.updateOne(
+      { _id: noteId },
+      { $set: { bookmarked: true } }
+    );
+
+    // Check if the update was successful
+    if (result.nModified === 0) {
+      return res.status(404).json({ error: 'Note not found' });
+    }
+
+    res.json({ message: 'Note bookmarked successfully' });
+  } catch (error) {
+    console.error('Error bookmarking note:', error);
+    res.status(500).json({ error: 'Internal server error', message: error.message });
+  }
+});
+
+
+
+// Route to get bookmarked notes for a specific user
+app.get('/api/bookmarked-notes', async (req, res) => {
+  try {
+    // const { userId } = req.params;
+
+    // Find all notes where 'bookmarked' is true and userId matches
+    const bookmarkedNotes = await Note.find({ bookmarked: true });
+
+    res.json({ bookmarkedNotes });
+  } catch (error) {
+    console.error('Error fetching bookmarked notes:', error);
+    res.status(500).json({ error: 'Internal server error', message: error.message });
+  }
+});
+
 
 
 
