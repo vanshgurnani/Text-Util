@@ -3,15 +3,24 @@ import axios from 'axios';
 
 const BookmarkPage = () => {
   const [bookmarkedNotes, setBookmarkedNotes] = useState([]);
+  const [userId, setUserId] = useState('');
   // const userId = '65095898cd35f7d4a98e4cad';
 
   useEffect(() => {
-    fetchBookmarkedNotes();
+    // Retrieve userId from local storage on component mount
+    const storedUserId = localStorage.getItem('userId');
+    if (storedUserId) {
+      setUserId(storedUserId);
+    }
   }, []);
 
   const fetchBookmarkedNotes = async () => {
+    if (!userId) {
+      console.error('userId is not available.');
+      return;
+    }
     try {
-      const response = await axios.get(`/api/bookmarked-notes`);
+      const response = await axios.get(`https://text-util-five.vercel.app/api/bookmarked-notes/${userId}`);
       setBookmarkedNotes(response.data.bookmarkedNotes);
 
       console.log('Bookmarked Notes:', response.data.bookmarkedNotes);
@@ -29,6 +38,12 @@ const BookmarkPage = () => {
       }
     }
   };
+
+  useEffect(() => {
+    if(userId){
+      fetchBookmarkedNotes();
+    }
+  }, [userId]);
 
   return (
     <div>

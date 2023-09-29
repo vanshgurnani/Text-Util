@@ -280,12 +280,12 @@ app.post('/api/notes/bookmark/:noteId', async (req, res) => {
 
 
 // Route to get bookmarked notes for a specific user
-app.get('/api/bookmarked-notes', async (req, res) => {
+app.get('/api/bookmarked-notes/:userId', async (req, res) => {
   try {
-    // const { userId } = req.params;
+    const { userId } = req.params;
 
     // Find all notes where 'bookmarked' is true and userId matches
-    const bookmarkedNotes = await Note.find({ bookmarked: true });
+    const bookmarkedNotes = await Note.find({ bookmarked: true,owner: userId });
 
     res.json({ bookmarkedNotes });
   } catch (error) {

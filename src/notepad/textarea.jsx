@@ -32,7 +32,7 @@ function Textarea(props) {
     }
   
     try {
-      const response = await axios.get(`/api/fetch-notes/${userId}`);
+      const response = await axios.get(`https://text-util-five.vercel.app/api/fetch-notes/${userId}`);
       const notes = response.data.notes;
   
       if (notes && Array.isArray(notes)) {
@@ -101,7 +101,7 @@ const searchNotes = async () => {
     loadNotes(); // Load all notes for the user if the search term is empty
   } else {
     try {
-      const response = await axios.get(`/api/search/${userId}?searchTerm=${searchTerm}`);
+      const response = await axios.get(`https://text-util-five.vercel.app/api/search/${userId}?searchTerm=${searchTerm}`);
       const sortedResults = response.data.notes.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
       setSearchResults(sortedResults);
     } catch (error) {
@@ -119,7 +119,7 @@ const searchNotes = async () => {
         return;
       }
       // Save the note to the backend
-      const response = await axios.post('/api/notes', { content: text, category: category, userId : userId });
+      const response = await axios.post('https://text-util-five.vercel.app/api/notes', { content: text, category: category, userId : userId });
       if (response.data.success) {
         props.showAlert('Note saved successfully!', 'success');
         loadNotes(); // Refresh the notes list after saving
@@ -158,7 +158,7 @@ const searchNotes = async () => {
   const handleDeleteNote = async (noteId) => {
     try {
       // Make an API call to delete the note by ID
-      await axios.delete(`/api/notes/${noteId}`);
+      await axios.delete(`https://text-util-five.vercel.app/api/notes/${noteId}`);
       props.showAlert('Note deleted successfully!', 'success');
       
       // Reload the notes list after deletion

@@ -13,7 +13,7 @@ const Icon = (props) => {
 
   const handleBookmarkNote = async (noteId) => {
     try {
-      await axios.post(`/api/notes/bookmark/${noteId}`, {});
+      await axios.post(`https://text-util-five.vercel.app/api/notes/bookmark/${noteId}`, {});
       console.log('Note bookmarked successfully!');
     } catch (error) {
       console.error('Error bookmarking note:', error);
