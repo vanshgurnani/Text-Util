@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import axios from 'axios';
 
-function BarChart() {
+function BookmarkGraph() {
   const chartRef = useRef(null);
   const [userId, setUserId] = useState('');
   const [data, setData] = useState([]);
@@ -21,16 +21,16 @@ function BarChart() {
       return;
     }
 
-    // Fetch data from your server using the userId
+    // Fetch bookmarked notes from your server using the userId
     axios
-      .get(`https://text-util-five.vercel.app/api/fetch-notes/${userId}`)
+      .get(`https://text-util-five.vercel.app/api/bookmarked-notes/${userId}`)
       .then((response) => {
-        const notesData = response.data.notes; // Assuming data is an array of objects with 'category' and 'characterCount' properties
+        const bookmarkedNotes = response.data.bookmarkedNotes;
 
         // Calculate total character count for each category
         const categoryCounts = {};
 
-        notesData.forEach((note) => {
+        bookmarkedNotes.forEach((note) => {
           const { category, content } = note;
 
           if (!categoryCounts[category]) {
@@ -121,11 +121,11 @@ function BarChart() {
 
   return (
     <div className='text-center'>
-      <h1 className='mx-5'>Bar Chart</h1>
-      <h3 className='mx-5'>Category Graph</h3>
+      <h1 className='mx-5'>Bookmark Graph</h1>
+      <h3 className='mx-5'>Category Graph for Bookmarked Notes</h3>
       <div ref={chartRef} width={400} height={200}></div>
     </div>
   );
 }
 
-export default BarChart;
+export default BookmarkGraph;

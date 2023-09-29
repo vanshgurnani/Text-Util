@@ -2,6 +2,7 @@ import React from 'react';
 import Line from './line';
 import Bar2 from './bar2';
 import Bar3 from './bar3';
+import Bookmark from './bookmark';
 
 function insight(props) {
   return (
@@ -13,6 +14,9 @@ function insight(props) {
       <br />
       <br />
       <Bar3 />
+      <br />
+      <br />
+      <Bookmark />
       <br />
       <br />
     </div>

@@ -119,10 +119,10 @@ function BarGraph() {
   }, [data]);
 
   return (
-    <div>
+    <div className='text-center'>
       <h1 className='mx-5'>Bar Graph</h1>
       <h3 className='mx-5'>Total Character Count for Each 10-Note Interval</h3>
-      <div ref={chartRef}></div>
+      <div ref={chartRef} width={400} height={200}></div>
     </div>
   );
 }

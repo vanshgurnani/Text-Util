@@ -121,11 +121,11 @@ function LineChart(props) {
   }, [data]);
 
   return (
-    <>
+    <div className='text-center'>
       <h1 className='mx-5'>Line Chart</h1>
       <h3 className='mx-5'>Length & Time Graph</h3>
-      <div ref={chartRef}></div>
-    </>
+      <div ref={chartRef} width={400} height={200}></div>
+    </div>
   );
 }
 

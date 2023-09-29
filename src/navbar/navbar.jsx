@@ -73,7 +73,7 @@ function Navbar(props) {
               </li>
 
         </ul>
-        <div className={`mx-2 form-check form-switch text-${props.mode === 'light' ? 'dark' : 'light'}`}>
+        <div className={`form-check mx-2 form-switch text-${props.mode === 'light' ? 'dark' : 'light'}`}>
           <input className="form-check-input" type="checkbox" onClick={props.toggleMode} role="switch" id="flexSwitchCheckDefault"/>
           <label className="form-check-label" htmlFor="flexSwitchCheckDefault">
             {props.mode === 'light' ? 'Enable Dark Mode' : 'Enable Light Mode'}
@@ -87,8 +87,8 @@ function Navbar(props) {
             Welcome, {username}
           </span>
       )}
-
-      <button className='btn btn-danger mx-3' onClick={handleLogout}>
+      <br />
+      <button className='mx-2 btn btn-danger' onClick={handleLogout}>
         Logout
       </button>
 
