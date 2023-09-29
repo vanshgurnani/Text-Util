@@ -9,6 +9,7 @@ const Registration = () => {
   });
 
   const [response, setResponse] = useState(null);
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -17,6 +18,11 @@ const Registration = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!userData.username || !userData.email || !userData.password) {
+      setError('Please fill in all the fields.');
+      return;
+    }
 
     try {
       const response = await axios.post('https://text-util-five.vercel.app/registers', userData);
@@ -45,61 +51,60 @@ const Registration = () => {
   };
 
   return (
-    <div className="container mt-5">
-      <h2>Registration</h2>
-      {response && (
-        <div className={`alert ${response.includes('Successful') ? 'alert-success' : 'alert-danger'}`} role="alert">
-          {response}
-        </div>
-      )}
-      <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <label htmlFor="username" className="form-label">
-            Username
-          </label>
+    <div className="container d-flex align-items-center justify-content-center">
+      <div className="card bg-transparent" style={{ maxWidth: '400px', width: '100%',marginTop:'10%' }}>
+        <div className="card-body">
+          <h2 className="card-title text-center">Registration</h2>
+          {error && <div className="alert alert-danger text-center" role="alert">{error}</div>}
+          {response && (
+            <div className={`alert ${response.includes('Successful') ? 'alert-success' : 'alert-danger'}`} role="alert">
+              {response}
+            </div>
+          )}
+          <form onSubmit={handleSubmit}>
+          <div className="mb-3">
           <input
             type="text"
             name="username"
+            placeholder='Username'
             value={userData.username}
             onChange={handleChange}
             className="form-control"
             id="username"
-            required
           />
         </div>
         <div className="mb-3">
-          <label htmlFor="email" className="form-label">
-            Email
-          </label>
           <input
             type="email"
             name="email"
+            placeholder='Email'
             value={userData.email}
             onChange={handleChange}
             className="form-control"
             id="email"
-            required
           />
         </div>
         <div className="mb-3">
-          <label htmlFor="password" className="form-label">
-            Password
-          </label>
           <input
             type="password"
             name="password"
+            placeholder='Password'
             value={userData.password}
             onChange={handleChange}
             className="form-control"
             id="password"
-            required
           />
         </div>
-        <button type="submit" className="btn btn-primary">
+        <button type="submit" className="btn btn-primary mt-3 w-100">
           Register
+        </button>
+        <button type="button" className="btn btn-danger mt-3 w-100">
+          <a className='text-white' href="/" style={{ textDecoration: 'none' }}>Login</a>
         </button>
       </form>
     </div>
+  </div>
+</div>
   );
 };
 

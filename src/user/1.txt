@@ -1,0 +1,55 @@
+<div className="container mt-5">
+      <h2>Registration</h2>
+      {response && (
+        <div className={`alert ${response.includes('Successful') ? 'alert-success' : 'alert-danger'}`} role="alert">
+          {response}
+        </div>
+      )}
+      <form onSubmit={handleSubmit}>
+        <div className="mb-3">
+          <label htmlFor="username" className="form-label">
+            Username
+          </label>
+          <input
+            type="text"
+            name="username"
+            value={userData.username}
+            onChange={handleChange}
+            className="form-control"
+            id="username"
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label htmlFor="email" className="form-label">
+            Email
+          </label>
+          <input
+            type="email"
+            name="email"
+            value={userData.email}
+            onChange={handleChange}
+            className="form-control"
+            id="email"
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label htmlFor="password" className="form-label">
+            Password
+          </label>
+          <input
+            type="password"
+            name="password"
+            value={userData.password}
+            onChange={handleChange}
+            className="form-control"
+            id="password"
+            required
+          />
+        </div>
+        <button type="submit" className="btn btn-primary">
+          Register
+        </button>
+      </form>
+    </div>
