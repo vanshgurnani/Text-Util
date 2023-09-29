@@ -215,7 +215,7 @@ const searchNotes = async () => {
         
         <div className="mb-3 d-flex justify-content-between">
           <h1>{props.head}</h1>
-          <Link to='/bookmark'><img style={{width:'50px',borderRadius:'50%',cursor:'pointer'}} src="images/icon1.png" alt="icon" /></Link>
+          <Link to='/bookmark'><img style={{width:'50px',borderRadius:'60%',cursor:'pointer',filter: props.mode === 'dark' ? 'invert(1)' : 'invert(0)'  }} src="images/icon1.png" alt="icon" /></Link>
         </div>
         <textarea
           className="form-control"
