@@ -4,6 +4,7 @@ import axios from 'axios';
 import { generatePDF } from './pdf';
 import { FaTrash, FaShareSquare, FaVolumeUp,FaFilePdf } from 'react-icons/fa';
 import BookmarkIcon from './bookmark';
+import SearchBar from './search';
 // import Quil from '../components/quil';
 // https://text-util-five.vercel.app
 
@@ -199,18 +200,11 @@ const searchNotes = async () => {
 
       <div className={`container ${style}`} style={{ color: props.mode === 'dark' ? 'white' : '#042743' }}>
 
-        <div className="mb-3 d-flex">
-          <input
-            className="form-control me-2" type="search" aria-label="Search"
-            placeholder="Search notes..."
-            style={{width: '70%'}}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <button onClick={searchNotes} className="btn btn-primary px-4 mx-2 my-2">
-            {searchTerm.trim() === '' ? 'Fetch all Notes' : 'Search'}
-          </button>
-        </div>
+        <SearchBar
+          searchTerm={searchTerm}
+          onSearchTermChange={(value) => setSearchTerm(value)}
+          onSearch={searchNotes}
+        />
         
         
         <div className="mb-3 d-flex justify-content-between">
