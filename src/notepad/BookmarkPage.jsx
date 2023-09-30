@@ -69,7 +69,7 @@ const BookmarkPage = (props) => {
                       className='btn btn-link'
                       onClick={() => toggleNoteExpand(index)}
                     >
-                      ....Read More
+                      Read More
                     </p>
                   </p>
                 ) : (
@@ -81,7 +81,7 @@ const BookmarkPage = (props) => {
                       className='btn btn-link'
                       onClick={() => toggleNoteExpand(index)}
                     >
-                      ....Read Less
+                      Read Less
                     </p>
                   </div>
                 )}
