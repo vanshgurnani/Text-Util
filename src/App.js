@@ -11,6 +11,7 @@ import Summary from './summary/summary';
 import Login from './user/login';
 import Register from './user/registers';
 import Bookmark from './notepad/BookmarkPage';
+import Category from './category/category';
 
 
 function App(props) {
@@ -80,11 +81,16 @@ function App(props) {
       <Route exact path='/notes' element={<TextArea showAlert={showAlert} head="Welcome to NotePad" mode={mode} />}/>
       <Route exact path='/about' element={<About mode={mode} />}/>
       <Route exact path='/bookmark' element={<Bookmark mode={mode} />}/>
-        {/* UserAuth Path */}
-        <Route exact path='/' element={<Login mode={mode} />} />
-        <Route exact path='/register' element={<Register mode={mode} />} />
+      
+      {/* UserAuth Path */}
+      <Route exact path='/' element={<Login mode={mode} />} />
+      <Route exact path='/register' element={<Register mode={mode} />} />
 
-        </Routes>
+      {/* Category Path */}
+
+      <Route exact path='/uncategory' element={<Category head='uncategory' category='uncategorized' mode={mode} />} />
+
+      </Routes>
     </Router>
     </>
   );

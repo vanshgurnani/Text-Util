@@ -142,6 +142,27 @@ app.get('/api/fetch', async (req, res) => {
   }
 });
 
+// app.get route for fetching notes by category
+app.get('/api/category/:userId', async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const { category } = req.query; // Get the category from the query parameter
+
+    let query = { owner: userId };
+    if (category) {
+      query.category = category;
+    }
+
+    const notes = await Note.find(query);
+
+    res.json({ notes });
+  } catch (error) {
+    console.error('Error fetching notes by category:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 
 app.get('/api/search/:userId', async (req, res) => {
   try {
