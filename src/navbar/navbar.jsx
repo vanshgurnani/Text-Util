@@ -58,9 +58,9 @@ function Navbar(props) {
           </li>
 
           <li className="nav-item dropdown">
-            <Link className="nav-link dropdown-toggle active" to="/general" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              News
-            </Link>
+                <Link className="nav-link dropdown-toggle active" to="/general" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  News
+                </Link>
                 <ul className={`dropdown-menu `} >
                   <li className="item"><Link className="dropdown-item link" aria-current="page" to="/general">General</Link></li>
                   <li className='item'><Link className="dropdown-item link" aria-current="page" to="/technology">Technology</Link></li>
@@ -70,7 +70,20 @@ function Navbar(props) {
                   <li className='item'><Link className="dropdown-item link" aria-current="page" to="/health">Health</Link></li>
                   <li className='item'><Link className="dropdown-item link" aria-current="page" to="/science">Science</Link></li>
                 </ul>
-              </li>
+          </li>
+          <li className="nav-item dropdown">
+                <Link className="nav-link dropdown-toggle active" to="/" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Notes
+                </Link>
+                <ul className={`dropdown-menu `} >
+                  <li className="item"><Link className="dropdown-item link" aria-current="page" to="/uncategory">Unactegorized</Link></li>
+                  <li className='item'><Link className="dropdown-item link" aria-current="page" to="/work">Work</Link></li>
+                  <li className='item'><Link className="dropdown-item link" aria-current="page" to="/development">Development</Link></li>
+                  <li className='item'><Link className="dropdown-item link" aria-current="page" to="/study">Study</Link></li>
+                  <li className='item'><Link className="dropdown-item link" aria-current="page" to="/generals">General</Link></li>
+                  <li className='item'><Link className="dropdown-item link" aria-current="page" to="/personal">Personal</Link></li>
+                </ul>
+          </li>
 
         </ul>
         <div className={`form-check mx-2 form-switch text-${props.mode === 'light' ? 'dark' : 'light'}`}>

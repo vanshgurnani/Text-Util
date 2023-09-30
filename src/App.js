@@ -88,7 +88,12 @@ function App(props) {
 
       {/* Category Path */}
 
-      <Route exact path='/uncategory' element={<Category head='uncategory' category='uncategorized' mode={mode} />} />
+      <Route exact path='/uncategory' element={<Category head='Uncategory' category='uncategorized' mode={mode} />} />
+      <Route exact path='/work' element={<Category head='Work' category='Work' mode={mode} />} />
+      <Route exact path='/development' element={<Category head='Development' category='Development' mode={mode} />} />
+      <Route exact path='/study' element={<Category head='Study' category='Study' mode={mode} />} />
+      <Route exact path='/generals' element={<Category head='General' category='General' mode={mode} />} />
+      <Route exact path='/personal' element={<Category head='Personal' category='Personal' mode={mode} />} />
 
       </Routes>
     </Router>
