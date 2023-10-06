@@ -45,7 +45,6 @@ function App(props) {
       setMode('light');
       showAlert("Light Mode has been enabled","warning");
       document.title="Notepad Light Mode";
-      console.log(api)
     }
   }
 

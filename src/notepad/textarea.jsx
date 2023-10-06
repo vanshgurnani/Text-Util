@@ -56,14 +56,7 @@ function Textarea(props) {
     }
   }, [userId]);
 
-  function getRandomLightColor() {
-    const letters = 'ABCDEF';
-    let color = '#';
-    for (let i = 0; i < 3; i++) {
-      color += letters[Math.floor(Math.random() * 6)]; // Use letters A-F
-    }
-    return color;
-  }
+  
   
   
   
@@ -73,10 +66,7 @@ function Textarea(props) {
       // If note is expanded, collapse it
       setExpandedNotes(expandedNotes.filter((id) => id !== noteId));
     } else {
-      // If note is not expanded, expand it and set a color
-      const color = getRandomLightColor();
       setExpandedNotes([...expandedNotes, noteId]);
-      setNoteColors({ ...noteColors, [noteId]: color });
     }
   };
   
@@ -267,7 +257,7 @@ const searchNotes = async () => {
           
           <div key={note._id} className="card mx-2 my-2" style={{
             width: '18rem',
-            backgroundColor: noteColors[note._id] || getRandomLightColor(),
+            backgroundColor: noteColors[note._id] 
           }}>
           <div className="card-body">
               <h5 className="card-title">

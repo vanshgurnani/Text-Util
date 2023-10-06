@@ -54,13 +54,19 @@ const BookmarkPage = (props) => {
     }
   }, [userId]);
 
+  let mystyle = {
+    color: props.mode === 'dark' ? 'white' : '#042743',
+    backgroundColor: props.mode === 'dark' ? 'rgb(36 74 104)' : 'white',
+    borderColor : props.mode === 'dark' ? 'white' : 'transparent'
+  };
+
   return (
     <div className='container mt-4' style={{ color: props.mode === 'dark' ? 'white' : '#042743' }}>
       <h2 className='text-center mb-4'>Your Bookmarked Notes</h2>
       <div className='row'>
         {bookmarkedNotes.map((note, index) => (
           <div key={note._id} className='col-md-4'>
-            <div className='card mb-4'>
+            <div className='card mb-4' style={mystyle}>
               <div className='card-body'>
                 {note.content.length > maxContentLength && !expandedNotes[index] ? (
                   <p>
