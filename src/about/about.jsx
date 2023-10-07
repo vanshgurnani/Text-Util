@@ -40,14 +40,18 @@ function About(props) {
                 data-bs-parent="#accordionExample"
               >
                 <div className="accordion-body" style={mystyle}>
-                  <div className="d-flex">
-                      <div className="container">
-                        <img style={{width:'300px',height:'300px'}} src={user.profile} alt="images" />
+                  <div className="row">
+                      <div className="col">
+                        <div className="container">
+                          <img style={{width:'300px',height:'300px'}} src={user.profile} alt="images" />
+                        </div>
                       </div>
-                      <div className="container">
-                        <strong>Designation:</strong> {user.designation}<br />
-                        <strong>Skills:</strong> {user.skills.join(', ')}<br />
-                        <strong>Additional information:</strong> {user.additionalInfo}
+                      <div className='col'>
+                        <div className="container">
+                          <strong>Designation:</strong> {user.designation}<br />
+                          <strong>Skills:</strong> {user.skills.join(', ')}<br />
+                          <strong>Additional information:</strong> {user.additionalInfo}
+                        </div>
                       </div>
                   </div>
                 </div>
