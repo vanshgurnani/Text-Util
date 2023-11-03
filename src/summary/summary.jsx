@@ -72,7 +72,7 @@ function App(props) {
     setIsLoading(true);
 
     axios
-      .post('https://flask-production-71e4.up.railway.app/get_summary', { text })
+      .post('/get_summary', { text })
       .then((response) => {
         setSummary(response.data.summary);
         setAccuracy(response.data.accuracy);
