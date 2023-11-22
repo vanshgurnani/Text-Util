@@ -265,7 +265,7 @@ const searchNotes = async () => {
                     <div key={note._id} className="card mx-2 my-2" style={{ width: '18rem', backgroundColor: noteColors[note._id] }}>
                       <div className="card-body">
                         <h5 className="card-title">
-                          {`${index + 1}. ${note.content.substring(0, 10)}`}
+                          {`${indexOfFirstNote + index + 1}. ${note.content.substring(0, 10)}`}
                           {note.content.length > 10 && (
                             <p style={{ cursor: 'pointer', fontWeight: 'normal', color: 'gray' }} onClick={() => handleExpandNote(note._id)}>
                               {expandedNotes.includes(note._id) ? '....Read Less' : '....Read More'}
