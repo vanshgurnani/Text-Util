@@ -17,6 +17,18 @@ function Textarea(props) {
   const [noteColors, setNoteColors] = useState({}); // State variable to store note colors
   const [userId, setUserId] = useState('');
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const notesPerPage = 6; // Adjust the number of notes per page here
+
+  // Calculate indexes for pagination
+  const indexOfFirstNote = (currentPage - 1) * notesPerPage;
+  const indexOfLastNote = indexOfFirstNote + notesPerPage;
+  const currentNotes = searchResults.slice(indexOfFirstNote, indexOfLastNote);
+
+  // Calculate total pages
+  const totalPages = Math.ceil(searchResults.length / notesPerPage);
+
+
   useEffect(() => {
     // Retrieve userId from local storage on component mount
     const storedUserId = localStorage.getItem('userId');
@@ -24,6 +36,12 @@ function Textarea(props) {
       setUserId(storedUserId);
     }
   }, []);
+
+  // Function to handle page change
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
 
 
   const loadNotes = async () => {
@@ -188,127 +206,121 @@ const searchNotes = async () => {
   return (
     <>
 
-      <div className={`container ${style}`} style={{ color: props.mode === 'dark' ? 'white' : '#042743' }}>
-
-        <SearchBar
-          searchTerm={searchTerm}
-          onSearchTermChange={(value) => setSearchTerm(value)}
-          onSearch={searchNotes}
-        />
-        
-        
-        <div className="mb-3 d-flex justify-content-between">
-          <h1>{props.head}</h1>
-          <Link to='/bookmark'><img style={{width:'50px',borderRadius:'60%',cursor:'pointer',filter: props.mode === 'dark' ? 'invert(1)' : 'invert(0)'  }} src="images/icon1.png" alt="icon" /></Link>
+        <div className={`container ${style}`} style={{ color: props.mode === 'dark' ? 'white' : '#042743' }}>
+          <SearchBar
+            searchTerm={searchTerm}
+            onSearchTermChange={(value) => setSearchTerm(value)}
+            onSearch={searchNotes}
+          />
+          <div className="mb-3 d-flex justify-content-between">
+            <h1>{props.head}</h1>
+            <Link to='/bookmark'><img style={{ width: '50px', borderRadius: '60%', cursor: 'pointer', filter: props.mode === 'dark' ? 'invert(1)' : 'invert(0)' }} src="images/icon1.png" alt="icon" /></Link>
+          </div>
+          <textarea
+            className="form-control"
+            onChange={handleUpChange}
+            value={text}
+            id="myBox"
+            rows="8"
+            style={{ resize: 'none' }}
+            cols="20"
+            placeholder="Enter the text"
+          ></textarea>
+          <div className="mb-3">
+            <label htmlFor="category">Category:</label>
+            <select
+              id="category"
+              className="form-select"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            >
+              <option value="Uncategorized">Uncategorized</option>
+              <option value="Personal">Personal</option>
+              <option value="Work">Work</option>
+              <option value="Development">Development</option>
+              <option value="Study">Study</option>
+              <option value="General">General</option>
+              {/* Add more categories as needed */}
+            </select>
+          </div>
+          <button onClick={handleClear} className="btn btn-danger mx-2 my-2">
+            Clear
+          </button>
+          <button onClick={saveNote} className="btn btn-primary mx-2 my-2">
+            Save Note
+          </button>
         </div>
-        <textarea
-          className="form-control"
-          onChange={handleUpChange}
-          value={text}
-          id="myBox"
-          rows="8"
-          style={{ resize: 'none' }}
-          cols="20"
-          placeholder="Enter the text"
-        ></textarea>
-
-
-        <div className="mb-3">
-          <label htmlFor="category">Category:</label>
-          <select
-            id="category"
-            className="form-select"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
-            <option value="Uncategorized">Uncategorized</option>
-            <option value="Personal">Personal</option>
-            <option value="Work">Work</option>
-            <option value="Development">Development</option>
-            <option value="Study">Study</option>
-            <option value="General">General</option>
-            {/* Add more categories as needed */}
-          </select>
-        </div>
-
-        
-        <button onClick={handleClear} className="btn btn-danger mx-2 my-2">
-          Clear
-        </button>
-        <button onClick={saveNote} className="btn btn-primary mx-2 my-2">
-          Save Note
-        </button>
-      </div>
-      <div className={`container ${style}`} style={{ color: props.mode === 'dark' ? 'white' : '#042743' }}>
-      <p>Character Count: {text.split(/\s+/).filter((element) => element.length !== 0).length}</p>
-      <p>Estimated Reading Time: {0.008 * text.split(' ').filter((element) => element.length !== 0).length} minutes</p>
-      <p>{text}</p>
-      {/* Display search results or all notes */}
-      <h1>Search Results</h1>
-
-
-
-      {searchResults && searchResults.length > 0 ? (
-        <div className='container'>
-
-        <div className='row mx-auto'>
-        {searchResults.map((note, index) => (
-          <div className='col-md-4 mb-4' key={note._id}>
-          
-          <div key={note._id} className="card mx-2 my-2" style={{
-            width: '18rem',
-            backgroundColor: noteColors[note._id] 
-          }}>
-          <div className="card-body">
-              <h5 className="card-title">
-                {`${index + 1}. ${note.content.substring(0, 10)}`} {/* Display the first 100 characters */}
-                {note.content.length > 10 && (
-                  <p style={{cursor:'pointer',fontWeight: 'normal',color: 'gray'}} onClick={() => handleExpandNote(note._id)}>
-                    {expandedNotes.includes(note._id) ? '....Read Less' : '....Read More'}
-                  </p>
-                )}
-              </h5>
-              <BookmarkIcon noteId={note._id} />
-              <p className="card-text">Category: {note.category}</p>
-              <FaTrash className='mx-2' style={{ cursor: 'pointer' }} onClick={() => handleDeleteNote(note._id)} />
-              <FaShareSquare className='mx-2' style={{ cursor: 'pointer' }} onClick={() => handleShareNote(note)} />
-              <FaVolumeUp className='mx-2' style={{ cursor: 'pointer' }} onClick={() => handleTextToSpeech(note.content)} />
-              <FaFilePdf className='mx-2' style={{ cursor: 'pointer' }} onClick={() => saveNoteAndGeneratePDF(note.content, note.category)} />
-
-            {expandedNotes.includes(note._id) ? (
-              <div>
-                <p className="card-text">{note.content}</p> {/* Display full content when expanded */}
-                <p className="card-text">Timestamp: {new Date(note.timestamp).toLocaleString()}</p>
+    
+        <div className={`container ${style}`} style={{ color: props.mode === 'dark' ? 'white' : '#042743' }}>
+          <p>Character Count: {text.split(/\s+/).filter((element) => element.length !== 0).length}</p>
+          <p>Estimated Reading Time: {0.008 * text.split(' ').filter((element) => element.length !== 0).length} minutes</p>
+          <p>{text}</p>
+          <h1>Search Results</h1>
+          {searchResults && searchResults.length > 0 ? (
+            <>
+            <div className='container'>
+              <div className='row mx-auto'>
+                {currentNotes.map((note, index) => (
+                  <div className='col-md-4 mb-4' key={note._id}>
+                    <div key={note._id} className="card mx-2 my-2" style={{ width: '18rem', backgroundColor: noteColors[note._id] }}>
+                      <div className="card-body">
+                        <h5 className="card-title">
+                          {`${index + 1}. ${note.content.substring(0, 10)}`}
+                          {note.content.length > 10 && (
+                            <p style={{ cursor: 'pointer', fontWeight: 'normal', color: 'gray' }} onClick={() => handleExpandNote(note._id)}>
+                              {expandedNotes.includes(note._id) ? '....Read Less' : '....Read More'}
+                            </p>
+                          )}
+                        </h5>
+                        <BookmarkIcon noteId={note._id} />
+                        <p className="card-text">Category: {note.category}</p>
+                        <FaTrash className='mx-2' style={{ cursor: 'pointer' }} onClick={() => handleDeleteNote(note._id)} />
+                        <FaShareSquare className='mx-2' style={{ cursor: 'pointer' }} onClick={() => handleShareNote(note)} />
+                        <FaVolumeUp className='mx-2' style={{ cursor: 'pointer' }} onClick={() => handleTextToSpeech(note.content)} />
+                        <FaFilePdf className='mx-2' style={{ cursor: 'pointer' }} onClick={() => saveNoteAndGeneratePDF(note.content, note.category)} />
+                        {expandedNotes.includes(note._id) ? (
+                          <div>
+                            <p className="card-text">{note.content}</p>
+                            <p className="card-text">Timestamp: {new Date(note.timestamp).toLocaleString()}</p>
+                          </div>
+                        ) : (
+                          <p className="card-text">Timestamp: {new Date(note.timestamp).toLocaleString()}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ) : (
-              <p className="card-text">Timestamp: {new Date(note.timestamp).toLocaleString()}</p>
-            )}
-          </div>
+            </div>
+
+            {/* Pagination */}
+    <nav aria-label="Page navigation example">
+    <ul className="pagination justify-content-center">
+      <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+        <button className="page-link" onClick={() => handlePageChange(currentPage - 1)}>Previous</button>
+      </li>
+      {Array.from({ length: totalPages }, (_, i) => (
+        <li key={i} className={`page-item ${currentPage === i + 1 ? 'active' : ''}`}>
+          <button className="page-link" onClick={() => handlePageChange(i + 1)}>{i + 1}</button>
+        </li>
+      ))}
+      <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+        <button className="page-link" onClick={() => handlePageChange(currentPage + 1)}>Next</button>
+      </li>
+    </ul>
+  </nav>
+
+
+            </>
+          ) : (
+            <div>
+              {searchTerm.length > 0 && <p>No matching notes found</p>}
+            </div>
+          )}
         </div>
-          
-          </div>
-        ))}
-
-
-        </div>
-
-        
-        
 
 
 
-
-        </div>
-      ) : (
-        <div>
-          {searchTerm.length > 0 && <p>No matching notes found</p>}
-        </div>
-      )}
-
-
-
-      
-      </div>
     </>
   );
 }
