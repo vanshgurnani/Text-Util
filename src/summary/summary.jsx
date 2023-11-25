@@ -72,7 +72,7 @@ function App(props) {
     setIsLoading(true);
 
     axios
-      .post('/get_summary', { text })
+      .post('https://web-production-032d.up.railway.app/get_summary', { text })
       .then((response) => {
         setSummary(response.data.summary);
         setAccuracy(response.data.accuracy);
