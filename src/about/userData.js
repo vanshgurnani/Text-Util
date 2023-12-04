@@ -26,7 +26,7 @@ const userData = [
       additionalInfo: 'Additional info for Keshav.',
       skills: ['HTML/CSS', 'React.js','Bootstrap'],
       designation: 'Frontend Developer',
-      profile:'images/Vansh.jpg'
+      profile:'images/keshav.jpeg'
     },
   ];
   
