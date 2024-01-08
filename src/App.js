@@ -1,5 +1,5 @@
 import React,{useState,useEffect} from 'react'
-import { BrowserRouter as Router, Routes, Route} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route,Navigate} from "react-router-dom";
 // import Home from '../src/components/home';
 import TextArea from './notepad/textarea';
 import About from './about/about';
@@ -12,6 +12,7 @@ import Login from './user/login';
 import Register from './user/registers';
 import Bookmark from './notepad/BookmarkPage';
 import Category from './category/category';
+import PrivateRoutes from './util/PrivateRoutes';
 
 
 function App(props) {
@@ -64,35 +65,44 @@ function App(props) {
     <Alert alert={alert}/>
       <Routes>
 
-      {/* News Path */}
-      <Route exact path='/general' element={<News key="general" heading="General" apiKey={api}  pageSize={5} country="in" category="general" mode={mode} />}/>
-      <Route exact path='/business' element={<News key="business" heading="Business" apiKey={api}  pageSize={5} country="in" category="business" mode={mode} />}/>
-      <Route exact path='/entertainment' element={<News key="entertainment" apiKey={api}  heading="Entertainment" pageSize={5} country="in" category="entertainment" mode={mode} />}/>
-      <Route exact path='/health' element={<News key="health" heading="Health" apiKey={api}  pageSize={5} country="in" category="health" mode={mode} />}/>
-      <Route exact path='/science' element={<News key="science" heading="Science" apiKey={api}  pageSize={5} country="in" category="science" mode={mode} />}/>
-      <Route exact path='/sports' element={<News key="sports" heading="Sports" apiKey={api}  pageSize={5} country="in" category="sports" mode={mode} />}/>
-      <Route exact path='/technology' element={<News key="technology" apiKey={api} heading="Technology"  pageSize={5} country="in" category="technology" mode={mode} />}/>
+      <Route path="*" element={<Navigate to="/" />} />
+
+      <Route element={<PrivateRoutes />}>
+       
+      `{/* News Path */}
+        <Route exact path='/general' element={<News key="general" heading="General" apiKey={api}  pageSize={5} country="in" category="general" mode={mode} />}/>
+        <Route exact path='/business' element={<News key="business" heading="Business" apiKey={api}  pageSize={5} country="in" category="business" mode={mode} />}/>
+        <Route exact path='/entertainment' element={<News key="entertainment" apiKey={api}  heading="Entertainment" pageSize={5} country="in" category="entertainment" mode={mode} />}/>
+        <Route exact path='/health' element={<News key="health" heading="Health" apiKey={api}  pageSize={5} country="in" category="health" mode={mode} />}/>
+        <Route exact path='/science' element={<News key="science" heading="Science" apiKey={api}  pageSize={5} country="in" category="science" mode={mode} />}/>
+        <Route exact path='/sports' element={<News key="sports" heading="Sports" apiKey={api}  pageSize={5} country="in" category="sports" mode={mode} />}/>
+        <Route exact path='/technology' element={<News key="technology" apiKey={api} heading="Technology"  pageSize={5} country="in" category="technology" mode={mode} />}/>
+        
+        {/* NotePad Path */}
+        <Route exact path='/insight' element={<Insight mode={mode} />}/>
+        <Route exact path='/summary' element={<Summary mode={mode} />} />
+        <Route exact path='/notes' element={<TextArea showAlert={showAlert} head="Welcome to NotePad" mode={mode} />}/>
+        <Route exact path='/about' element={<About mode={mode} />}/>
+        <Route exact path='/bookmark' element={<Bookmark mode={mode} />}/>
+        
+        {/* Category Path */}
+  
+        <Route exact path='/uncategory' element={<Category head='Uncategory' category='uncategorized' mode={mode} />} />
+        <Route exact path='/work' element={<Category head='Work' category='Work' mode={mode} />} />
+        <Route exact path='/development' element={<Category head='Development' category='Development' mode={mode} />} />
+        <Route exact path='/study' element={<Category head='Study' category='Study' mode={mode} />} />
+        <Route exact path='/generals' element={<Category head='General' category='General' mode={mode} />} />
+        <Route exact path='/personal' element={<Category head='Personal' category='Personal' mode={mode} />} />
+      
+      </Route>
+
       
       
-      {/* NotePad Path */}
-      <Route exact path='/insight' element={<Insight mode={mode} />}/>
-      <Route exact path='/summary' element={<Summary mode={mode} />} />
-      <Route exact path='/notes' element={<TextArea showAlert={showAlert} head="Welcome to NotePad" mode={mode} />}/>
-      <Route exact path='/about' element={<About mode={mode} />}/>
-      <Route exact path='/bookmark' element={<Bookmark mode={mode} />}/>
       
       {/* UserAuth Path */}
       <Route exact path='/' element={<Login mode={mode} />} />
       <Route exact path='/register' element={<Register mode={mode} />} />
 
-      {/* Category Path */}
-
-      <Route exact path='/uncategory' element={<Category head='Uncategory' category='uncategorized' mode={mode} />} />
-      <Route exact path='/work' element={<Category head='Work' category='Work' mode={mode} />} />
-      <Route exact path='/development' element={<Category head='Development' category='Development' mode={mode} />} />
-      <Route exact path='/study' element={<Category head='Study' category='Study' mode={mode} />} />
-      <Route exact path='/generals' element={<Category head='General' category='General' mode={mode} />} />
-      <Route exact path='/personal' element={<Category head='Personal' category='Personal' mode={mode} />} />
 
       </Routes>
     </Router>
