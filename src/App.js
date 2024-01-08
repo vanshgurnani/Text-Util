@@ -65,9 +65,6 @@ function App(props) {
     <Alert alert={alert}/>
       <Routes>
 
-      <Route path="*" element={<Navigate to="/" />} />
-
-      <Route element={<PrivateRoutes />}>
        
       `{/* News Path */}
         <Route exact path='/general' element={<News key="general" heading="General" apiKey={api}  pageSize={5} country="in" category="general" mode={mode} />}/>
@@ -93,8 +90,6 @@ function App(props) {
         <Route exact path='/study' element={<Category head='Study' category='Study' mode={mode} />} />
         <Route exact path='/generals' element={<Category head='General' category='General' mode={mode} />} />
         <Route exact path='/personal' element={<Category head='Personal' category='Personal' mode={mode} />} />
-      
-      </Route>
 
       
       
