@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 type MarkdownEditorProps = {
   value: string;
@@ -34,7 +35,7 @@ export default function MarkdownEditor({ value, onChange }: MarkdownEditorProps)
       {preview ? (
         <div className="markdown-preview">
           {value ? (
-            <ReactMarkdown>{value}</ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{value}</ReactMarkdown>
           ) : (
             <p className="markdown-empty">Nothing to preview yet.</p>
           )}
