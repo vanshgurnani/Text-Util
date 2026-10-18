@@ -47,7 +47,9 @@ The frontend and backend are separate services. In production, the backend web s
 
 See the [product roadmap](docs/PRODUCT-ROADMAP.md) for user-facing features and
 the [architecture roadmap](docs/ARCHITECTURE-ROADMAP.md) for technical
-foundations and operations.
+foundations and operations. The [frontend UI redesign plan](docs/FRONTEND-UI-REDESIGN.md)
+tracks the workspace and editor experience improvements. The workspace uses a
+neutral light theme with a muted Noteform-green accent.
 
 ## Repository layout
 

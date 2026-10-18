@@ -55,6 +55,8 @@ export default function Workspace() {
   const [previewingImport, setPreviewingImport] = useState(false);
   const [importingWorkspace, setImportingWorkspace] = useState(false);
   const [exportingWorkspace, setExportingWorkspace] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [recentIds, setRecentIds] = useState<string[]>([]);
   const commandInputRef = useRef<HTMLInputElement>(null);
   const editRevision = useRef(0);
@@ -264,6 +266,7 @@ export default function Workspace() {
     if (!await selectNote(note)) return false;
     setCategory('All notes');
     setSearch('');
+    setMobileNavOpen(false);
     return true;
   }
 
@@ -315,6 +318,7 @@ export default function Workspace() {
       setSelected(result.note);
       setDraftDirty(false);
       setSaveStatus('saved');
+      setMobileNavOpen(false);
       flash('New note created');
     } catch (err) {
       flash(err instanceof Error ? err.message : 'Could not create note');
@@ -497,7 +501,8 @@ export default function Workspace() {
   }
 
   return (
-    <main className="app-shell">
+    <main className={`app-shell ${sidebarCollapsed ? 'sidebar-collapsed' : ''} ${mobileNavOpen ? 'mobile-nav-open' : ''}`}>
+      {mobileNavOpen && <button className="sidebar-backdrop" aria-label="Close navigation" onClick={() => setMobileNavOpen(false)} />}
       <aside className="sidebar">
         <div className="sidebar-logo"><span>✦</span> Noteform</div>
         <div className="workspace-switcher">
@@ -507,7 +512,7 @@ export default function Workspace() {
         </div>
         <button className="new-note-button" onClick={() => createNote()}><span>＋</span> New page <kbd>⌘ N</kbd></button>
         <button className="capture-button" onClick={() => setShowCapture(true)}><span>⌁</span> Quick capture <kbd>⌥ ⇧ C</kbd></button>
-        <nav>
+        <nav onClick={() => setMobileNavOpen(false)}>
           <p className="nav-label">LIBRARY</p>
           <button className={category === 'All notes' ? 'nav-item active' : 'nav-item'} onClick={() => setCategory('All notes')}><span>▤</span> All notes <b>{notes.length}</b></button>
           <button className={category === 'Inbox' ? 'nav-item active' : 'nav-item'} onClick={() => {
@@ -556,6 +561,14 @@ export default function Workspace() {
       <section className="content-area">
         <header className="topbar">
           <div className="breadcrumbs">
+            <button
+              className="sidebar-toggle"
+              aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              aria-expanded={!sidebarCollapsed}
+              onClick={() => setSidebarCollapsed(current => !current)}
+            >{sidebarCollapsed ? '☷' : '◧'}</button>
+            <button className="mobile-nav-toggle" aria-label="Open navigation" aria-expanded={mobileNavOpen} onClick={() => setMobileNavOpen(true)}>☰</button>
             <button onClick={async () => { if (await selectNote(null)) { setCategory('All notes'); setSearch(''); } }}>Workspace</button>
             {pageBreadcrumbs.map(crumb => (
               <span className="breadcrumb-segment" key={crumb.id}>
@@ -577,7 +590,7 @@ export default function Workspace() {
             <button className="user-avatar" onClick={logout}>{user.username[0].toUpperCase()}</button>
           </div>
         </header>
-        <div className={selected ? 'workspace mobile-editing' : 'workspace'}>
+        <div className={`${selected ? 'workspace mobile-editing' : 'workspace'} ${sidebarCollapsed ? 'wide-workspace' : ''}`}>
           <div className="notes-column">
             <div className="page-heading">
               <div>
@@ -666,12 +679,13 @@ export default function Workspace() {
                     <button onClick={() => { void saveNote(true); }}>Overwrite with my edits</button>
                   </div>
                 )}
-                <div className="editor-paper">
-                  <div className="editor-icon">{selected.icon}</div>
-                  <input className="title-input" value={selected.title} onChange={event => updateSelected('title', event.target.value)} placeholder="Untitled" />
-                  <div className="editor-info">
-                    <span>Last edited {relativeDate(selected.updated_at).toLowerCase()}</span><span>·</span><span>{wordCount} words</span>
-                  </div>
+                <div className="editor-document-scroll">
+                  <article className="editor-paper">
+                    <div className="page-icon-badge">{selected.icon}</div>
+                    <input className="title-input" value={selected.title} onChange={event => updateSelected('title', event.target.value)} placeholder="Untitled" />
+                    <div className="editor-info">
+                      <span>Last edited {relativeDate(selected.updated_at).toLowerCase()}</span><span>·</span><span>{wordCount} words</span>
+                    </div>
                   {childPages.length > 0 && (
                     <div className="page-children">
                       <span>SUBPAGES</span>
@@ -689,6 +703,7 @@ export default function Workspace() {
                   )}
                   <MarkdownEditor value={selected.content} onChange={value => updateSelected('content', value)} />
                   <div className="editor-footer"><span>Markdown supported · Images: ![alt](URL)</span><span>⌘ Enter to save</span></div>
+                  </article>
                 </div>
               </>
             ) : (
