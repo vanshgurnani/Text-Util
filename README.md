@@ -38,7 +38,9 @@ Browser ──HTTPS──> Next.js frontend
 
 The frontend and backend are separate services. In production, the backend web service is directly reachable over HTTPS, so MCP clients can use its `/mcp` endpoint without a tunnel.
 
-The longer-term architecture and feature improvement plan is in [`docs/ARCHITECTURE-ROADMAP.md`](docs/ARCHITECTURE-ROADMAP.md).
+See the [product roadmap](docs/PRODUCT-ROADMAP.md) for user-facing features and
+the [architecture roadmap](docs/ARCHITECTURE-ROADMAP.md) for technical
+foundations and operations.
 
 ## Repository layout
 
