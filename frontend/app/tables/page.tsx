@@ -25,7 +25,13 @@ export default function TablesPage() {
     try {
       const result = await api<{ tables: DataTable[] }>('/tables');
       setTables(result.tables);
-      setSelected(current => current ? result.tables.find(table => table.id === current.id) || null : result.tables[0] || null);
+      const requestedTableId = new URLSearchParams(window.location.search).get('table_id');
+      setSelected(current => (
+        (requestedTableId && result.tables.find(table => table.id === requestedTableId))
+        || (current && result.tables.find(table => table.id === current.id))
+        || result.tables[0]
+        || null
+      ));
     } catch (err) {
       if (err instanceof Error && err.message.toLowerCase().includes('token')) window.location.assign('/login');
       else setError(err instanceof Error ? err.message : 'Could not load tables');

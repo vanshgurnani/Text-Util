@@ -9,6 +9,7 @@ import {
   ApiError,
   api,
   clearSession,
+  DataTable,
   downloadWorkspaceExport,
   importWorkspace,
   Note,
@@ -49,6 +50,10 @@ export default function Workspace() {
   const [showMcp, setShowMcp] = useState(false);
   const [mcpToken, setMcpToken] = useState('');
   const [showCapture, setShowCapture] = useState(false);
+  const [showNewPageDialog, setShowNewPageDialog] = useState(false);
+  const [newTableName, setNewTableName] = useState('');
+  const [newPageError, setNewPageError] = useState('');
+  const [creatingTable, setCreatingTable] = useState(false);
   const [captureTitle, setCaptureTitle] = useState('');
   const [captureContent, setCaptureContent] = useState('');
   const [captureSource, setCaptureSource] = useState('');
@@ -90,6 +95,12 @@ export default function Workspace() {
 
   useEffect(() => {
     function handleGlobalShortcuts(event: KeyboardEvent) {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'n') {
+        event.preventDefault();
+        setNewPageError('');
+        setShowNewPageDialog(true);
+        return;
+      }
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
         event.preventDefault();
         setShowCommandPalette(true);
@@ -328,7 +339,7 @@ export default function Workspace() {
     if (item.id === 'new-page') {
       setCategory('All notes');
       setSelectedTag(null);
-      await createNote();
+      setShowNewPageDialog(true);
     } else if (item.id === 'quick-capture') {
       setShowCapture(true);
     } else if (item.id === 'inbox' || item.id === 'favorites') {
@@ -375,6 +386,36 @@ export default function Workspace() {
       flash('New note created');
     } catch (err) {
       flash(err instanceof Error ? err.message : 'Could not create note');
+    }
+  }
+
+  async function createStructuredTable(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (draftDirty && !await saveNote()) {
+      setNewPageError('Save or resolve the open page edits before creating a table.');
+      return;
+    }
+    setCreatingTable(true);
+    setNewPageError('');
+    try {
+      const result = await api<{ table: DataTable }>('/tables', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: newTableName,
+          columns: [
+            { name: 'Name', type: 'text' },
+            { name: 'Status', type: 'select', options: ['Todo', 'In progress', 'Done'] },
+          ],
+        }),
+      });
+      setShowNewPageDialog(false);
+      setNewTableName('');
+      setMobileNavOpen(false);
+      router.push(`/tables?table_id=${encodeURIComponent(result.table.id)}`);
+    } catch (err) {
+      setNewPageError(err instanceof Error ? err.message : 'Could not create table');
+    } finally {
+      setCreatingTable(false);
     }
   }
 
@@ -579,7 +620,7 @@ export default function Workspace() {
           <div><strong>{user.username}&apos;s space</strong><small>Personal workspace</small></div>
           <span className="chevron">⌄</span>
         </div>
-        <button className="new-note-button" onClick={() => createNote()}><span>＋</span> New page <kbd>⌘ N</kbd></button>
+        <button className="new-note-button" onClick={() => setShowNewPageDialog(true)}><span>＋</span> New page <kbd>⌘ N</kbd></button>
         <button className="capture-button" onClick={() => setShowCapture(true)}><span>⌁</span> Quick capture <kbd>⌥ ⇧ C</kbd></button>
         <nav onClick={() => setMobileNavOpen(false)}>
           <p className="nav-label">LIBRARY</p>
@@ -605,7 +646,7 @@ export default function Workspace() {
                 ))}
             </>
           )}
-          <p className="nav-label categories-label">PRIVATE <button aria-label="Create page" onClick={() => createNote()}>＋</button></p>
+          <p className="nav-label categories-label">PRIVATE <button aria-label="Create page" onClick={() => setShowNewPageDialog(true)}>＋</button></p>
           <PagesTree
             notes={notes.filter(note => !note.inbox)}
             selectedId={selected?.id}
@@ -704,7 +745,7 @@ export default function Workspace() {
                 <div className="empty-icon">✦</div>
                 <h3>{category === 'Inbox' ? 'Your Inbox is clear' : 'Your space is waiting'}</h3>
                 <p>{category === 'Inbox' ? 'Quick captures will land here until you are ready to organize them.' : 'Capture an idea, a thought, or anything worth keeping.'}</p>
-                <button className="primary-button" onClick={() => category === 'Inbox' ? setShowCapture(true) : createNote()}>
+                <button className="primary-button" onClick={() => category === 'Inbox' ? setShowCapture(true) : setShowNewPageDialog(true)}>
                   {category === 'Inbox' ? 'Capture a thought' : 'Create your first note'} <span>→</span>
                 </button>
               </div>
@@ -881,6 +922,44 @@ export default function Workspace() {
               ))}
             </div>
             <footer><span>↑↓ Navigate</span><span>↵ Open</span><span>⌘ K Toggle</span></footer>
+          </section>
+        </div>
+      )}
+      {showNewPageDialog && (
+        <div className="modal-backdrop" onClick={() => setShowNewPageDialog(false)}>
+          <section className="capture-modal new-page-modal" role="dialog" aria-modal="true" aria-labelledby="new-page-heading" onClick={event => event.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowNewPageDialog(false)} aria-label="Close new page options">×</button>
+            <div className="mcp-symbol">＋</div>
+            <p className="eyebrow">CREATE IN YOUR WORKSPACE</p>
+            <h2 id="new-page-heading">What would you like to create?</h2>
+            <p className="muted modal-copy">Choose a format. It will open here in this tab.</p>
+            {newPageError && <p className="form-error" role="alert">{newPageError}</p>}
+            <div className="new-page-options">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowNewPageDialog(false);
+                  setNewPageError('');
+                  void createNote();
+                }}
+              >
+                <span>✎</span>
+                <strong>Text page</strong>
+                <small>Write and organize thoughts with Markdown.</small>
+              </button>
+              <form onSubmit={event => { void createStructuredTable(event); }}>
+                <span>▦</span>
+                <strong>Structured data</strong>
+                <small>Start a table with typed, editable columns.</small>
+                <label>
+                  Table name
+                  <input autoFocus value={newTableName} onChange={event => setNewTableName(event.target.value)} maxLength={120} required placeholder="e.g. Reading list" />
+                </label>
+                <button type="submit" className="primary-button" disabled={creatingTable}>
+                  {creatingTable ? 'Creating…' : 'Create table'} <span>→</span>
+                </button>
+              </form>
+            </div>
           </section>
         </div>
       )}

@@ -256,6 +256,18 @@ html,body { background:var(--cream); color:var(--ink); font-family:Arial,Helveti
 .table-empty-state { display:grid; min-height:55vh; align-content:center; justify-items:center; gap:12px; text-align:center; }
 .table-empty-state > span { color:#758c7c; font-size:32px; }
 .table-empty-state p { margin:0; color:#858782; font-size:13px; }
+.new-page-modal h2 { max-width:390px; }
+.new-page-options { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.new-page-options > button,.new-page-options > form { display:flex; flex-direction:column; align-items:flex-start; gap:9px; min-width:0; padding:16px; border:1px solid #e5e7e3; border-radius:5px; background:#fff; color:#4a4d48; text-align:left; }
+.new-page-options > button:hover { border-color:#bfcbbf; background:#f8faf7; }
+.new-page-options > button > span,.new-page-options > form > span { color:#688070; font-size:21px; }
+.new-page-options strong { font-size:12px; }
+.new-page-options small { min-height:32px; color:#888b85; font-size:10px; line-height:1.5; }
+.new-page-options label { width:100%; color:#777a75; font-size:10px; }
+.new-page-options label input { display:block; width:100%; margin-top:6px; padding:9px; border:1px solid #e3e5e1; border-radius:4px; background:#fff; color:var(--ink); font-size:11px; }
+.new-page-options .primary-button { width:100%; display:flex; justify-content:space-between; align-items:center; padding:10px 11px; font-size:10px; }
+.new-page-options .primary-button span { margin:0; }
+.new-page-options .primary-button:disabled { cursor:wait; }
 @media(max-width:700px) {
   .tables-topbar { padding:0 17px; }
   .tables-layout { grid-template-columns:1fr; }
@@ -264,4 +276,9 @@ html,body { background:var(--cream); color:var(--ink); font-family:Arial,Helveti
   .tables-sidebar-foot { display:none; }
   .table-content { padding:30px 16px; }
   .table-heading { align-items:flex-start; flex-direction:column; }
+}
+@media(max-width:560px) {
+  .new-page-options { grid-template-columns:1fr; }
+  .new-page-options > button,.new-page-options > form { padding:13px; }
+  .new-page-options small { min-height:0; }
 }
