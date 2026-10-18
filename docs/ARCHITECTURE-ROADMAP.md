@@ -394,57 +394,47 @@ Every pull request should run:
 - [x] Add Cloudflare Tunnel Compose service.
 - [x] Add OAuth metadata and PKCE flow.
 - [x] Add permanent user-scoped MCP tokens.
-- [x] Add automated CI build and test workflow.
-- [x] Add health/readiness checks and Compose health dependencies.
-- [x] Add API request IDs and structured logs.
+- [ ] Add automated CI build and test workflow.
+- [ ] Add health/readiness checks and Compose health dependencies.
+- [ ] Add API request IDs and structured logs.
 
 ### Phase 1 — Secure production foundations
 
-- [x] Move web authentication to HTTP-only cookie sessions while retaining JWT compatibility.
-- [x] Add process-local rate limiting and account protection guardrails.
-- [ ] Replace process-local limits with a shared Redis-backed limiter for multiple replicas.
-- [x] Add refresh-token rotation and revocation.
-- [x] Add audit events for auth and MCP actions.
+- [ ] Move web authentication to HTTP-only cookie sessions.
+- [ ] Add rate limiting and account protection.
+- [ ] Add refresh-token rotation and revocation.
+- [ ] Add audit events for auth and MCP actions.
 - [ ] Add production MongoDB backup and restore process.
 - [ ] Add secret rotation runbook.
 
 ### Phase 2 — Domain and collaboration model
 
-- [x] Introduce personal workspaces and membership roles foundation.
-- [x] Add shared workspace invitations and membership administration foundation.
-- [x] Add category collection and user-managed categories.
-- [x] Add note revisions and optimistic concurrency.
-- [x] Extract the note application service from main.py.
-- [ ] Extract all repositories and remaining application services from main.py.
-- [x] Add cursor pagination.
+- [ ] Introduce workspaces and membership roles.
+- [ ] Add category collection and user-managed categories.
+- [ ] Add note revisions and optimistic concurrency.
+- [ ] Extract repositories and application services from main.py.
+- [ ] Add cursor pagination.
 
 ### Phase 3 — Editor and knowledge experience
 
-- [x] Add explicit Markdown/plain note content format.
 - [ ] Add structured rich-text editor.
-- [x] Add note revision history and safe restore API.
-- [x] Add frontend autosave and visible revision history.
-- [ ] Add rich conflict resolution UI with merge support.
-- [x] Add bounded Markdown/JSON import and export API.
-- [x] Add MongoDB-indexed full-text search for multi-term queries while preserving substring search for single terms.
+- [ ] Add autosave, conflict resolution, and revision history.
+- [ ] Add Markdown/JSON import and export.
+- [ ] Add full-text search improvements.
 - [ ] Add background embeddings and semantic search.
 
 ### Phase 4 — MCP platform
 
-- [x] Add scope enforcement in the dispatcher.
-- [x] Add paginated search and version-aware MCP update tool.
-- [x] Add update and export MCP tools plus asynchronous insights queueing.
-- [ ] Add model-backed summarization with explicit AI consent.
+- [ ] Add scope enforcement in the dispatcher.
+- [ ] Add paginated search and structured tool outputs.
+- [ ] Add update, export, and summarization tools.
 - [ ] Add confirmation workflows for destructive actions.
 - [ ] Add MCP client registration management and per-client limits.
 
 ### Phase 5 — Scale and operate
 
-- [x] Move long-running insights work to a Mongo-backed queue and worker service.
-- [x] Add bounded retries and dead-letter handling.
-- [ ] Replace the Mongo queue with a shared production queue.
-- [x] Add request metrics endpoint and structured request counters.
-- [ ] Add distributed tracing, dashboards, and alerts.
+- [ ] Move long-running jobs to a queue and worker service.
+- [ ] Add tracing, metrics, dashboards, and alerts.
 - [ ] Run multiple API replicas behind a managed edge.
 - [ ] Use managed MongoDB with replica set and backups.
 - [ ] Add load tests for REST, MCP, and search.
@@ -476,3 +466,4 @@ Noteform is ready for a first production beta when:
 - The public MCP hostname uses HTTPS and a stable domain.
 - The privacy policy explains note storage, MCP access, and AI processing.
 - An incident response owner and rollback procedure are documented.
+

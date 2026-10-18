@@ -12,7 +12,6 @@ Noteform is a calm, Notion-inspired personal notes workspace. Users can create, 
 - Workspace records and membership foundations for future collaboration.
 - Workspace-owned default and custom categories.
 - Note creation, editing, deletion, category filtering, search, and bookmarks.
-- Notes have an explicit Markdown/plain content format for future structured editing.
 - Responsive Notion-inspired two-pane workspace UI.
 - JWT session authentication for the web application.
 - HTTP-only web sessions with JWT compatibility for existing clients.
@@ -218,7 +217,7 @@ The server publishes protected-resource metadata, authorization-server metadata,
 | `DELETE` | `/auth/mcp-token` | Revoke the current MCP token |
 | `GET` | `/notes` | Search and filter notes with cursor pagination |
 | `GET` | `/notes/export?format=json|markdown` | Export up to 100 notes |
-| `POST` | `/notes/import?format=json|markdown` | Import up to 100 notes |
+| `POST` | `/notes/import` | Import up to 100 notes |
 | `POST` | `/notes` | Create a note |
 | `PATCH` | `/notes/{id}` | Update a note |
 | `GET` | `/notes/{id}/revisions` | List note revisions |
@@ -240,8 +239,6 @@ MCP tools currently exposed:
 - `create_note`
 - `update_note`
 - `list_bookmarks`
-- `export_notes`
-- `queue_insights`
 
 ## Local development without Docker
 

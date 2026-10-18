@@ -6,8 +6,6 @@
     "dev": "npm --prefix frontend run dev",
     "build": "npm --prefix frontend run build",
     "start": "npm --prefix frontend run start",
-    "test": "PYTHONPATH=backend python3 -m pytest -q backend",
-    "test:backend": "cd backend && python3 -m pytest -q",
     "docker:up": "colima start && DOCKER_BUILDKIT=0 docker-compose up --build -d",
     "docker:down": "docker-compose down"
   }

@@ -1,15 +1,13 @@
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-export type User = { id: string; username: string; email: string; workspace_id?: string };
+export type User = { id: string; username: string; email: string };
 export type Note = {
   id: string;
   title: string;
   content: string;
   category: string;
   icon: string;
-  content_format: 'markdown' | 'plain';
   bookmarked: boolean;
-  version: number;
   created_at: string;
   updated_at: string;
 };
@@ -19,7 +17,7 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
   const headers = new Headers(options.headers);
   headers.set('Content-Type', 'application/json');
   if (token) headers.set('Authorization', `Bearer ${token}`);
-  const response = await fetch(`${API_URL}${path}`, { ...options, headers, credentials: 'include' });
+  const response = await fetch(`${API_URL}${path}`, { ...options, headers });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.detail || data.error || 'Something went wrong');
   return data as T;
