@@ -22,6 +22,7 @@ class NoteCreate(BaseModel):
     content: str = Field(default="", max_length=100_000)
     category: str = Field(default="General", max_length=40)
     icon: str = Field(default="✦", max_length=8)
+    parent_id: Optional[str] = None
 
 
 class NoteUpdate(BaseModel):

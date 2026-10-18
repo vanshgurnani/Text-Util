@@ -253,7 +253,13 @@ def list_notes(
 @app.post("/notes", status_code=status.HTTP_201_CREATED)
 def create_note(payload: NoteCreate, user: dict = Depends(current_user)):
     now = datetime.now(timezone.utc)
-    note = {**payload.model_dump(), "owner_id": user["_id"], "bookmarked": False, "created_at": now, "updated_at": now}
+    note_data = payload.model_dump(exclude={"parent_id"})
+    if payload.parent_id:
+        parent = note_or_404(payload.parent_id, user)
+        note_data["parent_id"] = parent["_id"]
+    else:
+        note_data["parent_id"] = None
+    note = {**note_data, "owner_id": user["_id"], "bookmarked": False, "created_at": now, "updated_at": now}
     result = notes_collection().insert_one(note)
     note["_id"] = result.inserted_id
     return {"note": serialize_note(note)}
@@ -276,6 +282,8 @@ def update_note(note_id: str, payload: NoteUpdate, user: dict = Depends(current_
 @app.delete("/notes/{note_id}")
 def delete_note(note_id: str, user: dict = Depends(current_user)):
     note_or_404(note_id, user)
+    if notes_collection().find_one({"parent_id": ObjectId(note_id), **owner_filter(user)}):
+        raise HTTPException(status_code=409, detail="Move or delete this page's child pages before deleting it")
     notes_collection().delete_one({"_id": ObjectId(note_id), **owner_filter(user)})
     return {"success": True}
 

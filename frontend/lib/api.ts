@@ -7,6 +7,7 @@ export type Note = {
   content: string;
   category: string;
   icon: string;
+  parent_id: string | null;
   bookmarked: boolean;
   created_at: string;
   updated_at: string;

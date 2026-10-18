@@ -23,3 +23,12 @@
 .markdown-preview code { background:#f4f2ec; padding:2px 4px; border-radius:2px; font:12px 'DM Mono',monospace; }
 .markdown-preview pre code { padding:0; }
 .markdown-empty { color:#c3c0b8; }
+.page-tree { display:flex; flex-direction:column; gap:1px; margin:0 0 10px; }
+.page-tree-row { display:flex; align-items:center; min-width:0; height:30px; border-radius:4px; color:#78756e; }
+.page-tree-row:hover,.page-tree-row.active { background:#e4e8df; color:#405743; }
+.page-tree-toggle,.page-tree-title,.page-tree-add { height:26px; background:transparent; color:inherit; }
+.page-tree-toggle { width:22px; flex:none; color:#99958d; font-size:14px; }
+.page-tree-title { display:flex; align-items:center; gap:8px; min-width:0; flex:1; overflow:hidden; padding:0 2px; text-align:left; white-space:nowrap; text-overflow:ellipsis; font-size:11px; }
+.page-tree-title span { flex:none; font-size:12px; }
+.page-tree-add { width:24px; flex:none; opacity:0; color:#77746d; font-size:16px; }
+.page-tree-row:hover .page-tree-add,.page-tree-add:focus-visible { opacity:1; }

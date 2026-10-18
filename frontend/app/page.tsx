@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import MarkdownEditor from '@/app/components/MarkdownEditor';
+import PagesTree from '@/app/components/PagesTree';
 import { api, clearSession, Note, User } from '@/lib/api';
 
 const categories = ['All notes', 'Personal', 'Work', 'Ideas', 'Reading', 'General'];
@@ -94,7 +95,7 @@ export default function Workspace() {
     }
   }
 
-  async function createNote() {
+  async function createNote(parentId: string | null = null) {
     try {
       const result = await api<{ note: Note }>('/notes', {
         method: 'POST',
@@ -103,9 +104,10 @@ export default function Workspace() {
           content: '',
           category: 'General',
           icon: icons[notes.length % icons.length],
+          parent_id: parentId,
         }),
       });
-      setNotes([result.note, ...notes]);
+      setNotes(current => [result.note, ...current]);
       setSelected(result.note);
       flash('New note created');
     } catch (err) {
@@ -169,11 +171,22 @@ export default function Workspace() {
           <div><strong>{user.username}&apos;s space</strong><small>Personal workspace</small></div>
           <span className="chevron">⌄</span>
         </div>
-        <button className="new-note-button" onClick={createNote}><span>＋</span> New note <kbd>⌘ N</kbd></button>
+        <button className="new-note-button" onClick={() => createNote()}><span>＋</span> New page <kbd>⌘ N</kbd></button>
         <nav>
           <p className="nav-label">LIBRARY</p>
           <button className={category === 'All notes' ? 'nav-item active' : 'nav-item'} onClick={() => setCategory('All notes')}><span>▤</span> All notes <b>{notes.length}</b></button>
           <button className={category === 'Favorites' ? 'nav-item active' : 'nav-item'} onClick={() => setCategory('Favorites')}><span>♡</span> Favorites</button>
+          <p className="nav-label categories-label">PRIVATE <button aria-label="Create page" onClick={() => createNote()}>＋</button></p>
+          <PagesTree
+            notes={notes}
+            selectedId={selected?.id}
+            onSelect={note => {
+              setCategory('All notes');
+              setSearch('');
+              setSelected(note);
+            }}
+            onCreateChild={parentId => createNote(parentId)}
+          />
           <p className="nav-label categories-label">CATEGORIES <button onClick={() => setCategory('General')}>＋</button></p>
           {categories.slice(1).map(item => (
             <button key={item} className={category === item ? 'nav-item active' : 'nav-item'} onClick={() => setCategory(item)}>
@@ -223,7 +236,7 @@ export default function Workspace() {
                 <div className="empty-icon">✦</div>
                 <h3>Your space is waiting</h3>
                 <p>Capture an idea, a thought, or anything worth keeping.</p>
-                <button className="primary-button" onClick={createNote}>Create your first note <span>→</span></button>
+                <button className="primary-button" onClick={() => createNote()}>Create your first note <span>→</span></button>
               </div>
             ) : (
               <div className={view === 'grid' ? 'note-list grid-view' : 'note-list'}>
