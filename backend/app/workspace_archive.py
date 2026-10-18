@@ -1,12 +1,10 @@
 from __future__ import annotations
 
 import io
-import json
 import re
 import unicodedata
 import zipfile
 import zlib
-from datetime import datetime, timezone
 from pathlib import PurePosixPath
 from typing import Any
 from urllib.parse import quote
@@ -16,8 +14,6 @@ from pydantic import ValidationError
 from .schemas import NoteCreate
 
 
-ARCHIVE_FORMAT = "noteform-workspace"
-ARCHIVE_VERSION = 1
 MAX_ARCHIVE_BYTES = 20 * 1024 * 1024
 MAX_ARCHIVE_NOTES = 500
 MAX_ARCHIVE_ENTRIES = MAX_ARCHIVE_NOTES * 2 + 1
@@ -69,23 +65,6 @@ def create_workspace_archive(notes: list[dict[str, Any]]) -> bytes:
         paths[note_id] = f"{parent_path}/{filename}"
         return paths[note_id]
 
-    manifest_notes = []
-    for note in notes:
-        path = note_path(note["id"])
-        manifest_notes.append({
-            "id": note["id"],
-            "parent_id": None if note.get("inbox") else note.get("parent_id"),
-            "path": path,
-            "title": note.get("title", "Untitled"),
-            "category": note.get("category", "General"),
-            "icon": note.get("icon", "✦"),
-            "bookmarked": bool(note.get("bookmarked", False)),
-            "inbox": bool(note.get("inbox", False)),
-            "source_url": note.get("source_url"),
-            "created_at": note.get("created_at"),
-            "updated_at": note.get("updated_at"),
-        })
-
     markdown_files = [(note_path(note["id"]), _markdown_for(note)) for note in notes]
     total_size = sum(len(markdown.encode("utf-8")) for _, markdown in markdown_files)
     if total_size > MAX_UNCOMPRESSED_BYTES:
@@ -93,14 +72,6 @@ def create_workspace_archive(notes: list[dict[str, Any]]) -> bytes:
 
     output = io.BytesIO()
     with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as archive:
-        archive.writestr(
-            "manifest.json",
-            json.dumps(
-                {"format": ARCHIVE_FORMAT, "version": ARCHIVE_VERSION, "notes": manifest_notes},
-                ensure_ascii=False,
-                indent=2,
-            ),
-        )
         for path, markdown in markdown_files:
             archive.writestr(path, markdown)
     result = output.getvalue()
@@ -151,132 +122,62 @@ def parse_workspace_archive(data: bytes) -> list[dict[str, Any]]:
                 raise ValueError("Archive expands beyond the 20 MB import limit")
             files[entry.filename] = entry
 
-        manifest_info = files.get("manifest.json")
-        if not manifest_info:
-            raise ValueError("Archive is missing manifest.json; import a Noteform Markdown ZIP export")
-        if manifest_info.file_size > 5 * 1024 * 1024:
-            raise ValueError("Archive manifest is too large")
-        try:
-            manifest = json.loads(archive.read(manifest_info).decode("utf-8"))
-        except (UnicodeDecodeError, json.JSONDecodeError, RuntimeError, EOFError, RecursionError, zlib.error, NotImplementedError) as exc:
-            raise ValueError("Archive manifest must be valid UTF-8 JSON") from exc
-        if (
-            not isinstance(manifest, dict)
-            or manifest.get("format") != ARCHIVE_FORMAT
-            or manifest.get("version") != ARCHIVE_VERSION
-            or not isinstance(manifest.get("notes"), list)
-        ):
-            raise ValueError("Unsupported Noteform archive format or version")
+        if len(files) > MAX_ARCHIVE_NOTES:
+            raise ValueError("Archive contains more than 500 Markdown pages")
+        if any(PurePosixPath(name).suffix.lower() != ".md" for name in files):
+            raise ValueError("Archive may contain Markdown files only")
 
-        records = manifest["notes"]
-        if len(records) > MAX_ARCHIVE_NOTES:
-            raise ValueError("Archive contains more than 500 pages")
-        ids: set[str] = set()
-        paths: set[str] = set()
-        normalized: list[dict[str, Any]] = []
-        expected_files = {"manifest.json"}
-
-        for record in records:
-            if not isinstance(record, dict):
-                raise ValueError("Archive contains an invalid page record")
-            note_id = record.get("id")
-            path_value = record.get("path")
-            if not isinstance(note_id, str) or not note_id or len(note_id) > 128 or note_id in ids:
-                raise ValueError("Archive contains an invalid or duplicate page id")
-            if not isinstance(path_value, str):
-                raise ValueError("Archive page is missing its Markdown file path")
-            path = PurePosixPath(path_value)
-            if (
-                path.is_absolute()
-                or "\\" in path_value
-                or path.suffix.lower() != ".md"
-                or any(part in {"", ".", ".."} for part in path.parts)
-                or path_value not in files
-                or path_value in paths
-            ):
-                raise ValueError("Archive contains an invalid or duplicate Markdown path")
-            ids.add(note_id)
-            paths.add(path_value)
-            expected_files.add(path_value)
-
+        page_paths = set(files)
+        pages: list[dict[str, Any]] = []
+        for path_name, info in files.items():
             try:
-                markdown = archive.read(files[path_value]).decode("utf-8")
+                markdown = archive.read(info).decode("utf-8-sig")
             except (UnicodeDecodeError, RuntimeError, EOFError, zipfile.BadZipFile, zlib.error, NotImplementedError) as exc:
-                raise ValueError(f"{path_value} is not a readable UTF-8 Markdown file") from exc
-            manifest_title = str(record.get("title", "Untitled"))
-            title = manifest_title
+                raise ValueError(f"{path_name} is not a readable UTF-8 Markdown file") from exc
+
+            path = PurePosixPath(path_name)
             first_line, separator, remaining = markdown.partition("\n")
             if first_line.startswith("# "):
-                heading = first_line[2:]
-                title = manifest_title if heading == _markdown_title(manifest_title) else heading.strip()
+                title = first_line[2:].strip() or "Untitled"
                 content = remaining[1:] if separator and remaining.startswith("\n") else remaining
             else:
+                title = path.stem.replace("_", " ").strip() or "Untitled"
                 content = markdown
-            source_url = record.get("source_url")
-            if isinstance(source_url, str) and source_url:
-                safe_url = quote(source_url, safe=MARKDOWN_URL_SAFE)
-                source_marker = f"\n\n[Original source](<{safe_url}>)."
-                if content.endswith(source_marker):
-                    content = content[:-len(source_marker)]
+
+            parent_id = None
+            for index in range(len(path.parts) - 2, -1, -1):
+                folder_parts = path.parts[:index]
+                folder_name = path.parts[index]
+                candidate = PurePosixPath(*folder_parts, f"{folder_name}.md").as_posix()
+                if candidate in page_paths:
+                    parent_id = candidate
+                    break
+
+            inbox = bool(path.parts and path.parts[0].casefold() == "inbox")
+            if inbox:
+                parent_id = None
 
             try:
-                validated = NoteCreate(
-                    title=title,
-                    content=content,
-                    category=record.get("category", "General"),
-                    icon=record.get("icon", "✦"),
-                    source_url=source_url,
-                    inbox=record.get("inbox", False),
-                )
+                validated = _validate_markdown_page(title, content, inbox)
             except ValidationError as exc:
                 raise ValueError(f"Page '{title[:80]}' has invalid or oversized fields") from exc
-            bookmarked = record.get("bookmarked", False)
-            if not isinstance(bookmarked, bool):
-                raise ValueError(f"Page '{title[:80]}' has an invalid bookmark value")
-            normalized.append({
-                "id": note_id,
-                "path": path_value,
-                "parent_id": record.get("parent_id"),
+
+            pages.append({
+                "id": path_name,
+                "path": path_name,
+                "parent_id": parent_id,
                 "title": validated.title,
                 "content": validated.content,
                 "category": validated.category,
                 "icon": validated.icon,
-                "source_url": validated.source_url,
+                "source_url": None,
                 "inbox": validated.inbox,
-                "bookmarked": bookmarked,
-                "created_at": _parse_datetime(record.get("created_at")),
-                "updated_at": _parse_datetime(record.get("updated_at")),
+                "bookmarked": False,
+                "created_at": None,
+                "updated_at": None,
             })
-
-        if files.keys() != expected_files:
-            raise ValueError("Archive contains files outside its Noteform Markdown export")
-
-        by_id = {note["id"]: note for note in normalized}
-        for note in normalized:
-            parent_id = note["parent_id"]
-            if parent_id is not None and (not isinstance(parent_id, str) or parent_id not in by_id):
-                raise ValueError("Archive refers to a missing parent page")
-            if note["inbox"] and parent_id is not None:
-                raise ValueError("Inbox captures cannot be nested under another page")
-
-        for note in normalized:
-            seen: set[str] = set()
-            parent_id = note["id"]
-            while parent_id is not None:
-                if parent_id in seen:
-                    raise ValueError("Archive contains a circular page hierarchy")
-                seen.add(parent_id)
-                parent_id = by_id[parent_id]["parent_id"]
-    return normalized
+    return pages
 
 
-def _parse_datetime(value: Any) -> datetime | None:
-    if value is None:
-        return None
-    if not isinstance(value, str) or len(value) > 64:
-        raise ValueError("Archive contains an invalid page timestamp")
-    try:
-        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    except ValueError as exc:
-        raise ValueError("Archive contains an invalid page timestamp") from exc
-    return parsed.replace(tzinfo=timezone.utc) if parsed.tzinfo is None else parsed
+def _validate_markdown_page(title: str, content: str, inbox: bool) -> NoteCreate:
+    return NoteCreate(title=title, content=content, inbox=inbox)

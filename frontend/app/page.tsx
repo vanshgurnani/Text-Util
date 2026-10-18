@@ -782,12 +782,12 @@ export default function Workspace() {
             <div className="mcp-symbol">⇄</div>
             <p className="eyebrow">YOUR DATA · YOUR CHOICE</p>
             <h2 id="portability-heading">Take your workspace with you</h2>
-            <p className="muted modal-copy">Export readable Markdown pages in a ZIP, or add pages from a Noteform export. Imports never replace your existing notes.</p>
+            <p className="muted modal-copy">Export readable Markdown pages in a ZIP, or import Markdown files and folders. Imports never replace your existing notes.</p>
             <button className="primary-button portability-export" onClick={() => void exportWorkspace()} disabled={exportingWorkspace}>
               {exportingWorkspace ? 'Preparing export…' : 'Download workspace ZIP'} <span>↓</span>
             </button>
             <label className="archive-picker">
-              Import a Noteform ZIP
+              Import a Markdown ZIP
               <input
                 type="file"
                 accept=".zip,application/zip"
@@ -811,7 +811,7 @@ export default function Workspace() {
                 </button>
               </div>
             )}
-            <p className="archive-note">Preserves page hierarchy, Markdown content, bookmarks, source URLs, and linked media URLs. Binary attachments are not supported. Limit: 500 pages and 20 MB.</p>
+            <p className="archive-note">Imports Markdown only, with nesting inferred when a folder matches a Markdown page. Exports contain Markdown files only and no manifest. Categories, bookmarks, and timestamps are not included; links remain in the page text. Limit: 500 pages and 20 MB.</p>
             {importError && <p className="form-error" role="alert">{importError}</p>}
           </section>
         </div>

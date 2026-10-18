@@ -203,18 +203,20 @@ workflow from a template without copying old notes manually.
 
 ### 7. Keep user data portable
 
-- [x] Export all pages as readable Markdown in a Noteform ZIP, with nested folder
-  paths and a manifest preserving hierarchy, bookmarks, source URLs, and dates.
-- [x] Preview a Noteform ZIP's page count and add the pages without replacing
-  existing workspace data.
-- [x] Preserve Markdown content, including externally linked media URLs.
-- [ ] Add arbitrary Markdown/folder imports, JSON backup, and binary attachment
-  storage/export; these are not supported by the current Noteform ZIP format.
+- [x] Export all pages as readable Markdown files in a manifest-free ZIP, with
+  nested folder paths.
+- [x] Preview Markdown ZIP imports and add pages without replacing existing
+  workspace data.
+- [x] Import Markdown files and infer nesting when a folder matches a Markdown
+  page; preserve links and media references present in the Markdown body.
+- [ ] Preserve categories, bookmarks, source URL metadata, and timestamps, or
+  package binary attachments; these are not represented in the Markdown-only
+  format.
 - Enforce the current import/export limits of 500 pages and 20 MB.
 
-**Done when:** a user can export and re-import a Noteform ZIP without losing
-page hierarchy, Markdown content, source links, bookmarks, or linked media
-references. This first version does not package binary attachments.
+**Done when:** a user can export and re-import a Markdown-only ZIP with the
+page hierarchy and Markdown content intact. The ZIP contains no JSON manifest;
+other Noteform-only metadata and binary attachments are not included.
 
 ## Stage 3 — Turn pages into useful work
 
@@ -315,9 +317,9 @@ analytics choices to users.
    protection, and mobile editing.
 2. **Capture and find:** Inbox, one excellent capture path, global
    command/search palette, search excerpts, and keyboard navigation.
-3. **Make switching safer:** [x] Noteform Markdown ZIP import/export with
-   preserved hierarchy, links, and page metadata. Arbitrary Markdown imports
-   and binary attachments remain future work.
+3. **Make switching safer:** [x] Manifest-free Markdown ZIP import/export with
+   folder hierarchy inferred from Markdown pages. Noteform-only metadata and
+   binary attachments remain future work.
 4. **Connect knowledge:** user-created tags, backlinks, and templates, guided
    by the capture and retrieval patterns users actually adopt.
 

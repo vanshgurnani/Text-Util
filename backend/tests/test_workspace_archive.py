@@ -1,5 +1,4 @@
 import io
-import json
 import unittest
 import zipfile
 
@@ -52,18 +51,17 @@ class WorkspaceArchiveTests(unittest.TestCase):
 
     def test_round_trip_preserves_page_content_metadata_and_hierarchy(self):
         imported = parse_workspace_archive(create_workspace_archive(self.notes))
-        by_id = {note["id"]: note for note in imported}
+        by_title = {note["title"]: note for note in imported}
+        archive = zipfile.ZipFile(io.BytesIO(create_workspace_archive(self.notes)))
 
-        self.assertEqual(by_id["root-1"]["content"], self.notes[0]["content"])
-        self.assertEqual(by_id["root-1"]["title"], self.notes[0]["title"])
-        self.assertEqual(by_id["root-1"]["parent_id"], None)
-        self.assertEqual(by_id["child-2"]["parent_id"], "root-1")
-        self.assertEqual(by_id["root-1"]["source_url"], self.notes[0]["source_url"])
-        self.assertTrue(by_id["root-1"]["bookmarked"])
-        self.assertTrue(by_id["inbox-3"]["inbox"])
-        self.assertEqual(by_id["root-1"]["category"], "Reading")
-        self.assertEqual(by_id["root-1"]["icon"], "◈")
-        self.assertEqual(by_id["root-1"]["created_at"].isoformat(), self.notes[0]["created_at"])
+        self.assertNotIn("manifest.json", archive.namelist())
+        self.assertEqual(by_title["Research  Notes"]["parent_id"], None)
+        self.assertEqual(by_title["Nested page"]["parent_id"], by_title["Research  Notes"]["id"])
+        self.assertIn(self.notes[0]["content"], by_title["Research  Notes"]["content"])
+        self.assertIn("https://example.test/page?a=1&b=two", by_title["Research  Notes"]["content"])
+        self.assertTrue(by_title["Captured link"]["inbox"])
+        self.assertEqual(by_title["Research  Notes"]["category"], "General")
+        self.assertFalse(by_title["Research  Notes"]["bookmarked"])
 
     def test_rejects_invalid_zip_and_unsafe_paths(self):
         with self.assertRaisesRegex(ValueError, "valid Noteform Markdown ZIP"):
@@ -90,42 +88,29 @@ class WorkspaceArchiveTests(unittest.TestCase):
 
     def test_rejects_extra_binary_files(self):
         output = io.BytesIO()
-        with zipfile.ZipFile(io.BytesIO(create_workspace_archive(self.notes))) as source:
-            manifest = source.read("manifest.json")
-            files = {name: source.read(name) for name in source.namelist() if name != "manifest.json"}
         with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as archive:
-            archive.writestr("manifest.json", manifest)
-            for name, contents in files.items():
-                archive.writestr(name, contents)
+            archive.writestr("page.md", "# Page\n\nBody")
             archive.writestr("assets/image.png", b"binary")
-        with self.assertRaisesRegex(ValueError, "outside its Noteform Markdown export"):
+        with self.assertRaisesRegex(ValueError, "Markdown files only"):
             parse_workspace_archive(output.getvalue())
 
     def test_rejects_more_than_500_pages(self):
         output = io.BytesIO()
-        manifest = {
-            "format": "noteform-workspace",
-            "version": 1,
-            "notes": [{} for _ in range(501)],
-        }
         with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as archive:
-            archive.writestr("manifest.json", json.dumps(manifest))
-        with self.assertRaisesRegex(ValueError, "more than 500 pages"):
+            for index in range(501):
+                archive.writestr(f"page-{index}.md", "# Page")
+        with self.assertRaisesRegex(ValueError, "more than 500 Markdown pages"):
             parse_workspace_archive(output.getvalue())
 
-    def test_rejects_circular_parent_relationships(self):
+    def test_imports_a_markdown_only_zip_with_folder_hierarchy(self):
         output = io.BytesIO()
-        with zipfile.ZipFile(io.BytesIO(create_workspace_archive(self.notes))) as source:
-            manifest = json.loads(source.read("manifest.json"))
-            files = {name: source.read(name) for name in source.namelist() if name != "manifest.json"}
-        manifest["notes"][0]["parent_id"] = "child-2"
-        manifest["notes"][1]["parent_id"] = "root-1"
         with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as archive:
-            archive.writestr("manifest.json", json.dumps(manifest))
-            for name, contents in files.items():
-                archive.writestr(name, contents)
-        with self.assertRaisesRegex(ValueError, "circular page hierarchy"):
-            parse_workspace_archive(output.getvalue())
+            archive.writestr("Research.md", "# Research\n\nParent page")
+            archive.writestr("Research/Child.md", "# Child\n\nChild page")
+        imported = parse_workspace_archive(output.getvalue())
+        parent = next(note for note in imported if note["title"] == "Research")
+        child = next(note for note in imported if note["title"] == "Child")
+        self.assertEqual(child["parent_id"], parent["id"])
 
 
 if __name__ == "__main__":
