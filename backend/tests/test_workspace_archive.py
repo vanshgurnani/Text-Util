@@ -50,7 +50,7 @@ class WorkspaceArchiveTests(unittest.TestCase):
         ]
 
     def test_round_trip_preserves_page_content_metadata_and_hierarchy(self):
-        imported = parse_workspace_archive(create_workspace_archive(self.notes))
+        imported = parse_workspace_archive(create_workspace_archive(self.notes))["pages"]
         by_title = {note["title"]: note for note in imported}
         archive = zipfile.ZipFile(io.BytesIO(create_workspace_archive(self.notes)))
 
@@ -64,7 +64,7 @@ class WorkspaceArchiveTests(unittest.TestCase):
         self.assertFalse(by_title["Research  Notes"]["bookmarked"])
 
     def test_rejects_invalid_zip_and_unsafe_paths(self):
-        with self.assertRaisesRegex(ValueError, "valid Noteform Markdown ZIP"):
+        with self.assertRaisesRegex(ValueError, "valid ZIP archive"):
             parse_workspace_archive(b"not a zip")
 
         output = io.BytesIO()
@@ -83,15 +83,29 @@ class WorkspaceArchiveTests(unittest.TestCase):
             for name, contents in files.items():
                 archive.writestr(name, contents)
 
-        imported = parse_workspace_archive(output.getvalue())
+        imported = parse_workspace_archive(output.getvalue())["pages"]
         self.assertEqual(len(imported), len(self.notes))
 
-    def test_rejects_extra_binary_files(self):
+    def test_accepts_media_other_files_and_macos_metadata(self):
+        output = io.BytesIO()
+        with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+            archive.writestr("page.markdown", "# Page\n\nBody")
+            archive.writestr("assets/image.png", b"image")
+            archive.writestr("references/paper.pdf", b"pdf")
+            archive.writestr("__MACOSX/._page.markdown", b"metadata")
+            archive.writestr(".DS_Store", b"metadata")
+
+        imported = parse_workspace_archive(output.getvalue())
+        self.assertEqual(len(imported["pages"]), 1)
+        self.assertEqual(imported["pages"][0]["title"], "Page")
+        self.assertEqual(imported["skipped_files"], 2)
+
+    def test_rejects_executable_files(self):
         output = io.BytesIO()
         with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as archive:
             archive.writestr("page.md", "# Page\n\nBody")
-            archive.writestr("assets/image.png", b"binary")
-        with self.assertRaisesRegex(ValueError, "Markdown files only"):
+            archive.writestr("scripts/run.sh", "echo no")
+        with self.assertRaisesRegex(ValueError, "executable files"):
             parse_workspace_archive(output.getvalue())
 
     def test_rejects_more_than_500_pages(self):
@@ -107,7 +121,7 @@ class WorkspaceArchiveTests(unittest.TestCase):
         with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as archive:
             archive.writestr("Research.md", "# Research\n\nParent page")
             archive.writestr("Research/Child.md", "# Child\n\nChild page")
-        imported = parse_workspace_archive(output.getvalue())
+        imported = parse_workspace_archive(output.getvalue())["pages"]
         parent = next(note for note in imported if note["title"] == "Research")
         child = next(note for note in imported if note["title"] == "Child")
         self.assertEqual(child["parent_id"], parent["id"])

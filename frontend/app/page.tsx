@@ -50,7 +50,7 @@ export default function Workspace() {
   const [commandIndex, setCommandIndex] = useState(0);
   const [showPortability, setShowPortability] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
-  const [importPreview, setImportPreview] = useState<{ count: number; pages: { title: string; path: string }[] } | null>(null);
+  const [importPreview, setImportPreview] = useState<{ count: number; skipped_files: number; pages: { title: string; path: string }[] } | null>(null);
   const [importError, setImportError] = useState('');
   const [previewingImport, setPreviewingImport] = useState(false);
   const [importingWorkspace, setImportingWorkspace] = useState(false);
@@ -806,12 +806,15 @@ export default function Workspace() {
                   <ul>{importPreview.pages.map((page, index) => <li key={`${page.path}-${index}`}>{page.title}</li>)}</ul>
                 )}
                 {importPreview.count > importPreview.pages.length && <small>and {importPreview.count - importPreview.pages.length} more</small>}
+                {importPreview.skipped_files > 0 && (
+                  <small>{importPreview.skipped_files} asset or other non-Markdown file(s) accepted but not stored. Binary attachments are not supported yet.</small>
+                )}
                 <button className="primary-button" onClick={() => void confirmWorkspaceImport()} disabled={importingWorkspace || importPreview.count === 0}>
                   {importingWorkspace ? 'Importing…' : `Add ${importPreview.count} ${importPreview.count === 1 ? 'page' : 'pages'}`}
                 </button>
               </div>
             )}
-            <p className="archive-note">Imports Markdown only, with nesting inferred when a folder matches a Markdown page. Exports contain Markdown files only and no manifest. Categories, bookmarks, and timestamps are not included; links remain in the page text. Limit: 500 pages and 20 MB.</p>
+            <p className="archive-note">Imports .md and .markdown pages, and accepts linked media/assets and common ZIP metadata. Folder nesting is inferred when a folder matches a Markdown page. Non-Markdown files are not stored, and executable files are rejected. Exports contain Markdown files only and no manifest. Limit: 500 pages and 20 MB.</p>
             {importError && <p className="form-error" role="alert">{importError}</p>}
           </section>
         </div>

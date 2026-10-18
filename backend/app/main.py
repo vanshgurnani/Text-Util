@@ -351,7 +351,7 @@ def export_workspace(user: dict = Depends(current_user)):
     )
 
 
-async def read_workspace_upload(file: UploadFile) -> list[dict[str, Any]]:
+async def read_workspace_upload(file: UploadFile) -> dict[str, Any]:
     data = await file.read(MAX_ARCHIVE_BYTES + 1)
     if len(data) > MAX_ARCHIVE_BYTES:
         raise HTTPException(status_code=413, detail="Workspace archive exceeds the 20 MB import limit")
@@ -363,16 +363,19 @@ async def read_workspace_upload(file: UploadFile) -> list[dict[str, Any]]:
 
 @app.post("/workspace/import/preview")
 async def preview_workspace_import(file: UploadFile = File(...), user: dict = Depends(current_user)):
-    notes = await read_workspace_upload(file)
+    archive = await read_workspace_upload(file)
+    notes = archive["pages"]
     return {
         "count": len(notes),
+        "skipped_files": archive["skipped_files"],
         "pages": [{"title": note["title"], "path": note["path"]} for note in notes[:5]],
     }
 
 
 @app.post("/workspace/import")
 async def import_workspace(file: UploadFile = File(...), user: dict = Depends(current_user)):
-    notes = await read_workspace_upload(file)
+    archive = await read_workspace_upload(file)
+    notes = archive["pages"]
     if not notes:
         return {"imported": 0}
     now = datetime.now(timezone.utc)

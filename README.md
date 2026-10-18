@@ -16,7 +16,9 @@ Noteform is a calm, Notion-inspired personal notes workspace. Users can create, 
 - Quick-capture Inbox for thoughts and source links to organize later.
 - Manifest-free Markdown ZIP import/export for Markdown pages and nested folders.
   Imports preserve hierarchy when a folder matches a Markdown page; categories,
-  bookmarks, and timestamps are not included (500-page and 20 MB limits).
+  bookmarks, and timestamps are not included. ZIP imports tolerate linked
+  assets and macOS metadata, but do not persist non-Markdown files (500-page
+  and 20 MB limits).
 - Debounced editor autosave with concurrent-edit conflict handling.
 - Responsive Notion-inspired two-pane workspace UI.
 - JWT session authentication for the web application.

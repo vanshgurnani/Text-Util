@@ -209,14 +209,17 @@ workflow from a template without copying old notes manually.
   workspace data.
 - [x] Import Markdown files and infer nesting when a folder matches a Markdown
   page; preserve links and media references present in the Markdown body.
+- [x] Accept `.md` and `.markdown` files, tolerate linked media/other
+  non-executable files, and ignore common macOS ZIP metadata.
 - [ ] Preserve categories, bookmarks, source URL metadata, and timestamps, or
-  package binary attachments; these are not represented in the Markdown-only
-  format.
+  store/import binary attachments; non-Markdown files are currently accepted
+  but skipped.
 - Enforce the current import/export limits of 500 pages and 20 MB.
 
 **Done when:** a user can export and re-import a Markdown-only ZIP with the
 page hierarchy and Markdown content intact. The ZIP contains no JSON manifest;
-other Noteform-only metadata and binary attachments are not included.
+other Noteform-only metadata and binary attachments are not included. Media
+files in imported ZIPs are tolerated but not stored yet.
 
 ## Stage 3 — Turn pages into useful work
 

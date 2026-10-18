@@ -65,7 +65,7 @@ async function uploadWorkspaceFile<T>(path: string, file: File): Promise<T> {
 }
 
 export function previewWorkspaceImport(file: File) {
-  return uploadWorkspaceFile<{ count: number; pages: { title: string; path: string }[] }>(
+  return uploadWorkspaceFile<{ count: number; skipped_files: number; pages: { title: string; path: string }[] }>(
     '/workspace/import/preview',
     file,
   );

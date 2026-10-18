@@ -19,6 +19,19 @@ MAX_ARCHIVE_NOTES = 500
 MAX_ARCHIVE_ENTRIES = MAX_ARCHIVE_NOTES * 2 + 1
 MAX_UNCOMPRESSED_BYTES = 20 * 1024 * 1024
 MARKDOWN_URL_SAFE = ":/?#[]@!$&'()*+,;=%"
+MARKDOWN_SUFFIXES = {".md", ".markdown"}
+EXECUTABLE_SUFFIXES = {
+    ".app",
+    ".appimage",
+    ".bat",
+    ".cmd",
+    ".com",
+    ".dll",
+    ".exe",
+    ".msi",
+    ".ps1",
+    ".sh",
+}
 
 
 def _slug(value: str) -> str:
@@ -80,13 +93,13 @@ def create_workspace_archive(notes: list[dict[str, Any]]) -> bytes:
     return result
 
 
-def parse_workspace_archive(data: bytes) -> list[dict[str, Any]]:
+def parse_workspace_archive(data: bytes) -> dict[str, Any]:
     if not data or len(data) > MAX_ARCHIVE_BYTES:
         raise ValueError("Archive must be between 1 byte and 20 MB")
     try:
         archive = zipfile.ZipFile(io.BytesIO(data))
     except zipfile.BadZipFile as exc:
-        raise ValueError("Upload a valid Noteform Markdown ZIP export") from exc
+        raise ValueError("Upload a valid ZIP archive containing Markdown pages") from exc
 
     with archive:
         entries = archive.infolist()
@@ -106,15 +119,16 @@ def parse_workspace_archive(data: bytes) -> list[dict[str, Any]]:
                 or (path.parts and path.parts[0].endswith(":"))
             ):
                 raise ValueError("Archive contains an unsafe file path")
+            file_type = (entry.external_attr >> 16) & 0o170000
+            if entry.flag_bits & 0x1:
+                raise ValueError("Encrypted ZIP entries are not supported")
+            allowed_types = {0, 0o040000} if is_directory else {0, 0o100000}
+            if file_type not in allowed_types:
+                raise ValueError("Archive may contain only regular files and directories")
             if is_directory:
                 continue
             if entry.filename in files:
                 raise ValueError("Archive contains duplicate file paths")
-            file_type = (entry.external_attr >> 16) & 0o170000
-            if entry.flag_bits & 0x1:
-                raise ValueError("Encrypted ZIP entries are not supported")
-            if file_type not in {0, 0o100000}:
-                raise ValueError("Archive may contain only regular files and directories")
             if entry.compress_type not in {zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED}:
                 raise ValueError("Archive uses an unsupported compression method")
             total_size += entry.file_size
@@ -122,14 +136,24 @@ def parse_workspace_archive(data: bytes) -> list[dict[str, Any]]:
                 raise ValueError("Archive expands beyond the 20 MB import limit")
             files[entry.filename] = entry
 
-        if len(files) > MAX_ARCHIVE_NOTES:
+        macos_files = sum(_is_macos_metadata(name) for name in files)
+        importable_files = {
+            name: info for name, info in files.items()
+            if not _is_macos_metadata(name)
+        }
+        markdown_files = {
+            name: info for name, info in importable_files.items()
+            if PurePosixPath(name).suffix.lower() in MARKDOWN_SUFFIXES
+        }
+        if len(markdown_files) > MAX_ARCHIVE_NOTES:
             raise ValueError("Archive contains more than 500 Markdown pages")
-        if any(PurePosixPath(name).suffix.lower() != ".md" for name in files):
-            raise ValueError("Archive may contain Markdown files only")
+        for name in importable_files:
+            if any(PurePosixPath(part).suffix.lower() in EXECUTABLE_SUFFIXES for part in PurePosixPath(name).parts):
+                raise ValueError("Archive may not contain executable files")
 
-        page_paths = set(files)
+        page_paths = set(markdown_files)
         pages: list[dict[str, Any]] = []
-        for path_name, info in files.items():
+        for path_name, info in markdown_files.items():
             try:
                 markdown = archive.read(info).decode("utf-8-sig")
             except (UnicodeDecodeError, RuntimeError, EOFError, zipfile.BadZipFile, zlib.error, NotImplementedError) as exc:
@@ -148,9 +172,12 @@ def parse_workspace_archive(data: bytes) -> list[dict[str, Any]]:
             for index in range(len(path.parts) - 2, -1, -1):
                 folder_parts = path.parts[:index]
                 folder_name = path.parts[index]
-                candidate = PurePosixPath(*folder_parts, f"{folder_name}.md").as_posix()
-                if candidate in page_paths:
-                    parent_id = candidate
+                candidates = (
+                    PurePosixPath(*folder_parts, f"{folder_name}{suffix}").as_posix()
+                    for suffix in MARKDOWN_SUFFIXES
+                )
+                parent_id = next((candidate for candidate in candidates if candidate in page_paths), None)
+                if parent_id is not None:
                     break
 
             inbox = bool(path.parts and path.parts[0].casefold() == "inbox")
@@ -176,7 +203,18 @@ def parse_workspace_archive(data: bytes) -> list[dict[str, Any]]:
                 "created_at": None,
                 "updated_at": None,
             })
-    return pages
+        skipped_files = len(importable_files) - len(markdown_files)
+    return {"pages": pages, "skipped_files": skipped_files}
+
+
+def _is_macos_metadata(path_name: str) -> bool:
+    path = PurePosixPath(path_name)
+    return (
+        "__MACOSX" in path.parts
+        or path.name in {".DS_Store", ".AppleDouble"}
+        or path.name.startswith("._")
+        or path.name in {"Thumbs.db", "desktop.ini"}
+    )
 
 
 def _validate_markdown_page(title: str, content: str, inbox: bool) -> NoteCreate:
