@@ -108,7 +108,93 @@ def oauth_issuer() -> str:
 
 
 def oauth_error_page(message: str, code: int = 400):
-    body = f"<!doctype html><title>Noteform authorization</title><main style='font:16px system-ui;max-width:500px;margin:10vh auto'><h1>Noteform</h1><p>{html.escape(message)}</p></main>"
+    body = f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Authorization Error — NoteOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {{
+      --bg: #f7f7f5;
+      --card-bg: #ffffff;
+      --text: #37352f;
+      --muted: #6b7280;
+      --border: rgba(55, 53, 47, 0.12);
+    }}
+    @media (prefers-color-scheme: dark) {{
+      :root {{
+        --bg: #191919;
+        --card-bg: #222222;
+        --text: rgba(255, 255, 255, 0.92);
+        --muted: rgba(255, 255, 255, 0.55);
+        --border: rgba(255, 255, 255, 0.12);
+      }}
+    }}
+    * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+    body {{
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      -webkit-font-smoothing: antialiased;
+    }}
+    .error-card {{
+      width: 100%;
+      max-width: 440px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 36px 32px;
+      text-align: center;
+      box-shadow: 0 20px 48px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+    }}
+    .error-icon {{
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: rgba(235, 87, 87, 0.1);
+      color: #eb5757;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin: 0 auto 16px;
+    }}
+    h1 {{ font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--text); }}
+    p {{ font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 22px; }}
+    a {{
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 18px;
+      background: #2383e2;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      transition: background 0.15s ease;
+    }}
+    a:hover {{ background: #1a73e8; }}
+  </style>
+</head>
+<body>
+  <main class="error-card">
+    <div class="error-icon">⚠️</div>
+    <h1>Authorization Error</h1>
+    <p>{html.escape(message)}</p>
+    <a href="/">Return to NoteOS Home</a>
+  </main>
+</body>
+</html>"""
     return HTMLResponse(body, status_code=code, headers={"Cache-Control": "no-store"})
 
 
@@ -171,6 +257,273 @@ async def oauth_register(request: Request):
     return {"client_id": client_id, "client_name": payload.get("client_name", "MCP client"), "redirect_uris": redirect_uris, "token_endpoint_auth_method": "none"}
 
 
+def render_oauth_authorize_page(fields: dict, error: str = "", email_val: str = "") -> str:
+    hidden = "".join(f"<input type='hidden' name='{html.escape(key)}' value='{html.escape(str(value))}' />" for key, value in fields.items())
+    error_html = f"""
+    <div class="alert-error" role="alert">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span>{html.escape(error)}</span>
+    </div>
+    """ if error else ""
+
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Authorize Claude / MCP — NoteOS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {{
+      --bg: #f7f7f5;
+      --card-bg: #ffffff;
+      --text: #37352f;
+      --muted: #6b7280;
+      --border: rgba(55, 53, 47, 0.12);
+      --border-focus: #2383e2;
+      --primary: #2383e2;
+      --primary-hover: #1a73e8;
+    }}
+    @media (prefers-color-scheme: dark) {{
+      :root {{
+        --bg: #191919;
+        --card-bg: #222222;
+        --text: rgba(255, 255, 255, 0.92);
+        --muted: rgba(255, 255, 255, 0.55);
+        --border: rgba(255, 255, 255, 0.12);
+        --border-focus: #2383e2;
+        --primary: #2383e2;
+        --primary-hover: #3b82f6;
+      }}
+    }}
+    * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+    body {{
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      -webkit-font-smoothing: antialiased;
+    }}
+    .auth-card {{
+      width: 100%;
+      max-width: 440px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 36px 32px;
+      box-shadow: 0 20px 48px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+    }}
+    .auth-header {{
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 24px;
+    }}
+    .brand-icon {{
+      width: 46px;
+      height: 46px;
+      border-radius: 10px;
+      background: rgba(35, 131, 226, 0.1);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(35, 131, 226, 0.2);
+    }}
+    .eyebrow {{
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }}
+    .title {{
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      margin-bottom: 6px;
+    }}
+    .subtitle {{
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.45;
+    }}
+    .scopes-box {{
+      background: rgba(55, 53, 47, 0.04);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 20px;
+      font-size: 12px;
+    }}
+    @media (prefers-color-scheme: dark) {{
+      .scopes-box {{ background: rgba(255, 255, 255, 0.04); }}
+    }}
+    .scopes-title {{
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }}
+    .scopes-list {{
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      color: var(--muted);
+    }}
+    .scopes-list li {{
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }}
+    .scopes-list svg {{
+      color: #0e9f6e;
+      flex-shrink: 0;
+    }}
+    .alert-error {{
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      background: #fdf2f2;
+      border: 1px solid rgba(235, 87, 87, 0.25);
+      color: #9b1c1c;
+      font-size: 12px;
+      margin-bottom: 18px;
+    }}
+    @media (prefers-color-scheme: dark) {{
+      .alert-error {{
+        background: rgba(235, 87, 87, 0.15);
+        color: #fca5a5;
+        border-color: rgba(235, 87, 87, 0.3);
+      }}
+    }}
+    .form-group {{
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+    }}
+    .form-label {{
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+    }}
+    .form-input {{
+      width: 100%;
+      height: 38px;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 14px;
+      color: var(--text);
+      background: transparent;
+      outline: none;
+      transition: all 0.15s ease;
+    }}
+    .form-input:focus {{
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 2.5px rgba(35, 131, 226, 0.2);
+    }}
+    .submit-btn {{
+      width: 100%;
+      height: 40px;
+      background: var(--primary);
+      color: #ffffff;
+      border: 0;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 1px 3px rgba(35, 131, 226, 0.3);
+      transition: all 0.15s ease;
+      margin-top: 8px;
+    }}
+    .submit-btn:hover {{
+      background: var(--primary-hover);
+      box-shadow: 0 2px 6px rgba(35, 131, 226, 0.4);
+    }}
+    .footer-note {{
+      margin-top: 20px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.4;
+    }}
+  </style>
+</head>
+<body>
+  <main class="auth-card">
+    <div class="auth-header">
+      <div class="brand-icon">✦</div>
+      <p class="eyebrow">NOTEOS CONNECT</p>
+      <h1 class="title">Authorize MCP Client</h1>
+      <p class="subtitle">Sign in to your NoteOS account to grant Claude or external assistant access to your workspace.</p>
+    </div>
+
+    {error_html}
+
+    <div class="scopes-box">
+      <div class="scopes-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span>Requested Capabilities</span>
+      </div>
+      <ul class="scopes-list">
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>Read & search workspace notes and tables</span>
+        </li>
+        <li>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>Create and update notes on your behalf</span>
+        </li>
+      </ul>
+    </div>
+
+    <form method="post" action="/oauth/authorize">
+      {hidden}
+      <div class="form-group">
+        <label class="form-label" for="email">Email</label>
+        <input class="form-input" id="email" name="email" type="email" value="{html.escape(email_val)}" placeholder="you@example.com" required autofocus />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <input class="form-input" id="password" name="password" type="password" placeholder="Enter your password" required />
+      </div>
+
+      <button class="submit-btn" type="submit">
+        <span>Authorize & Connect</span>
+        <span>→</span>
+      </button>
+    </form>
+
+    <p class="footer-note">
+      Your password is never shared with Claude or the MCP client. NoteOS generates a temporary, revocable OAuth session token.
+    </p>
+  </main>
+</body>
+</html>"""
+
+
 @app.get("/oauth/authorize", response_class=HTMLResponse)
 def oauth_authorize(
     response_type: str = Query(default=""), client_id: str = Query(default=""), redirect_uri: str = Query(default=""),
@@ -184,9 +537,7 @@ def oauth_authorize(
     if not valid_oauth_client(client_id, redirect_uri):
         return oauth_error_page("The OAuth client or redirect URI is not registered.")
     fields = {"response_type": response_type, "client_id": client_id, "redirect_uri": redirect_uri, "scope": scope, "state": state, "code_challenge": code_challenge, "code_challenge_method": code_challenge_method, "resource": resource}
-    hidden = "".join(f"<input type='hidden' name='{html.escape(key)}' value='{html.escape(value)}'>" for key, value in fields.items())
-    body = f"""<!doctype html><title>Connect Noteform</title><main style='font:16px system-ui;max-width:420px;margin:10vh auto;padding:28px;border:1px solid #ddd;border-radius:8px'><h1>Connect Noteform</h1><p>Sign in to let ChatGPT access your notes.</p><form method='post' action='/oauth/authorize'>{hidden}<label>Email<br><input name='email' type='email' required style='width:100%;padding:9px;margin:6px 0 14px'></label><label>Password<br><input name='password' type='password' required style='width:100%;padding:9px;margin:6px 0 18px'></label><button type='submit' style='padding:10px 16px'>Authorize</button></form></main>"""
-    return HTMLResponse(body, headers={"Cache-Control": "no-store"})
+    return HTMLResponse(render_oauth_authorize_page(fields), headers={"Cache-Control": "no-store"})
 
 
 @app.post("/oauth/authorize")
@@ -200,7 +551,8 @@ def oauth_authorize_submit(
         return oauth_error_page("This authorization request targets a different MCP resource.")
     user = users_collection().find_one({"email": email.lower()})
     if not user or not verify_password(password, user.get("password_hash", "")):
-        return oauth_error_page("Invalid Noteform email or password.")
+        fields = {"response_type": response_type, "client_id": client_id, "redirect_uri": redirect_uri, "scope": scope, "state": state, "code_challenge": code_challenge, "code_challenge_method": code_challenge_method, "resource": resource}
+        return HTMLResponse(render_oauth_authorize_page(fields, error="Invalid NoteOS email or password.", email_val=email), status_code=401, headers={"Cache-Control": "no-store"})
     code = f"nf_code_{secrets.token_urlsafe(40)}"
     oauth_codes_collection().insert_one({"code_hash": hash_mcp_token(code), "user_id": user["_id"], "client_id": client_id, "redirect_uri": redirect_uri, "code_challenge": code_challenge, "scope": scope, "resource": resource, "expires_at": datetime.now(timezone.utc) + timedelta(minutes=5)})
     query = {"code": code}

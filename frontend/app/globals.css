@@ -1846,45 +1846,464 @@ button {
   color: var(--notion-muted);
 }
 
-.connect-step {
-  border-top: 1px solid var(--notion-border);
-  padding: 14px 0;
+/* ==========================================================================
+   MCP & AI Assistant Connect Modal Redesign
+   ========================================================================== */
+.mcp-modal-redesign {
+  position: relative;
+  width: min(640px, 95vw);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--notion-paper);
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.22), 0 4px 16px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--notion-border-strong);
+  color: var(--notion-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", Roboto, sans-serif;
+}
+
+.mcp-header {
   display: flex;
-  gap: 12px;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
 }
-.connect-step span {
+
+.mcp-icon-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(35, 131, 226, 0.1);
+  color: var(--notion-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid rgba(35, 131, 226, 0.2);
+}
+
+.mcp-header-text {
+  flex: 1;
+}
+
+.mcp-header-text .eyebrow {
+  margin-bottom: 4px;
   font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--notion-blue);
   font-weight: 700;
-  color: var(--notion-light-muted);
 }
-.connect-step code {
-  display: block;
-  background: #f7f6f3;
-  padding: 6px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-  margin-top: 4px;
+
+.mcp-header-text h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 4px;
+  letter-spacing: -0.01em;
 }
-.connect-step button {
-  margin-left: auto;
+
+.mcp-header-text .modal-copy {
+  margin: 0;
+  font-size: 13px;
+  color: var(--notion-muted);
+  line-height: 1.45;
+}
+
+.mcp-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mcp-card {
+  background: #fbfbfa;
+  border: 1px solid var(--notion-border);
+  border-radius: 10px;
+  padding: 18px 20px;
+  transition: border-color 0.15s ease;
+}
+
+.mcp-card:hover {
+  border-color: var(--notion-border-strong);
+}
+
+.mcp-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.mcp-card-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mcp-icon-globe {
+  background: rgba(35, 131, 226, 0.12);
+  color: #2383e2;
+}
+
+.mcp-icon-key {
+  background: rgba(14, 159, 110, 0.12);
+  color: #0e9f6e;
+}
+
+.mcp-card-info {
+  flex: 1;
+}
+
+.mcp-card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.mcp-card-title-row h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--notion-text);
+}
+
+.mcp-badge-pill {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: rgba(35, 131, 226, 0.12);
+  color: #2383e2;
+  border: 1px solid rgba(35, 131, 226, 0.2);
+}
+
+.mcp-badge-neutral {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: rgba(55, 53, 47, 0.08);
+  color: var(--notion-muted);
+}
+
+.mcp-card-info p {
+  font-size: 12px;
+  color: var(--notion-muted);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.mcp-input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--notion-paper);
+  border: 1px solid var(--notion-border-strong);
+  border-radius: 6px;
+  padding: 4px 6px 4px 12px;
+  transition: all 0.15s ease;
+}
+
+.mcp-input-group:focus-within {
+  border-color: var(--notion-blue);
+  box-shadow: 0 0 0 2px rgba(35, 131, 226, 0.15);
+}
+
+.mcp-url-input, .mcp-token-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-family: 'DM Mono', Menlo, monospace;
+  font-size: 12px;
+  color: var(--notion-text);
+  outline: none;
+  min-width: 0;
+}
+
+.mcp-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 5px;
+  background: rgba(55, 53, 47, 0.08);
+  color: var(--notion-text);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.mcp-copy-btn:hover {
+  background: rgba(55, 53, 47, 0.14);
+}
+
+.mcp-token-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mcp-token-warning {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   font-size: 11px;
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+
+.mcp-regen-link {
+  color: var(--notion-blue);
+  text-decoration: underline;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.mcp-token-actions {
+  display: flex;
+}
+
+.mcp-primary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--notion-blue);
+  color: #fff;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  transition: background 0.15s ease;
+}
+
+.mcp-primary-btn:hover {
+  background: #1a73e8;
+}
+
+.mcp-tools-header {
+  margin-bottom: 12px;
+}
+
+.mcp-tools-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.mcp-tools-icon {
+  font-size: 14px;
+}
+
+.mcp-tools-count {
+  font-size: 11px;
+  color: var(--notion-muted);
+  background: rgba(55, 53, 47, 0.08);
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+
+.mcp-tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 8px;
+}
+
+.mcp-tool-pill {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  background: var(--notion-paper);
+  border: 1px solid var(--notion-border);
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.mcp-tool-pill:hover {
+  border-color: var(--notion-border-strong);
+  transform: translateY(-1px);
+}
+
+.mcp-tool-pill code {
+  font-family: 'DM Mono', Menlo, monospace;
+  font-size: 11px;
+  font-weight: 600;
   color: var(--notion-blue);
 }
-.mcp-tools {
+
+.mcp-tool-pill small {
+  font-size: 10px;
+  color: var(--notion-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mcp-guide-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.mcp-guide-toggle {
+  width: 100%;
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.mcp-guide-toggle:hover {
+  background: var(--notion-hover);
+}
+
+.mcp-guide-toggle-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--notion-text);
+}
+
+.mcp-guide-chevron {
+  font-size: 10px;
+  color: var(--notion-muted);
+  transition: transform 0.2s ease;
+}
+
+.mcp-guide-chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.mcp-guide-body {
+  padding: 0 18px 18px;
   border-top: 1px solid var(--notion-border);
-  padding-top: 14px;
+  background: var(--notion-paper);
 }
-.mcp-tools span { width: 100%; font-size: 11px; color: var(--notion-light-muted); }
-.mcp-tools b {
-  background: #f7f6f3;
-  font-weight: 500;
-  font-size: 11px;
-  padding: 3px 6px;
+
+.mcp-guide-text {
+  font-size: 12px;
+  color: var(--notion-muted);
+  margin: 12px 0 8px;
+}
+
+.mcp-guide-text code {
+  background: rgba(55, 53, 47, 0.08);
+  padding: 2px 5px;
   border-radius: 3px;
+  font-size: 11px;
 }
+
+.mcp-code-block {
+  position: relative;
+  background: #1e1e1e;
+  border-radius: 6px;
+  padding: 12px 14px;
+  overflow-x: auto;
+}
+
+.mcp-code-block pre {
+  margin: 0;
+  font-family: 'DM Mono', Menlo, monospace;
+  font-size: 11px;
+  color: #e5e7eb;
+  line-height: 1.5;
+}
+
+.mcp-copy-code-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  transition: background 0.15s ease;
+}
+
+.mcp-copy-code-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Dark Mode Overrides for MCP */
+.dark-mode .mcp-modal-redesign {
+  background: #202020;
+  border-color: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.dark-mode .mcp-card {
+  background: #272727;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark-mode .mcp-card:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.dark-mode .mcp-card-title-row h3 {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.dark-mode .mcp-badge-neutral {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.dark-mode .mcp-input-group {
+  background: #1c1c1c;
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.dark-mode .mcp-copy-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.dark-mode .mcp-copy-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.dark-mode .mcp-tool-pill {
+  background: #1c1c1c;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark-mode .mcp-tools-count {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.dark-mode .mcp-guide-body {
+  background: #272727;
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+.dark-mode .mcp-guide-text code {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.85);
+}
+
 
 /* ==========================================================================
    Portability Modal (Import & Export) Redesign

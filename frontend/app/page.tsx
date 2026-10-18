@@ -163,6 +163,10 @@ export default function Workspace() {
   const [favoritesExpanded, setFavoritesExpanded] = useState(true);
   const [workspaceExpanded, setWorkspaceExpanded] = useState(true);
   const [showBacklinks, setShowBacklinks] = useState(true);
+  const [mcpUrlCopied, setMcpUrlCopied] = useState(false);
+  const [mcpTokenCopied, setMcpTokenCopied] = useState(false);
+  const [mcpConfigCopied, setMcpConfigCopied] = useState(false);
+  const [mcpGuideOpen, setMcpGuideOpen] = useState(false);
 
   const commandInputRef = useRef<HTMLInputElement>(null);
   const editRevision = useRef(0);
@@ -3036,30 +3040,220 @@ export default function Workspace() {
       {/* MCP / GPT Connection Modal */}
       {showMcp && (
         <div className="modal-backdrop" onClick={() => setShowMcp(false)}>
-          <section className="mcp-modal" onClick={event => event.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowMcp(false)}>×</button>
-            <div className="mcp-symbol">✧</div>
-            <p className="eyebrow">NOTEOS CONNECT</p>
-            <h2>Connect GPT / MCP</h2>
-            <p className="muted modal-copy">Connect ChatGPT or any MCP client to query and interact with your workspace.</p>
-            <div className="connect-step">
-              <span>01</span>
-              <div><strong>Your MCP endpoint</strong><code>{typeof window !== 'undefined' ? `${window.location.origin}/mcp` : '/mcp'}</code></div>
-              <button onClick={() => navigator.clipboard?.writeText(typeof window !== 'undefined' ? `${window.location.origin}/mcp` : '/mcp')}>Copy</button>
+          <section className="mcp-modal-redesign" onClick={event => event.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="mcp-modal-title">
+            <button className="modal-close" onClick={() => setShowMcp(false)} aria-label="Close MCP modal">×</button>
+            
+            <div className="mcp-header">
+              <div className="mcp-icon-badge">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                </svg>
+              </div>
+              <div className="mcp-header-text">
+                <p className="eyebrow">NOTEOS CONNECT</p>
+                <h2 id="mcp-modal-title">Connect Claude & ChatGPT (MCP)</h2>
+                <p className="modal-copy">Allow Claude Desktop, ChatGPT, or Cursor to securely query, search, and manage your notes.</p>
+              </div>
             </div>
-            <div className="connect-step">
-              <span>02</span>
-              <div>
-                <strong>Permanent MCP API Token</strong>
+
+            <div className="mcp-sections">
+              {/* Step 1: Endpoint URL */}
+              <div className="mcp-card">
+                <div className="mcp-card-header">
+                  <div className="mcp-card-icon mcp-icon-globe">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10"/>
+                      <line x1="2" y1="12" x2="22" y2="12"/>
+                      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                    </svg>
+                  </div>
+                  <div className="mcp-card-info">
+                    <div className="mcp-card-title-row">
+                      <h3>Public MCP Endpoint</h3>
+                      <span className="mcp-badge-pill">OAuth & Token Ready</span>
+                    </div>
+                    <p>Enter this URL when adding a server in Claude Desktop, Cursor, or ChatGPT Custom Actions.</p>
+                  </div>
+                </div>
+
+                <div className="mcp-input-group">
+                  <input
+                    type="text"
+                    readOnly
+                    className="mcp-url-input"
+                    value={typeof window !== 'undefined' ? `${window.location.origin}/mcp` : '/mcp'}
+                  />
+                  <button
+                    type="button"
+                    className="mcp-copy-btn"
+                    onClick={() => {
+                      const url = typeof window !== 'undefined' ? `${window.location.origin}/mcp` : '/mcp';
+                      navigator.clipboard?.writeText(url);
+                      setMcpUrlCopied(true);
+                      setTimeout(() => setMcpUrlCopied(false), 2000);
+                    }}
+                  >
+                    {mcpUrlCopied ? (
+                      <>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        <span>Copy URL</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Step 2: Permanent Token */}
+              <div className="mcp-card">
+                <div className="mcp-card-header">
+                  <div className="mcp-card-icon mcp-icon-key">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 2l-2 2m-1.5 1.5L14 9l-1.5-1.5M19 4l-4 4m-4.5 4.5a5 5 0 1 1-7.07-7.07 5 5 0 0 1 7.07 7.07z"/>
+                    </svg>
+                  </div>
+                  <div className="mcp-card-info">
+                    <div className="mcp-card-title-row">
+                      <h3>Permanent API Token</h3>
+                      <span className="mcp-badge-neutral">Static Auth</span>
+                    </div>
+                    <p>For tools or scripts that authenticate using static Bearer tokens instead of OAuth.</p>
+                  </div>
+                </div>
+
                 {mcpToken ? (
-                  <><code>{mcpToken}</code><small>Copy it now. For security, it will not be shown again.</small></>
+                  <div className="mcp-token-box">
+                    <div className="mcp-input-group">
+                      <input
+                        type="text"
+                        readOnly
+                        className="mcp-token-input"
+                        value={mcpToken}
+                      />
+                      <button
+                        type="button"
+                        className="mcp-copy-btn"
+                        onClick={() => {
+                          navigator.clipboard?.writeText(mcpToken);
+                          setMcpTokenCopied(true);
+                          setTimeout(() => setMcpTokenCopied(false), 2000);
+                        }}
+                      >
+                        {mcpTokenCopied ? '✓ Copied!' : 'Copy Token'}
+                      </button>
+                    </div>
+                    <div className="mcp-token-warning">
+                      <span>⚠️ Make sure to copy this token now. For your security, it is hashed and cannot be retrieved again.</span>
+                      <button type="button" className="mcp-regen-link" onClick={generateMcpToken}>Regenerate token</button>
+                    </div>
+                  </div>
                 ) : (
-                  <small>Generate an authorization token for external MCP clients.</small>
+                  <div className="mcp-token-actions">
+                    <button type="button" className="mcp-primary-btn" onClick={generateMcpToken}>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>
+                      <span>Create Permanent Token</span>
+                    </button>
+                  </div>
                 )}
               </div>
-              <button onClick={generateMcpToken}>{mcpToken ? 'Regenerate' : 'Create token'}</button>
+
+              {/* Step 3: Available Tools */}
+              <div className="mcp-card">
+                <div className="mcp-tools-header">
+                  <div className="mcp-tools-title-group">
+                    <span className="mcp-tools-icon">⚡</span>
+                    <strong>Active Workspace Tools</strong>
+                    <span className="mcp-tools-count">7 tools</span>
+                  </div>
+                </div>
+                <div className="mcp-tools-grid">
+                  <div className="mcp-tool-pill">
+                    <code>search_notes</code>
+                    <small>Search notes by keyword</small>
+                  </div>
+                  <div className="mcp-tool-pill">
+                    <code>get_note</code>
+                    <small>Read note body & meta</small>
+                  </div>
+                  <div className="mcp-tool-pill">
+                    <code>create_note</code>
+                    <small>Save page to workspace</small>
+                  </div>
+                  <div className="mcp-tool-pill">
+                    <code>update_note</code>
+                    <small>Update existing page</small>
+                  </div>
+                  <div className="mcp-tool-pill">
+                    <code>delete_note</code>
+                    <small>Remove a page</small>
+                  </div>
+                  <div className="mcp-tool-pill">
+                    <code>list_bookmarks</code>
+                    <small>List starred notes</small>
+                  </div>
+                  <div className="mcp-tool-pill">
+                    <code>list_tables</code>
+                    <small>Structured databases</small>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 4: Claude Desktop Setup Guide (Toggle) */}
+              <div className="mcp-card mcp-guide-card">
+                <button
+                  type="button"
+                  className="mcp-guide-toggle"
+                  onClick={() => setMcpGuideOpen(prev => !prev)}
+                >
+                  <div className="mcp-guide-toggle-left">
+                    <span className="mcp-guide-icon">💻</span>
+                    <strong>Claude Desktop Configuration</strong>
+                  </div>
+                  <span className={`mcp-guide-chevron ${mcpGuideOpen ? 'is-open' : ''}`}>▼</span>
+                </button>
+
+                {mcpGuideOpen && (
+                  <div className="mcp-guide-body">
+                    <p className="mcp-guide-text">
+                      Add this configuration to your <code>claude_desktop_config.json</code>:
+                    </p>
+                    <div className="mcp-code-block">
+                      <pre>
+{`{
+  "mcpServers": {
+    "noteos": {
+      "url": "${typeof window !== 'undefined' ? `${window.location.origin}/mcp` : 'https://noteform-blush.vercel.app/mcp'}"
+    }
+  }
+}`}
+                      </pre>
+                      <button
+                        type="button"
+                        className="mcp-copy-code-btn"
+                        onClick={() => {
+                          const configStr = JSON.stringify({
+                            mcpServers: {
+                              noteos: {
+                                url: typeof window !== 'undefined' ? `${window.location.origin}/mcp` : 'https://noteform-blush.vercel.app/mcp'
+                              }
+                            }
+                          }, null, 2);
+                          navigator.clipboard?.writeText(configStr);
+                          setMcpConfigCopied(true);
+                          setTimeout(() => setMcpConfigCopied(false), 2000);
+                        }}
+                      >
+                        {mcpConfigCopied ? '✓ Copied' : 'Copy Config'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="mcp-tools"><span>Available tools</span><b>search_notes</b><b>get_note</b><b>create_note</b><b>list_bookmarks</b></div>
           </section>
         </div>
       )}

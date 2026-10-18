@@ -1,7 +1,6 @@
-const USE_PROXY = process.env.NEXT_PUBLIC_USE_PROXY !== 'false';
-export const API_URL = typeof window !== 'undefined' && USE_PROXY
-  ? '/api/proxy'
-  : (process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+export const API_URL = (
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+).replace(/\/$/, '');
 
 export type User = { id: string; username: string; email: string };
 export type Note = {
