@@ -13,13 +13,73 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   async function submit(event: FormEvent) {
-    event.preventDefault(); setError(''); setLoading(true);
+    event.preventDefault();
+    setError('');
+    setLoading(true);
     try {
-      const result = await api<{ token: string; user: User }>('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
-      saveSession(result.token, result.user); router.push('/');
-    } catch (err) { setError(err instanceof Error ? err.message : 'Unable to sign in'); }
-    finally { setLoading(false); }
+      const result = await api<{ token: string; user: User }>('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      });
+      saveSession(result.token, result.user);
+      router.push('/');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to sign in');
+    } finally {
+      setLoading(false);
+    }
   }
 
-  return <main className="auth-shell"><div className="auth-art"><div className="brand-mark">✦</div><p className="eyebrow">NOTEFORM</p><h1>Your thoughts,<br /><em>with room to grow.</em></h1><p className="auth-tagline">A considered home for the things you want to remember.</p><div className="floating-note note-one">“The best ideas start as fragments.”<small>Daily note · Today</small></div><div className="floating-note note-two">✦  12 ideas in progress</div></div><section className="auth-card"><div className="auth-brand"><span>✦</span> Noteform</div><h2>Welcome back</h2><p className="muted">Pick up where you left off.</p><form onSubmit={submit}><label>Email<input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" required /></label><label>Password<input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required /></label>{error && <p className="form-error">{error}</p>}<button className="primary-button wide" disabled={loading}>{loading ? 'Signing in…' : 'Sign in'} <span>→</span></button></form><p className="auth-switch">New to Noteform? <Link href="/register">Create an account</Link></p></section></main>;
+  return (
+    <main className="notion-auth-container">
+      <div className="notion-auth-box">
+        <div className="notion-auth-brand">
+          <div className="notion-auth-icon">✦</div>
+          <span className="notion-auth-brand-text">Noteform</span>
+        </div>
+
+        <h1 className="notion-auth-title">Log in</h1>
+        <p className="notion-auth-subtitle">Continue to your personal workspace</p>
+
+        {error && <div className="notion-auth-error" role="alert">{error}</div>}
+
+        <form onSubmit={submit} className="notion-auth-form">
+          <label className="notion-auth-field">
+            <span>Email</span>
+            <input
+              type="email"
+              autoFocus
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="Enter your email…"
+              required
+            />
+          </label>
+
+          <label className="notion-auth-field">
+            <span>Password</span>
+            <input
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder="Enter your password…"
+              required
+            />
+          </label>
+
+          <button
+            type="submit"
+            className="notion-auth-submit"
+            disabled={loading || !email || !password}
+          >
+            {loading ? 'Signing in…' : 'Continue'}
+          </button>
+        </form>
+
+        <div className="notion-auth-footer">
+          Don&apos;t have an account? <Link href="/register">Sign up</Link>
+        </div>
+      </div>
+    </main>
+  );
 }

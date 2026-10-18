@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { Note } from '@/lib/api';
 
 type PagesTreeProps = {
@@ -8,10 +8,24 @@ type PagesTreeProps = {
   selectedId?: string;
   onSelect: (note: Note) => void;
   onCreateChild: (parentId: string) => void;
+  onDelete?: (note: Note) => void;
+  onToggleBookmark?: (note: Note) => void;
+  onTogglePin?: (note: Note) => void;
 };
 
-export default function PagesTree({ notes, selectedId, onSelect, onCreateChild }: PagesTreeProps) {
+export default function PagesTree({
+  notes,
+  selectedId,
+  onSelect,
+  onCreateChild,
+  onDelete,
+  onToggleBookmark,
+  onTogglePin,
+}: PagesTreeProps) {
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
+  const [menuNoteId, setMenuNoteId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
   const { childrenByParent, roots, notesById } = useMemo(() => {
     const byParent = new Map<string | null, Note[]>();
     const byId = new Map(notes.map(note => [note.id, note]));
@@ -43,13 +57,29 @@ export default function PagesTree({ notes, selectedId, onSelect, onCreateChild }
     });
   }, [notesById, selectedId]);
 
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuNoteId(null);
+      }
+    }
+    if (menuNoteId) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [menuNoteId]);
+
   function renderPage(note: Note, depth: number) {
     const children = childrenByParent.get(note.id) || [];
     const isExpanded = expanded.has(note.id);
+    const isMenuOpen = menuNoteId === note.id;
 
     return (
       <div className="page-tree-node" key={note.id}>
-        <div className={`page-tree-row ${selectedId === note.id ? 'active' : ''}`} style={{ paddingLeft: 8 + depth * 16 }}>
+        <div
+          className={`page-tree-row ${selectedId === note.id ? 'active' : ''}`}
+          style={{ paddingLeft: 6 + depth * 14 }}
+        >
           <button
             type="button"
             className="page-tree-toggle"
@@ -63,23 +93,88 @@ export default function PagesTree({ notes, selectedId, onSelect, onCreateChild }
               return next;
             })}
           >
-            {children.length ? (isExpanded ? '⌄' : '›') : <span>·</span>}
+            {children.length ? (isExpanded ? '▾' : '▸') : <span className="page-tree-leaf">·</span>}
           </button>
-          <button type="button" className="page-tree-title" onClick={() => onSelect(note)}>
-            <span>{note.icon || '□'}</span>{note.title || 'Untitled'}
-          </button>
+
           <button
             type="button"
-            className="page-tree-add"
-            aria-label={`Add subpage to ${note.title || 'Untitled'}`}
-            title="Add subpage"
-            onClick={() => {
-              setExpanded(current => new Set(current).add(note.id));
-              onCreateChild(note.id);
-            }}
+            className="page-tree-title"
+            onClick={() => onSelect(note)}
+            title={note.title || 'Untitled'}
           >
-            +
+            <span className="page-tree-icon">{note.icon || '📄'}</span>
+            <span className="page-tree-text">{note.title || 'Untitled'}</span>
           </button>
+
+          <div className="page-tree-actions">
+            <button
+              type="button"
+              className="page-tree-add"
+              aria-label={`Add subpage to ${note.title || 'Untitled'}`}
+              title="Add a page inside"
+              onClick={e => {
+                e.stopPropagation();
+                setExpanded(current => new Set(current).add(note.id));
+                onCreateChild(note.id);
+              }}
+            >
+              ＋
+            </button>
+
+            {(onDelete || onToggleBookmark || onTogglePin) && (
+              <button
+                type="button"
+                className="page-tree-more"
+                aria-label="More actions"
+                title="Page options"
+                onClick={e => {
+                  e.stopPropagation();
+                  setMenuNoteId(isMenuOpen ? null : note.id);
+                }}
+              >
+                ···
+              </button>
+            )}
+
+            {isMenuOpen && (
+              <div className="notion-node-menu" ref={menuRef} onClick={e => e.stopPropagation()}>
+                {onToggleBookmark && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onToggleBookmark(note);
+                      setMenuNoteId(null);
+                    }}
+                  >
+                    <span>{note.bookmarked ? '★' : '☆'}</span> {note.bookmarked ? 'Remove from Favorites' : 'Add to Favorites'}
+                  </button>
+                )}
+                {onTogglePin && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onTogglePin(note);
+                      setMenuNoteId(null);
+                    }}
+                  >
+                    <span>{note.pinned ? '◆' : '◇'}</span> {note.pinned ? 'Unpin page' : 'Pin to top'}
+                  </button>
+                )}
+                {onDelete && (
+                  <button
+                    type="button"
+                    className="menu-danger"
+                    onClick={() => {
+                      setMenuNoteId(null);
+                      onDelete(note);
+                    }}
+                  >
+                    <span>🗑</span> Delete
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
         {isExpanded && children.map(child => renderPage(child, depth + 1))}
       </div>
