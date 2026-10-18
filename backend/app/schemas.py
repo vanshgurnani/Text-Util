@@ -18,6 +18,21 @@ class LoginRequest(BaseModel):
     password: str
 
 
+def normalize_tags(value: list[str]) -> list[str]:
+    normalized: list[str] = []
+    seen: set[str] = set()
+    for tag in value:
+        cleaned = tag.strip().casefold()
+        if not cleaned:
+            continue
+        if len(cleaned) > 32:
+            raise ValueError("Tags must be 32 characters or fewer")
+        if cleaned not in seen:
+            normalized.append(cleaned)
+            seen.add(cleaned)
+    return normalized
+
+
 class NoteCreate(BaseModel):
     title: str = Field(default="Untitled", max_length=160)
     content: str = Field(default="", max_length=100_000)
@@ -26,6 +41,12 @@ class NoteCreate(BaseModel):
     parent_id: Optional[str] = None
     source_url: Optional[str] = Field(default=None, max_length=2048)
     inbox: bool = False
+    tags: list[str] = Field(default_factory=list, max_length=20)
+
+    @field_validator("tags")
+    @classmethod
+    def normalize_tags(cls, value: list[str]) -> list[str]:
+        return normalize_tags(value)
 
     @field_validator("source_url")
     @classmethod
@@ -48,8 +69,17 @@ class NoteUpdate(BaseModel):
     category: Optional[str] = Field(default=None, max_length=40)
     icon: Optional[str] = Field(default=None, max_length=8)
     bookmarked: Optional[bool] = None
+    pinned: Optional[bool] = None
     inbox: Optional[bool] = None
     source_url: Optional[str] = Field(default=None, max_length=2048)
+    tags: Optional[list[str]] = Field(default=None, max_length=20)
+
+    @field_validator("tags")
+    @classmethod
+    def normalize_tags(cls, value: Optional[list[str]]) -> Optional[list[str]]:
+        if value is None:
+            return None
+        return normalize_tags(value)
 
     @field_validator("source_url")
     @classmethod

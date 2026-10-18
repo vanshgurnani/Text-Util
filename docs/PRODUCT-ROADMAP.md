@@ -171,10 +171,12 @@ back to its parent without scanning the full page tree.
 
 ### 4. Tags and flexible organization
 
-- Allow multiple user-created tags per page, with autocomplete and tag colors.
+- [x] Allow multiple user-created tags per page, with autocomplete and
+  consistent tag colors.
+- [x] Filter workspace pages by a tag.
 - Keep categories as broad folders/contexts; use tags for cross-cutting topics.
-- Add pinned pages and favorites, plus sort options such as recently edited,
-  created date, and title.
+- [x] Add pinned pages alongside favorites, plus sort options for recently
+  edited, created date, and title.
 - Add archive and restore before considering permanent deletion workflows.
 
 **Done when:** a page can be found through its parent, category, tag, favorite,

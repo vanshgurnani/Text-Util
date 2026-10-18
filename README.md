@@ -12,6 +12,9 @@ Noteform is a calm, Notion-inspired personal notes workspace. Users can create, 
 - Workspace records and membership foundations for future collaboration.
 - Workspace-owned default and custom categories.
 - Note creation, editing, deletion, category filtering, search, and bookmarks.
+- User-created page tags with autocomplete suggestions, color-coded chips, and
+  tag filtering.
+- Pinned pages and page sorting by last edited, creation date, or title.
 - Nested pages with a navigable page tree in each personal workspace.
 - Quick-capture Inbox for thoughts and source links to organize later.
 - Manifest-free Markdown ZIP import/export for Markdown pages and nested folders.

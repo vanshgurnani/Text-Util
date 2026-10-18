@@ -13,6 +13,8 @@ def serialize_note(note: dict) -> dict:
         "inbox": bool(note.get("inbox", False)),
         "version": int(note.get("version", 1)),
         "bookmarked": bool(note.get("bookmarked", False)),
+        "pinned": bool(note.get("pinned", False)),
+        "tags": note.get("tags", []),
         "created_at": note.get("created_at", datetime.utcnow()).isoformat(),
         "updated_at": note.get("updated_at", datetime.utcnow()).isoformat(),
     }

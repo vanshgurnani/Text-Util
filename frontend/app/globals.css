@@ -180,3 +180,35 @@ html,body { background:var(--cream); color:var(--ink); font-family:Arial,Helveti
 .command-result.active,.command-result:hover { background:#eef0ed; }
 .page-children button { border-color:#e7e9e6; background:#fff; border-radius:5px; }
 .page-children button:hover { border-color:#d4ddd7; background:#f7f8f6; }
+.page-tags { display:flex; flex-wrap:wrap; align-items:center; gap:7px; margin:-20px 0 28px; }
+.tag-chip { display:inline-flex; align-items:center; min-height:22px; padding:3px 7px; border-radius:4px; font:11px/1.2 Arial,Helvetica,sans-serif; white-space:nowrap; }
+.tag-color-0 { color:#526d60; background:#e9f0eb; }
+.tag-color-1 { color:#536d7a; background:#e9f0f3; }
+.tag-color-2 { color:#806b43; background:#f3f0e5; }
+.tag-color-3 { color:#845d55; background:#f5ece9; }
+.tag-color-4 { color:#6f6382; background:#f0edf5; }
+.tag-color-5 { color:#636a73; background:#edf0f2; }
+.editable-tag { gap:5px; }
+.editable-tag button { display:grid; width:16px; height:16px; place-items:center; padding:0; border-radius:3px; background:transparent; color:inherit; opacity:.65; }
+.editable-tag button:hover { opacity:1; background:#0000000c; }
+.tag-entry { display:inline-flex; }
+.tag-entry input { width:100px; padding:4px 7px; border:1px solid transparent; border-radius:4px; outline:0; background:transparent; color:#62645f; font-size:11px; }
+.tag-entry input:hover,.tag-entry input:focus { border-color:#e3e6e2; background:#fff; }
+.note-meta { flex-wrap:wrap; }
+.note-meta .tag-chip { min-height:18px; padding:2px 5px; font-size:9px; }
+.tag-overflow { color:#8a8c87; font-size:10px; }
+.tag-filter > span:first-child { color:#858782; font-weight:600; }
+.tag-filter.active > span:first-child { color:inherit; }
+.view-toggle { align-items:center; gap:2px; border:0; }
+.view-toggle > button { width:29px; height:28px; border:1px solid transparent; border-radius:5px; }
+.view-toggle > button.selected { background:#eef0ed; }
+.sort-control { display:flex; align-items:center; gap:5px; margin-right:5px; padding:0 7px; border:1px solid #e8e9e6; border-radius:5px; background:#fff; color:#858782; font-size:10px; }
+.sort-control select { max-width:112px; height:28px; border:0; outline:0; background:transparent; color:#565954; font:11px Arial,Helvetica,sans-serif; }
+.pin-indicator { color:#71877f; font-size:13px; }
+.pin-button { color:#8b8e89; }
+.pin-button.pinned { color:#586f69; background:#edf1ee; border-radius:4px; }
+@media (max-width: 560px) {
+  .sort-control { gap:2px; padding:0 4px; }
+  .sort-control span { display:none; }
+  .sort-control select { max-width:105px; }
+}

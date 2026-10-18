@@ -239,17 +239,23 @@ def oauth_token(
 def list_notes(
     search: str = Query(default=""),
     category: Optional[str] = Query(default=None),
+    tag: Optional[str] = Query(default=None, min_length=1, max_length=32),
     bookmarked: Optional[bool] = Query(default=None),
     inbox: Optional[bool] = Query(default=None),
     user: dict = Depends(current_user),
 ):
     query: dict[str, Any] = owner_filter(user)
     if category and category.lower() != "all":
-        query["category"] = category
+        if category.lower() == "pinned":
+            query["pinned"] = True
+        else:
+            query["category"] = category
     if bookmarked is not None:
         query["bookmarked"] = bookmarked
     if inbox is not None:
         query["inbox"] = inbox
+    if tag and tag.strip():
+        query["tags"] = tag.strip().casefold()
     if search.strip():
         query["$or"] = [
             {"title": {"$regex": search.strip(), "$options": "i"}},
@@ -420,6 +426,28 @@ def toggle_bookmark(note_id: str, user: dict = Depends(current_user)):
     if not updated:
         raise HTTPException(status_code=409, detail="This page changed elsewhere. Reload it and try again.")
     return {"bookmarked": bookmarked, "version": int(updated.get("version", 1))}
+
+
+@app.post("/notes/{note_id}/pin")
+def toggle_pin(note_id: str, user: dict = Depends(current_user)):
+    note = note_or_404(note_id, user)
+    pinned = not bool(note.get("pinned", False))
+    version_filter = (
+        {"version": int(note["version"])}
+        if "version" in note
+        else {"version": {"$exists": False}}
+    )
+    updated = notes_collection().find_one_and_update(
+        {"_id": ObjectId(note_id), **owner_filter(user), **version_filter},
+        {
+            "$set": {"pinned": pinned, "updated_at": datetime.now(timezone.utc)},
+            "$inc": {"version": 1},
+        },
+        return_document=ReturnDocument.AFTER,
+    )
+    if not updated:
+        raise HTTPException(status_code=409, detail="This page changed elsewhere. Reload it and try again.")
+    return {"pinned": pinned, "version": int(updated.get("version", 1))}
 
 
 @app.post("/summaries", status_code=status.HTTP_201_CREATED)

@@ -23,14 +23,22 @@ function relativeDate(date: string) {
   return days <= 0 ? 'Today' : days === 1 ? 'Yesterday' : `${days} days ago`;
 }
 
+function tagColorClass(tag: string) {
+  const colorIndex = Array.from(tag).reduce((hash, character) => (hash + character.charCodeAt(0)) % 6, 0);
+  return `tag-color-${colorIndex}`;
+}
+
 export default function Workspace() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [notes, setNotes] = useState<Note[]>([]);
   const [selected, setSelected] = useState<Note | null>(null);
   const [category, setCategory] = useState('All notes');
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [tagInput, setTagInput] = useState('');
   const [search, setSearch] = useState('');
   const [view, setView] = useState<'list' | 'grid'>('list');
+  const [sortMode, setSortMode] = useState<'updated' | 'created' | 'title'>('updated');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'dirty' | 'saving' | 'error' | 'conflict'>('saved');
@@ -111,15 +119,28 @@ export default function Workspace() {
 
   const visibleNotes = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
-    return notes.filter(note => {
+    const filtered = notes.filter(note => {
       if (category === 'Inbox' && !note.inbox) return false;
       if (category === 'Favorites' && !note.bookmarked) return false;
-      if (!['All notes', 'Inbox', 'Favorites'].includes(category) && note.category !== category) return false;
+      if (category === 'Pinned' && !note.pinned) return false;
+      if (!['All notes', 'Inbox', 'Favorites', 'Pinned'].includes(category) && note.category !== category) return false;
+      if (selectedTag && !note.tags.includes(selectedTag)) return false;
       if (!query) return true;
       return [note.title, note.content, note.source_url || '']
         .some(value => value.toLocaleLowerCase().includes(query));
     });
-  }, [notes, search, category]);
+    return filtered.sort((left, right) => {
+      if (sortMode === 'title') return left.title.localeCompare(right.title, undefined, { sensitivity: 'base' });
+      const leftDate = new Date(sortMode === 'created' ? left.created_at : left.updated_at).getTime();
+      const rightDate = new Date(sortMode === 'created' ? right.created_at : right.updated_at).getTime();
+      return rightDate - leftDate;
+    });
+  }, [notes, search, category, selectedTag, sortMode]);
+
+  const availableTags = useMemo(
+    () => Array.from(new Set(notes.flatMap(note => note.tags))).sort((left, right) => left.localeCompare(right)),
+    [notes],
+  );
 
   const pageBreadcrumbs = useMemo(() => {
     if (!selected) return [];
@@ -167,7 +188,9 @@ export default function Workspace() {
     [selected],
   );
 
-  function updateSelected(key: 'title' | 'content' | 'category', value: string) {
+  function updateSelected(key: 'title' | 'content' | 'category', value: string): void;
+  function updateSelected(key: 'tags', value: string[]): void;
+  function updateSelected(key: 'title' | 'content' | 'category' | 'tags', value: string | string[]) {
     if (!selected) return;
     setSelected({ ...selected, [key]: value });
     editRevision.current += 1;
@@ -194,6 +217,7 @@ export default function Workspace() {
           title: selected.title,
           content: selected.content,
           category: selected.category,
+          tags: selected.tags,
         }),
       });
       setNotes(current => current.map(note => note.id === result.note.id ? result.note : note));
@@ -220,6 +244,23 @@ export default function Workspace() {
       setSaving(false);
     }
   }, [selected]);
+
+  function addTag(value = tagInput) {
+    if (!selected) return;
+    const tag = value.trim().toLocaleLowerCase();
+    setTagInput('');
+    if (!tag) return;
+    if (tag.length > 32) {
+      flash('Tags must be 32 characters or fewer');
+      return;
+    }
+    if (selected.tags.length >= 20 && !selected.tags.includes(tag)) {
+      flash('A page can have up to 20 tags');
+      return;
+    }
+    if (selected.tags.some(existing => existing.toLocaleLowerCase() === tag)) return;
+    updateSelected('tags', [...selected.tags, tag]);
+  }
 
   useEffect(() => {
     if (!selected || !draftDirty || saveStatus !== 'dirty') return;
@@ -251,6 +292,7 @@ export default function Workspace() {
   async function selectNote(note: Note | null): Promise<boolean> {
     if (draftDirty && !await saveNote()) return false;
     setSelected(note);
+    setTagInput('');
     setSaveStatus('saved');
     if (note && !note.inbox && user) {
       setRecentIds(current => {
@@ -265,6 +307,7 @@ export default function Workspace() {
   async function openPage(note: Note): Promise<boolean> {
     if (!await selectNote(note)) return false;
     setCategory('All notes');
+    setSelectedTag(null);
     setSearch('');
     setMobileNavOpen(false);
     return true;
@@ -279,11 +322,15 @@ export default function Workspace() {
     }
     if (item.id === 'new-page') {
       setCategory('All notes');
+      setSelectedTag(null);
       await createNote();
     } else if (item.id === 'quick-capture') {
       setShowCapture(true);
     } else if (item.id === 'inbox' || item.id === 'favorites') {
-      if (await selectNote(null)) setCategory(item.id === 'inbox' ? 'Inbox' : 'Favorites');
+      if (await selectNote(null)) {
+        setSelectedTag(null);
+        setCategory(item.id === 'inbox' ? 'Inbox' : 'Favorites');
+      }
     }
   }
 
@@ -318,6 +365,7 @@ export default function Workspace() {
       setSelected(result.note);
       setDraftDirty(false);
       setSaveStatus('saved');
+      setSelectedTag(null);
       setMobileNavOpen(false);
       flash('New note created');
     } catch (err) {
@@ -397,6 +445,22 @@ export default function Workspace() {
       if (selected?.id === note.id) setSelected(updated);
     } catch (err) {
       flash(err instanceof Error ? err.message : 'Could not update favorite');
+    }
+  }
+
+  async function togglePin(note: Note) {
+    if (draftDirty && !await saveNote()) return;
+    try {
+      const target = draftDirty && selected?.id === note.id
+        ? (await api<{ note: Note }>(`/notes/${note.id}`)).note
+        : note;
+      const result = await api<{ pinned: boolean; version: number }>(`/notes/${note.id}/pin`, { method: 'POST' });
+      const updated = { ...target, pinned: result.pinned, version: result.version };
+      setNotes(current => current.map(item => item.id === note.id ? updated : item));
+      if (selected?.id === note.id) setSelected(updated);
+      flash(result.pinned ? 'Page pinned' : 'Page unpinned');
+    } catch (err) {
+      flash(err instanceof Error ? err.message : 'Could not update pin');
     }
   }
 
@@ -514,13 +578,14 @@ export default function Workspace() {
         <button className="capture-button" onClick={() => setShowCapture(true)}><span>⌁</span> Quick capture <kbd>⌥ ⇧ C</kbd></button>
         <nav onClick={() => setMobileNavOpen(false)}>
           <p className="nav-label">LIBRARY</p>
-          <button className={category === 'All notes' ? 'nav-item active' : 'nav-item'} onClick={() => setCategory('All notes')}><span>▤</span> All notes <b>{notes.length}</b></button>
+          <button className={category === 'All notes' && !selectedTag ? 'nav-item active' : 'nav-item'} onClick={() => { setSelectedTag(null); setCategory('All notes'); }}><span>▤</span> All notes <b>{notes.length}</b></button>
           <button className={category === 'Inbox' ? 'nav-item active' : 'nav-item'} onClick={() => {
             void selectNote(null).then(saved => {
-              if (saved) setCategory('Inbox');
+              if (saved) { setSelectedTag(null); setCategory('Inbox'); }
             });
           }}><span>⌁</span> Inbox</button>
-          <button className={category === 'Favorites' ? 'nav-item active' : 'nav-item'} onClick={() => setCategory('Favorites')}><span>♡</span> Favorites</button>
+          <button className={category === 'Favorites' ? 'nav-item active' : 'nav-item'} onClick={() => { setSelectedTag(null); setCategory('Favorites'); }}><span>♡</span> Favorites</button>
+          <button className={category === 'Pinned' ? 'nav-item active' : 'nav-item'} onClick={() => { setSelectedTag(null); setCategory('Pinned'); }}><span>⌖</span> Pinned <b>{notes.filter(note => note.pinned).length}</b></button>
           {recentIds.some(id => notes.some(note => note.id === id)) && (
             <>
               <p className="nav-label categories-label">RECENT</p>
@@ -541,12 +606,26 @@ export default function Workspace() {
             onSelect={openPage}
             onCreateChild={parentId => createNote(parentId)}
           />
-          <p className="nav-label categories-label">CATEGORIES <button onClick={() => setCategory('General')}>＋</button></p>
+          <p className="nav-label categories-label">CATEGORIES <button onClick={() => { setSelectedTag(null); setCategory('General'); }}>＋</button></p>
           {categories.slice(1).map(item => (
-            <button key={item} className={category === item ? 'nav-item active' : 'nav-item'} onClick={() => setCategory(item)}>
+            <button key={item} className={category === item ? 'nav-item active' : 'nav-item'} onClick={() => { setSelectedTag(null); setCategory(item); }}>
               <i className={`category-dot ${item.toLowerCase()}`} />{item}
             </button>
           ))}
+          {availableTags.length > 0 && (
+            <>
+              <p className="nav-label categories-label">TAGS</p>
+              {availableTags.map(tag => (
+                <button
+                  key={tag}
+                  className={`nav-item tag-filter ${selectedTag === tag ? 'active' : ''} ${tagColorClass(tag)}`}
+                  onClick={() => { setCategory('All notes'); setSelectedTag(current => current === tag ? null : tag); }}
+                >
+                  <span>#</span>{tag}<b>{notes.filter(note => note.tags.includes(tag)).length}</b>
+                </button>
+              ))}
+            </>
+          )}
           <p className="nav-label categories-label">CONNECT <button onClick={() => setShowMcp(true)}>＋</button></p>
           <button className="nav-item" onClick={() => setShowMcp(true)}><span>✧</span> Connect GPT</button>
         </nav>
@@ -569,7 +648,7 @@ export default function Workspace() {
               onClick={() => setSidebarCollapsed(current => !current)}
             >{sidebarCollapsed ? '☷' : '◧'}</button>
             <button className="mobile-nav-toggle" aria-label="Open navigation" aria-expanded={mobileNavOpen} onClick={() => setMobileNavOpen(true)}>☰</button>
-            <button onClick={async () => { if (await selectNote(null)) { setCategory('All notes'); setSearch(''); } }}>Workspace</button>
+            <button onClick={async () => { if (await selectNote(null)) { setCategory('All notes'); setSelectedTag(null); setSearch(''); } }}>Workspace</button>
             {pageBreadcrumbs.map(crumb => (
               <span className="breadcrumb-segment" key={crumb.id}>
                 <b>/</b>
@@ -595,10 +674,18 @@ export default function Workspace() {
             <div className="page-heading">
               <div>
                 <p className="eyebrow">{category === 'Inbox' ? 'CAPTURED FOR LATER' : category === 'All notes' ? 'YOUR LIBRARY' : 'FILTERED NOTES'}</p>
-                <h1>{category}</h1>
+                <h1>{selectedTag ? `# ${selectedTag}` : category}</h1>
                 <p className="muted">{category === 'Inbox' ? 'Thoughts and links to organize when you are ready.' : `${visibleNotes.length} ${visibleNotes.length === 1 ? 'note' : 'notes'} · Updated across your workspace`}</p>
               </div>
               <div className="view-toggle">
+                <label className="sort-control">
+                  <span>Sort</span>
+                  <select value={sortMode} onChange={event => setSortMode(event.target.value as typeof sortMode)} aria-label="Sort pages">
+                    <option value="updated">Last edited</option>
+                    <option value="created">Date created</option>
+                    <option value="title">Title</option>
+                  </select>
+                </label>
                 <button className={view === 'list' ? 'selected' : ''} onClick={() => setView('list')}>☷</button>
                 <button className={view === 'grid' ? 'selected' : ''} onClick={() => setView('grid')}>⊞</button>
               </div>
@@ -640,11 +727,13 @@ export default function Workspace() {
                   >
                     <div className="note-icon">{note.icon}</div>
                     <div className="note-preview">
-                      <div className="note-title-row"><h3>{note.title || 'Untitled'}</h3>{note.bookmarked && <span className="star">★</span>}</div>
+                      <div className="note-title-row"><h3>{note.title || 'Untitled'}</h3>{note.pinned && <span className="pin-indicator" title="Pinned page">⌖</span>}{note.bookmarked && <span className="star">★</span>}</div>
                       <p>{note.content || 'Empty note — start writing...'}</p>
                       {note.source_url && <p className="source-preview">{note.source_url}</p>}
                       <div className="note-meta">
                         <span className={`tag ${note.category.toLowerCase()}`}>{note.category}</span>
+                        {note.tags.slice(0, 3).map(tag => <span key={tag} className={`tag-chip ${tagColorClass(tag)}`}>#{tag}</span>)}
+                        {note.tags.length > 3 && <span className="tag-overflow">+{note.tags.length - 3}</span>}
                         <span>{relativeDate(note.updated_at)}</span>
                       </div>
                     </div>
@@ -663,6 +752,7 @@ export default function Workspace() {
                   </span>
                   <div>
                     <button className="toolbar-button" onClick={() => toggleBookmark(selected)}>{selected.bookmarked ? '★' : '☆'}</button>
+                    <button className={`toolbar-button pin-button ${selected.pinned ? 'pinned' : ''}`} onClick={() => togglePin(selected)} aria-label={selected.pinned ? 'Unpin page' : 'Pin page'} title={selected.pinned ? 'Unpin page' : 'Pin page'}>{selected.pinned ? '◆' : '◇'}</button>
                     <button className="toolbar-button" onClick={removeNote} disabled={deleting} aria-label="Delete note" title="Delete note">
                       {deleting ? '…' : '⌫'}
                     </button>
@@ -685,6 +775,33 @@ export default function Workspace() {
                     <input className="title-input" value={selected.title} onChange={event => updateSelected('title', event.target.value)} placeholder="Untitled" />
                     <div className="editor-info">
                       <span>Last edited {relativeDate(selected.updated_at).toLowerCase()}</span><span>·</span><span>{wordCount} words</span>
+                    </div>
+                    <div className="page-tags">
+                      {selected.tags.map(tag => (
+                        <span className={`tag-chip editable-tag ${tagColorClass(tag)}`} key={tag}>
+                          #{tag}
+                          <button type="button" aria-label={`Remove ${tag} tag`} onClick={() => updateSelected('tags', selected.tags.filter(item => item !== tag))}>×</button>
+                        </span>
+                      ))}
+                      <form className="tag-entry" onSubmit={event => { event.preventDefault(); addTag(); }}>
+                        <input
+                          value={tagInput}
+                          onChange={event => setTagInput(event.target.value)}
+                          onKeyDown={event => {
+                            if (event.key === ',' && tagInput.trim()) {
+                              event.preventDefault();
+                              addTag();
+                            }
+                          }}
+                          list="workspace-tag-suggestions"
+                          maxLength={32}
+                          placeholder="+ Add a tag"
+                          aria-label="Add a page tag"
+                        />
+                        <datalist id="workspace-tag-suggestions">
+                          {availableTags.map(tag => <option key={tag} value={tag} />)}
+                        </datalist>
+                      </form>
                     </div>
                   {childPages.length > 0 && (
                     <div className="page-children">

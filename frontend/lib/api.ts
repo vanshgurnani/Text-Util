@@ -12,6 +12,8 @@ export type Note = {
   inbox: boolean;
   version: number;
   bookmarked: boolean;
+  pinned: boolean;
+  tags: string[];
   created_at: string;
   updated_at: string;
 };
