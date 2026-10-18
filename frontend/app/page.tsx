@@ -23,6 +23,7 @@ export default function Workspace() {
   const [view, setView] = useState<'list' | 'grid'>('list');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState('');
   const [showMcp, setShowMcp] = useState(false);
   const [mcpToken, setMcpToken] = useState('');
@@ -121,11 +122,18 @@ export default function Workspace() {
 
   async function removeNote() {
     if (!selected || !window.confirm('Delete this note?')) return;
-    await api(`/notes/${selected.id}`, { method: 'DELETE' });
-    const remaining = notes.filter(note => note.id !== selected.id);
-    setNotes(remaining);
-    setSelected(remaining[0] || null);
-    flash('Note deleted');
+    setDeleting(true);
+    try {
+      await api(`/notes/${selected.id}`, { method: 'DELETE' });
+      const remaining = notes.filter(note => note.id !== selected.id);
+      setNotes(remaining);
+      setSelected(remaining[0] || null);
+      flash('Note deleted');
+    } catch (err) {
+      flash(err instanceof Error ? err.message : 'Could not delete note');
+    } finally {
+      setDeleting(false);
+    }
   }
 
   function flash(text: string) {
@@ -242,7 +250,9 @@ export default function Workspace() {
                   <span className="saved-state">{saving ? 'Saving…' : '✓ Saved'}</span>
                   <div>
                     <button className="toolbar-button" onClick={() => toggleBookmark(selected)}>{selected.bookmarked ? '★' : '☆'}</button>
-                    <button className="toolbar-button" onClick={removeNote}>⌫</button>
+                    <button className="toolbar-button" onClick={removeNote} disabled={deleting} aria-label="Delete note" title="Delete note">
+                      {deleting ? '…' : '⌫'}
+                    </button>
                     <button className="save-button" onClick={saveNote}>{saving ? 'Saving' : 'Save note'} <span>⌘ S</span></button>
                   </div>
                 </div>

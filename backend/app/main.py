@@ -369,6 +369,8 @@ async def mcp(request: Request):
                 {"name": "search_notes", "description": "Search the connected user's notes by title or content.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:read"]}], "inputSchema": {"type": "object", "properties": {"query": {"type": "string"}}, "required": ["query"]}},
                 {"name": "get_note", "description": "Read one note by id.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:read"]}], "inputSchema": {"type": "object", "properties": {"note_id": {"type": "string"}}, "required": ["note_id"]}},
                 {"name": "create_note", "description": "Save a new note to the connected user's workspace.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:write"]}], "inputSchema": {"type": "object", "properties": {"title": {"type": "string"}, "content": {"type": "string"}, "category": {"type": "string"}}, "required": ["content"]}},
+                {"name": "update_note", "description": "Edit an existing note. Only the supplied fields are changed.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:write"]}], "inputSchema": {"type": "object", "properties": {"note_id": {"type": "string"}, "title": {"type": "string"}, "content": {"type": "string"}, "category": {"type": "string"}}, "required": ["note_id"]}},
+                {"name": "delete_note", "description": "Permanently delete a note from the connected user's workspace.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:write"]}], "inputSchema": {"type": "object", "properties": {"note_id": {"type": "string"}}, "required": ["note_id"]}},
                 {"name": "list_bookmarks", "description": "List the connected user's bookmarked notes.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:read"]}], "inputSchema": {"type": "object", "properties": {}}},
             ]})
         if call.method != "tools/call":
@@ -383,6 +385,17 @@ async def mcp(request: Request):
         elif tool == "create_note":
             created = create_note(NoteCreate(title=values.get("title", "Untitled"), content=values.get("content", ""), category=values.get("category", "General")), user=user)
             text = f"Created note {created['note']['id']}: {created['note']['title']}"
+        elif tool == "update_note":
+            note_id = str(values.get("note_id", ""))
+            changes = {key: values[key] for key in ("title", "content", "category") if key in values}
+            if not changes:
+                return mcp_error(call.id, -32602, "At least one of title, content, or category is required")
+            updated = update_note(note_id, NoteUpdate(**changes), user=user)
+            text = f"Updated note {updated['note']['id']}: {updated['note']['title']}"
+        elif tool == "delete_note":
+            note_id = str(values.get("note_id", ""))
+            delete_note(note_id, user=user)
+            text = f"Deleted note {note_id}"
         elif tool == "list_bookmarks":
             notes = list_notes(bookmarked=True, user=user)["notes"]
             text = "\n\n".join(f"[{note['id']}] {note['title']}\n{note['content']}" for note in notes) or "No bookmarked notes."
