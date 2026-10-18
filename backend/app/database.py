@@ -14,6 +14,14 @@ def notes_collection():
     return db.notes
 
 
+def data_tables_collection():
+    return db.data_tables
+
+
+def data_records_collection():
+    return db.data_records
+
+
 def users_collection():
     return db.users
 
@@ -42,6 +50,8 @@ async def lifespan(_: FastAPI):
         users_collection().create_index("username", unique=True)
         notes_collection().create_index([("owner_id", ASCENDING), ("updated_at", DESCENDING)])
         notes_collection().create_index([("owner_id", ASCENDING), ("title", ASCENDING)])
+        data_tables_collection().create_index([("owner_id", ASCENDING), ("updated_at", DESCENDING)])
+        data_records_collection().create_index([("owner_id", ASCENDING), ("table_id", ASCENDING), ("updated_at", DESCENDING)])
     except Exception as exc:
         # The API can still start while Mongo is coming up; requests will report a useful error.
         print(f"MongoDB is not ready yet: {exc}")

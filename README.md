@@ -15,6 +15,8 @@ Noteform is a calm, Notion-inspired personal notes workspace. Users can create, 
 - User-created page tags with autocomplete suggestions, color-coded chips, and
   tag filtering.
 - Pinned pages and page sorting by last edited, creation date, or title.
+- Structured-data tables with Text, Number, Date, Checkbox, and Select columns,
+  inline record editing, and workspace-scoped storage.
 - Nested pages with a navigable page tree in each personal workspace.
 - Quick-capture Inbox for thoughts and source links to organize later.
 - Manifest-free Markdown ZIP import/export for Markdown pages and nested folders.
@@ -28,7 +30,8 @@ Noteform is a calm, Notion-inspired personal notes workspace. Users can create, 
 - HTTP-only web sessions with JWT compatibility for existing clients.
 - Permanent, user-scoped MCP API tokens stored as SHA-256 hashes.
 - OAuth 2.1 discovery, dynamic client registration, authorization-code + PKCE flow, and refresh tokens for hosted MCP clients such as ChatGPT.
-- MCP tools for `search_notes`, `get_note`, `create_note`, and `list_bookmarks`.
+- MCP tools for notes and bookmarks, plus structured table/record operations
+  such as `list_tables`, `create_table`, `get_table`, and record CRUD.
 - MongoDB persistence with Docker volume storage.
 - Public HTTPS MCP access through the hosting provider's web service.
 - Mongo-backed background jobs with a Compose worker for asynchronous insights.
@@ -54,7 +57,7 @@ foundations and operations. The [frontend UI redesign plan](docs/FRONTEND-UI-RED
 tracks the workspace and editor experience improvements. The workspace uses a
 neutral light theme with a muted Noteform-green accent. The
 [structured data roadmap](docs/STRUCTURED-DATA-ROADMAP.md) covers
-spreadsheet-like tables, typed properties, and CSV/Excel import/export.
+spreadsheet-like tables, typed properties, and future CSV/Excel import/export.
 
 ## Repository layout
 

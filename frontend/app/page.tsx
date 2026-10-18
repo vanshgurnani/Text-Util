@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import MarkdownEditor from '@/app/components/MarkdownEditor';
 import PagesTree from '@/app/components/PagesTree';
@@ -590,6 +591,7 @@ export default function Workspace() {
           }}><span>⌁</span> Inbox</button>
           <button className={category === 'Favorites' ? 'nav-item active' : 'nav-item'} onClick={() => { setSelectedTag(null); setCategory('Favorites'); }}><span>♡</span> Favorites</button>
           <button className={category === 'Pinned' ? 'nav-item active' : 'nav-item'} onClick={() => { setSelectedTag(null); setCategory('Pinned'); }}><span>⌖</span> Pinned <b>{notes.filter(note => note.pinned).length}</b></button>
+          <Link className="nav-item" href="/tables"><span>▦</span> Structured data</Link>
           {recentIds.some(id => notes.some(note => note.id === id)) && (
             <>
               <p className="nav-label categories-label">RECENT</p>

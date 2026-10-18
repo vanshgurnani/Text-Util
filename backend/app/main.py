@@ -4,6 +4,7 @@ import base64
 import hashlib
 import html
 import io
+import json
 import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
@@ -12,15 +13,18 @@ from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from bson import ObjectId
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import ValidationError
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from pymongo import ReturnDocument
 from pymongo.errors import DuplicateKeyError
 
 from .auth import create_access_token, create_mcp_token, create_oauth_token, current_user, hash_mcp_token, hash_password, public_user, user_from_token, verify_password
 from .config import settings
-from .database import lifespan, notes_collection, oauth_clients_collection, oauth_codes_collection, oauth_tokens_collection, summaries_collection, users_collection
+from .database import data_records_collection, data_tables_collection, lifespan, notes_collection, oauth_clients_collection, oauth_codes_collection, oauth_tokens_collection, summaries_collection, users_collection
 from .schemas import LoginRequest, MCPCall, NoteCreate, NoteUpdate, RegisterRequest, SummaryCreate
 from .serializers import serialize_note
+from .structured_data import normalize_columns, serialize_record, serialize_table, validate_record_values
+from .structured_schemas import DataColumn, DataRecordCreate, DataRecordUpdate, DataTableCreate, DataTableUpdate
 from .workspace_archive import MAX_ARCHIVE_BYTES, MAX_ARCHIVE_NOTES, create_workspace_archive, parse_workspace_archive
 
 
@@ -475,6 +479,141 @@ def insights(user: dict = Depends(current_user)):
     return {"total_notes": len(notes), "total_words": words, "categories": by_category}
 
 
+def data_table_or_404(table_id: str, user: dict) -> dict:
+    if not ObjectId.is_valid(table_id):
+        raise HTTPException(status_code=400, detail="Invalid table id")
+    table = data_tables_collection().find_one({"_id": ObjectId(table_id), **owner_filter(user)})
+    if not table:
+        raise HTTPException(status_code=404, detail="Table not found")
+    return table
+
+
+def data_record_or_404(table_id: str, record_id: str, user: dict) -> tuple[dict, dict]:
+    table = data_table_or_404(table_id, user)
+    if not ObjectId.is_valid(record_id):
+        raise HTTPException(status_code=400, detail="Invalid record id")
+    record = data_records_collection().find_one({
+        "_id": ObjectId(record_id),
+        "table_id": table["_id"],
+        **owner_filter(user),
+    })
+    if not record:
+        raise HTTPException(status_code=404, detail="Record not found")
+    return table, record
+
+
+@app.get("/tables")
+def list_data_tables(user: dict = Depends(current_user)):
+    tables = data_tables_collection().find(owner_filter(user)).sort("updated_at", -1).limit(200)
+    return {"tables": [serialize_table(table) for table in tables]}
+
+
+@app.post("/tables", status_code=status.HTTP_201_CREATED)
+def create_data_table(payload: DataTableCreate, user: dict = Depends(current_user)):
+    now = datetime.now(timezone.utc)
+    table = {
+        "owner_id": user["_id"],
+        "name": payload.name,
+        "columns": [column.model_dump() for column in payload.columns],
+        "created_at": now,
+        "updated_at": now,
+    }
+    result = data_tables_collection().insert_one(table)
+    table["_id"] = result.inserted_id
+    return {"table": serialize_table(table)}
+
+
+@app.get("/tables/{table_id}")
+def get_data_table(table_id: str, user: dict = Depends(current_user)):
+    return {"table": serialize_table(data_table_or_404(table_id, user))}
+
+
+@app.patch("/tables/{table_id}")
+def update_data_table(table_id: str, payload: DataTableUpdate, user: dict = Depends(current_user)):
+    data_table_or_404(table_id, user)
+    changes = {key: value for key, value in payload.model_dump().items() if value is not None}
+    if not changes:
+        raise HTTPException(status_code=422, detail="A table name is required")
+    changes["updated_at"] = datetime.now(timezone.utc)
+    table = data_tables_collection().find_one_and_update(
+        {"_id": ObjectId(table_id), **owner_filter(user)},
+        {"$set": changes},
+        return_document=ReturnDocument.AFTER,
+    )
+    return {"table": serialize_table(table)}
+
+
+@app.delete("/tables/{table_id}")
+def delete_data_table(table_id: str, user: dict = Depends(current_user)):
+    table = data_table_or_404(table_id, user)
+    data_records_collection().delete_many({"table_id": table["_id"], **owner_filter(user)})
+    data_tables_collection().delete_one({"_id": table["_id"], **owner_filter(user)})
+    return {"success": True}
+
+
+@app.post("/tables/{table_id}/columns", status_code=status.HTTP_201_CREATED)
+def add_data_column(table_id: str, payload: DataColumn, user: dict = Depends(current_user)):
+    table = data_table_or_404(table_id, user)
+    columns = normalize_columns([*table.get("columns", []), payload.model_dump()])
+    updated = data_tables_collection().find_one_and_update(
+        {"_id": table["_id"], **owner_filter(user)},
+        {"$set": {"columns": columns, "updated_at": datetime.now(timezone.utc)}},
+        return_document=ReturnDocument.AFTER,
+    )
+    return {"table": serialize_table(updated)}
+
+
+@app.get("/tables/{table_id}/records")
+def list_data_records(table_id: str, limit: int = Query(default=200, ge=1, le=500), user: dict = Depends(current_user)):
+    table = data_table_or_404(table_id, user)
+    records = data_records_collection().find({
+        "table_id": table["_id"],
+        **owner_filter(user),
+    }).sort([("created_at", 1), ("_id", 1)]).limit(limit)
+    return {"records": [serialize_record(record) for record in records]}
+
+
+@app.post("/tables/{table_id}/records", status_code=status.HTTP_201_CREATED)
+def create_data_record(table_id: str, payload: DataRecordCreate, user: dict = Depends(current_user)):
+    table = data_table_or_404(table_id, user)
+    now = datetime.now(timezone.utc)
+    record = {
+        "owner_id": user["_id"],
+        "table_id": table["_id"],
+        "values": validate_record_values(table.get("columns", []), payload.values),
+        "version": 1,
+        "created_at": now,
+        "updated_at": now,
+    }
+    result = data_records_collection().insert_one(record)
+    record["_id"] = result.inserted_id
+    return {"record": serialize_record(record)}
+
+
+@app.patch("/tables/{table_id}/records/{record_id}")
+def update_data_record(table_id: str, record_id: str, payload: DataRecordUpdate, user: dict = Depends(current_user)):
+    table, record = data_record_or_404(table_id, record_id, user)
+    if payload.version != int(record.get("version", 1)):
+        raise HTTPException(status_code=409, detail="This record changed elsewhere. Reload it before saving.")
+    current_values = record.get("values", {})
+    values = validate_record_values(table.get("columns", []), {**current_values, **payload.values})
+    updated = data_records_collection().find_one_and_update(
+        {"_id": record["_id"], **owner_filter(user), "version": payload.version},
+        {"$set": {"values": values, "updated_at": datetime.now(timezone.utc)}, "$inc": {"version": 1}},
+        return_document=ReturnDocument.AFTER,
+    )
+    if not updated:
+        raise HTTPException(status_code=409, detail="This record changed elsewhere. Reload it before saving.")
+    return {"record": serialize_record(updated)}
+
+
+@app.delete("/tables/{table_id}/records/{record_id}")
+def delete_data_record(table_id: str, record_id: str, user: dict = Depends(current_user)):
+    _, record = data_record_or_404(table_id, record_id, user)
+    data_records_collection().delete_one({"_id": record["_id"], **owner_filter(user)})
+    return {"success": True}
+
+
 def mcp_error(request_id: Any, code: int, message: str):
     return {"jsonrpc": "2.0", "id": request_id, "error": {"code": code, "message": message}}
 
@@ -534,6 +673,15 @@ async def mcp(request: Request):
                 {"name": "update_note", "description": "Edit an existing note. Only the supplied fields are changed. Pass the version read from get_note to detect conflicting edits.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:write"]}], "inputSchema": {"type": "object", "properties": {"note_id": {"type": "string"}, "version": {"type": "integer", "minimum": 1}, "title": {"type": "string"}, "content": {"type": "string"}, "category": {"type": "string"}}, "required": ["note_id"]}},
                 {"name": "delete_note", "description": "Permanently delete a note from the connected user's workspace.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:write"]}], "inputSchema": {"type": "object", "properties": {"note_id": {"type": "string"}}, "required": ["note_id"]}},
                 {"name": "list_bookmarks", "description": "List the connected user's bookmarked notes.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:read"]}], "inputSchema": {"type": "object", "properties": {}}},
+                {"name": "list_tables", "description": "List structured-data tables in the connected user's workspace.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:read"]}], "inputSchema": {"type": "object", "properties": {}}},
+                {"name": "create_table", "description": "Create a structured-data table. Supported column types: text, number, date, checkbox, select.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:write"]}], "inputSchema": {"type": "object", "properties": {"name": {"type": "string"}, "columns": {"type": "array", "items": {"type": "object", "properties": {"name": {"type": "string"}, "type": {"type": "string", "enum": ["text", "number", "date", "checkbox", "select"]}, "options": {"type": "array", "items": {"type": "string"}}}, "required": ["name", "type"]}}}, "required": ["name"]}},
+                {"name": "get_table", "description": "Get a table's column definitions by table id.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:read"]}], "inputSchema": {"type": "object", "properties": {"table_id": {"type": "string"}}, "required": ["table_id"]}},
+                {"name": "add_table_column", "description": "Add a typed column to a table. Select columns require options.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:write"]}], "inputSchema": {"type": "object", "properties": {"table_id": {"type": "string"}, "column": {"type": "object", "properties": {"name": {"type": "string"}, "type": {"type": "string", "enum": ["text", "number", "date", "checkbox", "select"]}, "options": {"type": "array", "items": {"type": "string"}}}, "required": ["name", "type"]}}, "required": ["table_id", "column"]}},
+                {"name": "list_table_records", "description": "List records in a table. Returns at most 500 records.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:read"]}], "inputSchema": {"type": "object", "properties": {"table_id": {"type": "string"}, "limit": {"type": "integer", "minimum": 1, "maximum": 500}}, "required": ["table_id"]}},
+                {"name": "create_table_record", "description": "Create a record. Values are keyed by column id; get_table provides the ids and types.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:write"]}], "inputSchema": {"type": "object", "properties": {"table_id": {"type": "string"}, "values": {"type": "object"}}, "required": ["table_id", "values"]}},
+                {"name": "update_table_record", "description": "Update a record using its version and a partial values object.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:write"]}], "inputSchema": {"type": "object", "properties": {"table_id": {"type": "string"}, "record_id": {"type": "string"}, "version": {"type": "integer", "minimum": 1}, "values": {"type": "object"}}, "required": ["table_id", "record_id", "version", "values"]}},
+                {"name": "delete_table_record", "description": "Permanently delete one record from a table.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:write"]}], "inputSchema": {"type": "object", "properties": {"table_id": {"type": "string"}, "record_id": {"type": "string"}}, "required": ["table_id", "record_id"]}},
+                {"name": "delete_table", "description": "Permanently delete a table and all its records.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:write"]}], "inputSchema": {"type": "object", "properties": {"table_id": {"type": "string"}}, "required": ["table_id"]}},
             ]})
         if call.method != "tools/call":
             return mcp_error(call.id, -32601, "Method not found")
@@ -561,6 +709,40 @@ async def mcp(request: Request):
         elif tool == "list_bookmarks":
             notes = list_notes(bookmarked=True, user=user)["notes"]
             text = "\n\n".join(f"[{note['id']}] {note['title']}\n{note['content']}" for note in notes) or "No bookmarked notes."
+        elif tool == "list_tables":
+            text = json.dumps(list_data_tables(user=user)["tables"], ensure_ascii=False)
+        elif tool == "create_table":
+            table = create_data_table(DataTableCreate.model_validate(values), user=user)["table"]
+            text = json.dumps(table, ensure_ascii=False)
+        elif tool == "get_table":
+            text = json.dumps(get_data_table(str(values.get("table_id", "")), user=user)["table"], ensure_ascii=False)
+        elif tool == "add_table_column":
+            table_id = str(values.get("table_id", ""))
+            column = DataColumn.model_validate(values.get("column", {}))
+            text = json.dumps(add_data_column(table_id, column, user=user)["table"], ensure_ascii=False)
+        elif tool == "list_table_records":
+            table_id = str(values.get("table_id", ""))
+            limit = int(values.get("limit", 200))
+            text = json.dumps(list_data_records(table_id, limit=limit, user=user)["records"], ensure_ascii=False)
+        elif tool == "create_table_record":
+            table_id = str(values.get("table_id", ""))
+            record = create_data_record(table_id, DataRecordCreate.model_validate({"values": values.get("values", {})}), user=user)["record"]
+            text = json.dumps(record, ensure_ascii=False)
+        elif tool == "update_table_record":
+            table_id = str(values.get("table_id", ""))
+            record_id = str(values.get("record_id", ""))
+            payload_values = {key: values[key] for key in ("version", "values") if key in values}
+            record = update_data_record(table_id, record_id, DataRecordUpdate.model_validate(payload_values), user=user)["record"]
+            text = json.dumps(record, ensure_ascii=False)
+        elif tool == "delete_table_record":
+            table_id = str(values.get("table_id", ""))
+            record_id = str(values.get("record_id", ""))
+            delete_data_record(table_id, record_id, user=user)
+            text = f"Deleted record {record_id}"
+        elif tool == "delete_table":
+            table_id = str(values.get("table_id", ""))
+            delete_data_table(table_id, user=user)
+            text = f"Deleted table {table_id} and its records"
         else:
             return mcp_error(call.id, -32602, f"Unknown tool: {tool}")
         return mcp_result(call.id, {"content": [{"type": "text", "text": text or "No matching notes."}]})
@@ -568,5 +750,7 @@ async def mcp(request: Request):
         if exc.status_code == 401:
             mcp_unauthorized(exc)
         return mcp_error(call.id, -32001, exc.detail)
+    except ValidationError as exc:
+        return mcp_error(call.id, -32602, str(exc))
     except Exception as exc:
         return mcp_error(call.id, -32000, str(exc))

@@ -85,17 +85,18 @@ clear, or cancel.
 
 ### Release 1 — Useful table basics
 
-- [ ] Create, rename, and delete a table; optionally locate it under a page.
-- [ ] Start with a useful name/text column and let the user add, rename,
-  reorder, and delete properties.
-- [ ] Support Text, Number, Date, Checkbox, and Select columns.
-- [ ] Add, edit, duplicate, and delete records with clear confirmation for
-  destructive actions.
-- [ ] Edit common cell values inline; expose a row detail panel for longer
-  content.
+- [x] Create, rename, and delete a table.
+- [x] Start with useful Name and Status columns and let the user add columns.
+- [x] Support Text, Number, Date, Checkbox, and Select columns.
+- [x] Add, edit, and delete records with confirmation for destructive actions.
+- [x] Edit common cell values inline with version checks against concurrent
+  edits.
+- [ ] Rename, reorder, and delete properties.
+- [ ] Duplicate records and expose a row detail panel for longer content.
 - [ ] Sort by one property and filter by text, select, checkbox, and date.
 - [ ] Save a default table view and preserve a stable ordering of rows.
-- [ ] Show empty, loading, validation, save, and error states.
+- [x] Show empty, loading, validation, save, and error states.
+- [x] Expose table and record operations through authenticated MCP tools.
 
 **Release 1 acceptance:** a user can create a table, enter at least 100 records,
 edit and reload them without data loss, and find a record using sort and filter.

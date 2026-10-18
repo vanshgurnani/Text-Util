@@ -18,6 +18,30 @@ export type Note = {
   updated_at: string;
 };
 
+export type DataColumn = {
+  id: string;
+  name: string;
+  type: 'text' | 'number' | 'date' | 'checkbox' | 'select';
+  options: string[];
+};
+
+export type DataTable = {
+  id: string;
+  name: string;
+  columns: DataColumn[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type DataRecord = {
+  id: string;
+  table_id: string;
+  values: Record<string, string | number | boolean | null>;
+  version: number;
+  created_at: string;
+  updated_at: string;
+};
+
 export class ApiError extends Error {
   constructor(
     message: string,
