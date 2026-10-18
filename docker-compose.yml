@@ -1,0 +1,37 @@
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017"
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      MONGO_URI: mongodb://mongo:27017
+      MONGO_DB: noteform
+      JWT_SECRET: ${JWT_SECRET:-local-development-secret-change-me}
+      CORS_ORIGINS: http://localhost:3000
+      MCP_API_KEY: ${MCP_API_KEY:-}
+      MCP_USER_ID: ${MCP_USER_ID:-}
+    depends_on:
+      - mongo
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+
+volumes:
+  mongo_data:
