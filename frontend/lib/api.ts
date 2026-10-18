@@ -10,10 +10,22 @@ export type Note = {
   parent_id: string | null;
   source_url: string | null;
   inbox: boolean;
+  version: number;
   bookmarked: boolean;
   created_at: string;
   updated_at: string;
 };
+
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+    public readonly detail: unknown,
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
 
 export async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('noteform_token') : null;
@@ -22,7 +34,18 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
   if (token) headers.set('Authorization', `Bearer ${token}`);
   const response = await fetch(`${API_URL}${path}`, { ...options, headers });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.detail || data.error || 'Something went wrong');
+  if (!response.ok) {
+    const detail = data.detail || data.error;
+    const detailMessage = typeof detail === 'object' && detail !== null && 'message' in detail
+      ? detail.message
+      : undefined;
+    const message = typeof detail === 'string'
+      ? detail
+      : typeof detailMessage === 'string'
+        ? detailMessage
+        : 'Something went wrong';
+    throw new ApiError(message, response.status, detail);
+  }
   return data as T;
 }
 

@@ -14,6 +14,7 @@ Noteform is a calm, Notion-inspired personal notes workspace. Users can create, 
 - Note creation, editing, deletion, category filtering, search, and bookmarks.
 - Nested pages with a navigable page tree in each personal workspace.
 - Quick-capture Inbox for thoughts and source links to organize later.
+- Debounced editor autosave with concurrent-edit conflict handling.
 - Responsive Notion-inspired two-pane workspace UI.
 - JWT session authentication for the web application.
 - HTTP-only web sessions with JWT compatibility for existing clients.

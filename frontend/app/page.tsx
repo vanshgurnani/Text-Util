@@ -1,10 +1,10 @@
 'use client';
 
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import MarkdownEditor from '@/app/components/MarkdownEditor';
 import PagesTree from '@/app/components/PagesTree';
-import { api, clearSession, Note, User } from '@/lib/api';
+import { ApiError, api, clearSession, Note, User } from '@/lib/api';
 
 const categories = ['All notes', 'Personal', 'Work', 'Ideas', 'Reading', 'General'];
 const icons = ['✦', '◌', '⌁', '□', '◈', '○'];
@@ -24,6 +24,8 @@ export default function Workspace() {
   const [view, setView] = useState<'list' | 'grid'>('list');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'dirty' | 'saving' | 'error' | 'conflict'>('saved');
+  const [draftDirty, setDraftDirty] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [message, setMessage] = useState('');
   const [showMcp, setShowMcp] = useState(false);
@@ -34,6 +36,8 @@ export default function Workspace() {
   const [captureSource, setCaptureSource] = useState('');
   const [captureError, setCaptureError] = useState('');
   const [capturing, setCapturing] = useState(false);
+  const editRevision = useRef(0);
+  const saveInFlight = useRef(false);
 
   useEffect(() => {
     const stored = localStorage.getItem('noteform_user');
@@ -89,31 +93,107 @@ export default function Workspace() {
   function updateSelected(key: 'title' | 'content' | 'category', value: string) {
     if (!selected) return;
     setSelected({ ...selected, [key]: value });
+    editRevision.current += 1;
+    setDraftDirty(true);
+    setSaveStatus(current => current === 'conflict' ? 'conflict' : 'dirty');
   }
 
-  async function saveNote() {
-    if (!selected) return;
+  const saveNote = useCallback(async (overwrite = false): Promise<boolean> => {
+    if (!selected || saveInFlight.current) return false;
+    const revision = editRevision.current;
+    let expectedVersion = selected.version;
     setSaving(true);
+    saveInFlight.current = true;
+    setSaveStatus('saving');
     try {
+      if (overwrite) {
+        const latest = await api<{ note: Note }>(`/notes/${selected.id}`);
+        expectedVersion = latest.note.version;
+      }
       const result = await api<{ note: Note }>(`/notes/${selected.id}`, {
         method: 'PATCH',
         body: JSON.stringify({
+          version: expectedVersion,
           title: selected.title,
           content: selected.content,
           category: selected.category,
         }),
       });
-      setSelected(result.note);
       setNotes(current => current.map(note => note.id === result.note.id ? result.note : note));
-      flash('Saved just now');
+      if (editRevision.current === revision) {
+        setSelected(current => current?.id === result.note.id ? result.note : current);
+        setDraftDirty(false);
+        setSaveStatus('saved');
+      } else {
+        setSelected(current => current?.id === result.note.id
+          ? { ...current, version: result.note.version, updated_at: result.note.updated_at }
+          : current);
+        setSaveStatus('dirty');
+      }
+      return true;
     } catch (err) {
-      flash(err instanceof Error ? err.message : 'Could not save');
+      if (err instanceof ApiError && err.status === 409) {
+        setSaveStatus('conflict');
+      } else {
+        setSaveStatus('error');
+      }
+      return false;
     } finally {
+      saveInFlight.current = false;
       setSaving(false);
+    }
+  }, [selected]);
+
+  useEffect(() => {
+    if (!selected || !draftDirty || saveStatus !== 'dirty') return;
+    const timer = setTimeout(() => { void saveNote(); }, 900);
+    return () => clearTimeout(timer);
+  }, [selected, draftDirty, saveStatus, saveNote]);
+
+  useEffect(() => {
+    function handleSaveShortcut(event: KeyboardEvent) {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
+        event.preventDefault();
+        if (draftDirty && saveStatus !== 'conflict') void saveNote();
+      }
+    }
+    window.addEventListener('keydown', handleSaveShortcut);
+    return () => window.removeEventListener('keydown', handleSaveShortcut);
+  }, [draftDirty, saveNote, saveStatus]);
+
+  useEffect(() => {
+    function warnBeforeLeaving(event: BeforeUnloadEvent) {
+      if (!draftDirty) return;
+      event.preventDefault();
+      event.returnValue = '';
+    }
+    window.addEventListener('beforeunload', warnBeforeLeaving);
+    return () => window.removeEventListener('beforeunload', warnBeforeLeaving);
+  }, [draftDirty]);
+
+  async function selectNote(note: Note | null): Promise<boolean> {
+    if (draftDirty && !await saveNote()) return false;
+    setSelected(note);
+    setSaveStatus('saved');
+    return true;
+  }
+
+  async function reloadConflictedNote() {
+    if (!selected) return;
+    try {
+      const latest = await api<{ note: Note }>(`/notes/${selected.id}`);
+      setSelected(latest.note);
+      setNotes(current => current.map(note => note.id === latest.note.id ? latest.note : note));
+      setDraftDirty(false);
+      setSaveStatus('saved');
+    } catch (err) {
+      setSaveStatus('error');
+      flash(err instanceof Error ? err.message : 'Could not reload page');
     }
   }
 
   async function createNote(parentId: string | null = null) {
+    if (draftDirty && !await saveNote()) return;
     try {
       const result = await api<{ note: Note }>('/notes', {
         method: 'POST',
@@ -127,6 +207,8 @@ export default function Workspace() {
       });
       setNotes(current => [result.note, ...current]);
       setSelected(result.note);
+      setDraftDirty(false);
+      setSaveStatus('saved');
       flash('New note created');
     } catch (err) {
       flash(err instanceof Error ? err.message : 'Could not create note');
@@ -135,6 +217,10 @@ export default function Workspace() {
 
   async function createCapture(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (draftDirty && !await saveNote()) {
+      setCaptureError('Save or resolve the open page edits before capturing.');
+      return;
+    }
     const sourceUrl = captureSource.trim();
     const content = captureContent.trim();
     if (!sourceUrl && !content) {
@@ -159,6 +245,8 @@ export default function Workspace() {
       setNotes(current => [result.note, ...current]);
       setCategory('Inbox');
       setSelected(result.note);
+      setDraftDirty(false);
+      setSaveStatus('saved');
       setCaptureTitle('');
       setCaptureContent('');
       setCaptureSource('');
@@ -173,10 +261,14 @@ export default function Workspace() {
   }
 
   async function moveCaptureToPages(note: Note) {
+    if (draftDirty && !await saveNote()) return;
     try {
+      const latest = draftDirty && selected?.id === note.id
+        ? await api<{ note: Note }>(`/notes/${note.id}`)
+        : { note };
       const result = await api<{ note: Note }>(`/notes/${note.id}`, {
         method: 'PATCH',
-        body: JSON.stringify({ inbox: false }),
+        body: JSON.stringify({ inbox: false, version: latest.note.version }),
       });
       setNotes(current => current.map(item => item.id === note.id ? result.note : item));
       setSelected(result.note);
@@ -188,20 +280,31 @@ export default function Workspace() {
   }
 
   async function toggleBookmark(note: Note) {
-    const result = await api<{ bookmarked: boolean }>(`/notes/${note.id}/bookmark`, { method: 'POST' });
-    const updated = { ...note, bookmarked: result.bookmarked };
-    setNotes(current => current.map(item => item.id === note.id ? updated : item));
-    if (selected?.id === note.id) setSelected(updated);
+    if (draftDirty && !await saveNote()) return;
+    try {
+      const target = draftDirty && selected?.id === note.id
+        ? (await api<{ note: Note }>(`/notes/${note.id}`)).note
+        : note;
+      const result = await api<{ bookmarked: boolean; version: number }>(`/notes/${note.id}/bookmark`, { method: 'POST' });
+      const updated = { ...target, bookmarked: result.bookmarked, version: result.version };
+      setNotes(current => current.map(item => item.id === note.id ? updated : item));
+      if (selected?.id === note.id) setSelected(updated);
+    } catch (err) {
+      flash(err instanceof Error ? err.message : 'Could not update favorite');
+    }
   }
 
   async function removeNote() {
     if (!selected || !window.confirm('Delete this note?')) return;
+    if (draftDirty && !await saveNote()) return;
     setDeleting(true);
     try {
       await api(`/notes/${selected.id}`, { method: 'DELETE' });
       const remaining = notes.filter(note => note.id !== selected.id);
       setNotes(remaining);
       setSelected(remaining[0] || null);
+      setDraftDirty(false);
+      setSaveStatus('saved');
       flash('Note deleted');
     } catch (err) {
       flash(err instanceof Error ? err.message : 'Could not delete note');
@@ -248,16 +351,21 @@ export default function Workspace() {
         <nav>
           <p className="nav-label">LIBRARY</p>
           <button className={category === 'All notes' ? 'nav-item active' : 'nav-item'} onClick={() => setCategory('All notes')}><span>▤</span> All notes <b>{notes.length}</b></button>
-          <button className={category === 'Inbox' ? 'nav-item active' : 'nav-item'} onClick={() => { setCategory('Inbox'); setSelected(null); }}><span>⌁</span> Inbox</button>
+          <button className={category === 'Inbox' ? 'nav-item active' : 'nav-item'} onClick={() => {
+            void selectNote(null).then(saved => {
+              if (saved) setCategory('Inbox');
+            });
+          }}><span>⌁</span> Inbox</button>
           <button className={category === 'Favorites' ? 'nav-item active' : 'nav-item'} onClick={() => setCategory('Favorites')}><span>♡</span> Favorites</button>
           <p className="nav-label categories-label">PRIVATE <button aria-label="Create page" onClick={() => createNote()}>＋</button></p>
           <PagesTree
             notes={notes.filter(note => !note.inbox)}
             selectedId={selected?.id}
-            onSelect={note => {
-              setCategory('All notes');
-              setSearch('');
-              setSelected(note);
+            onSelect={async note => {
+              if (await selectNote(note)) {
+                setCategory('All notes');
+                setSearch('');
+              }
             }}
             onCreateChild={parentId => createNote(parentId)}
           />
@@ -290,7 +398,7 @@ export default function Workspace() {
             <button className="user-avatar" onClick={logout}>{user.username[0].toUpperCase()}</button>
           </div>
         </header>
-        <div className="workspace">
+        <div className={selected ? 'workspace mobile-editing' : 'workspace'}>
           <div className="notes-column">
             <div className="page-heading">
               <div>
@@ -318,7 +426,7 @@ export default function Workspace() {
             ) : (
               <div className={view === 'grid' ? 'note-list grid-view' : 'note-list'}>
                 {notes.map(note => (
-                  <article key={note.id} className={`note-card ${selected?.id === note.id ? 'selected' : ''}`} onClick={() => setSelected(note)}>
+                  <article key={note.id} className={`note-card ${selected?.id === note.id ? 'selected' : ''}`} onClick={() => { void selectNote(note); }}>
                     <div className="note-icon">{note.icon}</div>
                     <div className="note-preview">
                       <div className="note-title-row"><h3>{note.title || 'Untitled'}</h3>{note.bookmarked && <span className="star">★</span>}</div>
@@ -338,16 +446,28 @@ export default function Workspace() {
             {selected ? (
               <>
                 <div className="editor-toolbar">
-                  <span className="saved-state">{saving ? 'Saving…' : '✓ Saved'}</span>
+                  <button className="mobile-back" onClick={() => { void selectNote(null); }}>← Pages</button>
+                  <span className={`saved-state save-${saveStatus}`}>
+                    {saveStatus === 'saving' || saving ? 'Saving…' : saveStatus === 'dirty' ? 'Unsaved changes' : saveStatus === 'error' ? 'Save failed' : saveStatus === 'conflict' ? 'Conflict detected' : '✓ Saved'}
+                  </span>
                   <div>
                     <button className="toolbar-button" onClick={() => toggleBookmark(selected)}>{selected.bookmarked ? '★' : '☆'}</button>
                     <button className="toolbar-button" onClick={removeNote} disabled={deleting} aria-label="Delete note" title="Delete note">
                       {deleting ? '…' : '⌫'}
                     </button>
                     {selected.inbox && <button className="move-capture-button" onClick={() => moveCaptureToPages(selected)}>Move to pages</button>}
-                    <button className="save-button" onClick={saveNote}>{saving ? 'Saving' : 'Save note'} <span>⌘ S</span></button>
+                    <button className="save-button" onClick={() => { void saveNote(); }} disabled={saving || saveStatus === 'conflict'}>
+                      {saving ? 'Saving…' : saveStatus === 'error' ? 'Retry save' : saveStatus === 'conflict' ? 'Resolve conflict' : 'Save now'} <span>⌘ S</span>
+                    </button>
                   </div>
                 </div>
+                {saveStatus === 'conflict' && (
+                  <div className="conflict-banner" role="alert">
+                    <p>This page changed in another tab or app. Your local edits are still here.</p>
+                    <button onClick={reloadConflictedNote}>Load latest</button>
+                    <button onClick={() => { void saveNote(true); }}>Overwrite with my edits</button>
+                  </div>
+                )}
                 <div className="editor-paper">
                   <div className="editor-icon">{selected.icon}</div>
                   <input className="title-input" value={selected.title} onChange={event => updateSelected('title', event.target.value)} placeholder="Untitled" />

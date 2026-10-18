@@ -42,6 +42,7 @@ class NoteCreate(BaseModel):
 
 
 class NoteUpdate(BaseModel):
+    version: Optional[int] = Field(default=None, ge=1)
     title: Optional[str] = Field(default=None, max_length=160)
     content: Optional[str] = Field(default=None, max_length=100_000)
     category: Optional[str] = Field(default=None, max_length=40)

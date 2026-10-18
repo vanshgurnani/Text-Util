@@ -113,9 +113,10 @@ or better. Establish baselines before setting numeric targets.
 Noteform already has accounts, notes/pages, nested page navigation, categories,
 bookmarks, Markdown editing and preview, search, MCP access, and a quick-capture
 Inbox that can preserve a source URL. Treat these as the starting point, not as
-roadmap deliverables. Before layering on features, make the core create, edit,
-save, navigate, and delete flows reliable on desktop and mobile. Richer capture
-sources such as browser/mobile share, PDFs, and voice remain future work.
+roadmap deliverables. The editor now autosaves, warns about unsaved drafts,
+detects concurrent edits with page versions, and offers a focused mobile editor.
+Richer capture sources such as browser/mobile share, PDFs, and voice remain
+future work.
 
 ## Roadmap at a glance
 
@@ -145,12 +146,12 @@ page without losing context; new captures appear in Inbox across refreshes.
 
 ### 2. Reliable autosave and editing
 
-- Autosave after a short pause and when leaving a page.
-- Show clear Saving, Saved, and Save failed states with a retry action.
-- Prevent a slow save from overwriting newer edits; detect concurrent changes.
+- [x] Autosave after a short pause and save before switching pages.
+- [x] Show clear Saving, Saved, and Save failed states with a retry action.
+- [x] Prevent stale writes with version checks; offer reload or explicit overwrite after a conflict.
 - Add Markdown shortcuts and a slash menu for headings, lists, quotes, code,
   images, dividers, and links.
-- Provide a mobile editing layout that does not require the two-column desktop
+- [x] Provide a mobile editing layout that does not require the two-column desktop
   workspace.
 
 **Done when:** edits survive navigation, reload, and transient network failure,

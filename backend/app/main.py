@@ -12,6 +12,7 @@ from bson import ObjectId
 from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, RedirectResponse
+from pymongo import ReturnDocument
 from pymongo.errors import DuplicateKeyError
 
 from .auth import create_access_token, create_mcp_token, create_oauth_token, current_user, hash_mcp_token, hash_password, public_user, user_from_token, verify_password
@@ -266,7 +267,7 @@ def create_note(payload: NoteCreate, user: dict = Depends(current_user)):
         note_data["parent_id"] = parent["_id"]
     else:
         note_data["parent_id"] = None
-    note = {**note_data, "owner_id": user["_id"], "bookmarked": False, "created_at": now, "updated_at": now}
+    note = {**note_data, "owner_id": user["_id"], "bookmarked": False, "version": 1, "created_at": now, "updated_at": now}
     result = notes_collection().insert_one(note)
     note["_id"] = result.inserted_id
     return {"note": serialize_note(note)}
@@ -279,11 +280,45 @@ def get_note(note_id: str, user: dict = Depends(current_user)):
 
 @app.patch("/notes/{note_id}")
 def update_note(note_id: str, payload: NoteUpdate, user: dict = Depends(current_user)):
-    note_or_404(note_id, user)
-    changes = {key: value for key, value in payload.model_dump().items() if value is not None}
+    note = note_or_404(note_id, user)
+    current_version = int(note.get("version", 1))
+    if payload.version is not None and payload.version != current_version:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": "This page changed elsewhere. Reload it or explicitly overwrite the newer version.",
+                "current_version": current_version,
+            },
+        )
+    changes = {
+        key: value
+        for key, value in payload.model_dump(exclude={"version"}).items()
+        if value is not None
+    }
+    if not changes:
+        return {"note": serialize_note(note)}
     changes["updated_at"] = datetime.now(timezone.utc)
-    notes_collection().update_one({"_id": ObjectId(note_id), **owner_filter(user)}, {"$set": changes})
-    return {"note": serialize_note(note_or_404(note_id, user))}
+    changes["version"] = current_version + 1
+    version_filter = (
+        {"version": current_version}
+        if "version" in note
+        else {"version": {"$exists": False}}
+    )
+    result = notes_collection().update_one(
+        {"_id": ObjectId(note_id), **owner_filter(user), **version_filter},
+        {"$set": changes},
+    )
+    if result.modified_count != 1:
+        latest = note_or_404(note_id, user)
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": "This page changed elsewhere. Reload it or explicitly overwrite the newer version.",
+                "current_version": int(latest.get("version", 1)),
+            },
+        )
+    updated = note_or_404(note_id, user)
+    return {"note": serialize_note(updated)}
 
 
 @app.delete("/notes/{note_id}")
@@ -299,8 +334,22 @@ def delete_note(note_id: str, user: dict = Depends(current_user)):
 def toggle_bookmark(note_id: str, user: dict = Depends(current_user)):
     note = note_or_404(note_id, user)
     bookmarked = not bool(note.get("bookmarked", False))
-    notes_collection().update_one({"_id": ObjectId(note_id), **owner_filter(user)}, {"$set": {"bookmarked": bookmarked, "updated_at": datetime.now(timezone.utc)}})
-    return {"bookmarked": bookmarked}
+    version_filter = (
+        {"version": int(note["version"])}
+        if "version" in note
+        else {"version": {"$exists": False}}
+    )
+    updated = notes_collection().find_one_and_update(
+        {"_id": ObjectId(note_id), **owner_filter(user), **version_filter},
+        {
+            "$set": {"bookmarked": bookmarked, "updated_at": datetime.now(timezone.utc)},
+            "$inc": {"version": 1},
+        },
+        return_document=ReturnDocument.AFTER,
+    )
+    if not updated:
+        raise HTTPException(status_code=409, detail="This page changed elsewhere. Reload it and try again.")
+    return {"bookmarked": bookmarked, "version": int(updated.get("version", 1))}
 
 
 @app.post("/summaries", status_code=status.HTTP_201_CREATED)
@@ -384,7 +433,7 @@ async def mcp(request: Request):
                 {"name": "search_notes", "description": "Search the connected user's notes by title or content.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:read"]}], "inputSchema": {"type": "object", "properties": {"query": {"type": "string"}}, "required": ["query"]}},
                 {"name": "get_note", "description": "Read one note by id.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:read"]}], "inputSchema": {"type": "object", "properties": {"note_id": {"type": "string"}}, "required": ["note_id"]}},
                 {"name": "create_note", "description": "Save a new note to the connected user's workspace.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:write"]}], "inputSchema": {"type": "object", "properties": {"title": {"type": "string"}, "content": {"type": "string"}, "category": {"type": "string"}}, "required": ["content"]}},
-                {"name": "update_note", "description": "Edit an existing note. Only the supplied fields are changed.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:write"]}], "inputSchema": {"type": "object", "properties": {"note_id": {"type": "string"}, "title": {"type": "string"}, "content": {"type": "string"}, "category": {"type": "string"}}, "required": ["note_id"]}},
+                {"name": "update_note", "description": "Edit an existing note. Only the supplied fields are changed. Pass the version read from get_note to detect conflicting edits.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:write"]}], "inputSchema": {"type": "object", "properties": {"note_id": {"type": "string"}, "version": {"type": "integer", "minimum": 1}, "title": {"type": "string"}, "content": {"type": "string"}, "category": {"type": "string"}}, "required": ["note_id"]}},
                 {"name": "delete_note", "description": "Permanently delete a note from the connected user's workspace.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:write"]}], "inputSchema": {"type": "object", "properties": {"note_id": {"type": "string"}}, "required": ["note_id"]}},
                 {"name": "list_bookmarks", "description": "List the connected user's bookmarked notes.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:read"]}], "inputSchema": {"type": "object", "properties": {}}},
             ]})
@@ -402,8 +451,8 @@ async def mcp(request: Request):
             text = f"Created note {created['note']['id']}: {created['note']['title']}"
         elif tool == "update_note":
             note_id = str(values.get("note_id", ""))
-            changes = {key: values[key] for key in ("title", "content", "category") if key in values}
-            if not changes:
+            changes = {key: values[key] for key in ("version", "title", "content", "category") if key in values}
+            if not any(key in changes for key in ("title", "content", "category")):
                 return mcp_error(call.id, -32602, "At least one of title, content, or category is required")
             updated = update_note(note_id, NoteUpdate(**changes), user=user)
             text = f"Updated note {updated['note']['id']}: {updated['note']['title']}"

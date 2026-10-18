@@ -11,6 +11,7 @@ def serialize_note(note: dict) -> dict:
         "parent_id": str(note["parent_id"]) if note.get("parent_id") else None,
         "source_url": note.get("source_url"),
         "inbox": bool(note.get("inbox", False)),
+        "version": int(note.get("version", 1)),
         "bookmarked": bool(note.get("bookmarked", False)),
         "created_at": note.get("created_at", datetime.utcnow()).isoformat(),
         "updated_at": note.get("updated_at", datetime.utcnow()).isoformat(),
