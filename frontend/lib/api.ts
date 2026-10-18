@@ -8,6 +8,8 @@ export type Note = {
   category: string;
   icon: string;
   parent_id: string | null;
+  source_url: string | null;
+  inbox: boolean;
   bookmarked: boolean;
   created_at: string;
   updated_at: string;

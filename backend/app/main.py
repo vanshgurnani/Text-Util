@@ -237,6 +237,7 @@ def list_notes(
     search: str = Query(default=""),
     category: Optional[str] = Query(default=None),
     bookmarked: Optional[bool] = Query(default=None),
+    inbox: Optional[bool] = Query(default=None),
     user: dict = Depends(current_user),
 ):
     query: dict[str, Any] = owner_filter(user)
@@ -244,8 +245,14 @@ def list_notes(
         query["category"] = category
     if bookmarked is not None:
         query["bookmarked"] = bookmarked
+    if inbox is not None:
+        query["inbox"] = inbox
     if search.strip():
-        query["$or"] = [{"title": {"$regex": search.strip(), "$options": "i"}}, {"content": {"$regex": search.strip(), "$options": "i"}}]
+        query["$or"] = [
+            {"title": {"$regex": search.strip(), "$options": "i"}},
+            {"content": {"$regex": search.strip(), "$options": "i"}},
+            {"source_url": {"$regex": search.strip(), "$options": "i"}},
+        ]
     notes = notes_collection().find(query).sort("updated_at", -1)
     return {"notes": [serialize_note(note) for note in notes]}
 

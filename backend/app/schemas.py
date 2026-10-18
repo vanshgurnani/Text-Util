@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import Any, Literal, Optional, Union
+from urllib.parse import urlsplit
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 
 class RegisterRequest(BaseModel):
@@ -23,6 +24,21 @@ class NoteCreate(BaseModel):
     category: str = Field(default="General", max_length=40)
     icon: str = Field(default="✦", max_length=8)
     parent_id: Optional[str] = None
+    source_url: Optional[str] = Field(default=None, max_length=2048)
+    inbox: bool = False
+
+    @field_validator("source_url")
+    @classmethod
+    def validate_source_url(cls, value: Optional[str]) -> Optional[str]:
+        if value is None:
+            return None
+        value = value.strip()
+        if not value:
+            return None
+        parsed = urlsplit(value)
+        if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+            raise ValueError("Source URL must use http or https")
+        return value
 
 
 class NoteUpdate(BaseModel):
@@ -31,6 +47,18 @@ class NoteUpdate(BaseModel):
     category: Optional[str] = Field(default=None, max_length=40)
     icon: Optional[str] = Field(default=None, max_length=8)
     bookmarked: Optional[bool] = None
+    inbox: Optional[bool] = None
+    source_url: Optional[str] = Field(default=None, max_length=2048)
+
+    @field_validator("source_url")
+    @classmethod
+    def validate_source_url(cls, value: Optional[str]) -> Optional[str]:
+        if value is None or not value.strip():
+            return value
+        parsed = urlsplit(value.strip())
+        if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+            raise ValueError("Source URL must use http or https")
+        return value.strip()
 
 
 class Note(BaseModel):

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import MarkdownEditor from '@/app/components/MarkdownEditor';
 import PagesTree from '@/app/components/PagesTree';
@@ -28,6 +28,12 @@ export default function Workspace() {
   const [message, setMessage] = useState('');
   const [showMcp, setShowMcp] = useState(false);
   const [mcpToken, setMcpToken] = useState('');
+  const [showCapture, setShowCapture] = useState(false);
+  const [captureTitle, setCaptureTitle] = useState('');
+  const [captureContent, setCaptureContent] = useState('');
+  const [captureSource, setCaptureSource] = useState('');
+  const [captureError, setCaptureError] = useState('');
+  const [capturing, setCapturing] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem('noteform_user');
@@ -40,11 +46,23 @@ export default function Workspace() {
     loadNotes();
   }, []);
 
+  useEffect(() => {
+    function handleCaptureShortcut(event: KeyboardEvent) {
+      if (event.altKey && event.shiftKey && event.key.toLowerCase() === 'c') {
+        event.preventDefault();
+        setShowCapture(true);
+      }
+    }
+    window.addEventListener('keydown', handleCaptureShortcut);
+    return () => window.removeEventListener('keydown', handleCaptureShortcut);
+  }, []);
+
   async function loadNotes() {
     try {
       const query = new URLSearchParams();
       if (search) query.set('search', search);
-      if (category !== 'All notes' && category !== 'Favorites') query.set('category', category);
+      if (category === 'Inbox') query.set('inbox', 'true');
+      else if (category !== 'All notes' && category !== 'Favorites') query.set('category', category);
       if (category === 'Favorites') query.set('bookmarked', 'true');
       const result = await api<{ notes: Note[] }>(`/notes?${query}`);
       setNotes(result.notes);
@@ -115,6 +133,60 @@ export default function Workspace() {
     }
   }
 
+  async function createCapture(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const sourceUrl = captureSource.trim();
+    const content = captureContent.trim();
+    if (!sourceUrl && !content) {
+      setCaptureError('Add a thought or a source link to capture.');
+      return;
+    }
+
+    setCaptureError('');
+    setCapturing(true);
+    try {
+      const result = await api<{ note: Note }>('/notes', {
+        method: 'POST',
+        body: JSON.stringify({
+          title: captureTitle.trim() || (sourceUrl ? 'Saved link' : 'Quick capture'),
+          content,
+          category: 'General',
+          icon: '⌁',
+          source_url: sourceUrl || null,
+          inbox: true,
+        }),
+      });
+      setNotes(current => [result.note, ...current]);
+      setCategory('Inbox');
+      setSelected(result.note);
+      setCaptureTitle('');
+      setCaptureContent('');
+      setCaptureSource('');
+      setCaptureError('');
+      setShowCapture(false);
+      flash('Saved to Inbox');
+    } catch (err) {
+      setCaptureError(err instanceof Error ? err.message : 'Could not save capture');
+    } finally {
+      setCapturing(false);
+    }
+  }
+
+  async function moveCaptureToPages(note: Note) {
+    try {
+      const result = await api<{ note: Note }>(`/notes/${note.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ inbox: false }),
+      });
+      setNotes(current => current.map(item => item.id === note.id ? result.note : item));
+      setSelected(result.note);
+      setCategory('All notes');
+      flash('Moved to Private pages');
+    } catch (err) {
+      flash(err instanceof Error ? err.message : 'Could not move capture');
+    }
+  }
+
   async function toggleBookmark(note: Note) {
     const result = await api<{ bookmarked: boolean }>(`/notes/${note.id}/bookmark`, { method: 'POST' });
     const updated = { ...note, bookmarked: result.bookmarked };
@@ -172,13 +244,15 @@ export default function Workspace() {
           <span className="chevron">⌄</span>
         </div>
         <button className="new-note-button" onClick={() => createNote()}><span>＋</span> New page <kbd>⌘ N</kbd></button>
+        <button className="capture-button" onClick={() => setShowCapture(true)}><span>⌁</span> Quick capture <kbd>⌥ ⇧ C</kbd></button>
         <nav>
           <p className="nav-label">LIBRARY</p>
           <button className={category === 'All notes' ? 'nav-item active' : 'nav-item'} onClick={() => setCategory('All notes')}><span>▤</span> All notes <b>{notes.length}</b></button>
+          <button className={category === 'Inbox' ? 'nav-item active' : 'nav-item'} onClick={() => { setCategory('Inbox'); setSelected(null); }}><span>⌁</span> Inbox</button>
           <button className={category === 'Favorites' ? 'nav-item active' : 'nav-item'} onClick={() => setCategory('Favorites')}><span>♡</span> Favorites</button>
           <p className="nav-label categories-label">PRIVATE <button aria-label="Create page" onClick={() => createNote()}>＋</button></p>
           <PagesTree
-            notes={notes}
+            notes={notes.filter(note => !note.inbox)}
             selectedId={selected?.id}
             onSelect={note => {
               setCategory('All notes');
@@ -206,11 +280,12 @@ export default function Workspace() {
       </aside>
       <section className="content-area">
         <header className="topbar">
-          <div className="breadcrumbs"><span>Workspace</span><b>/</b><strong>{category}</strong></div>
+          <div className="breadcrumbs"><span>Workspace</span><b>/</b><strong>{selected?.title || category}</strong></div>
           <div className="top-actions">
             <label className="search-box">
               <span>⌕</span><input value={search} onChange={event => setSearch(event.target.value)} placeholder="Search notes..." /><kbd>⌘ K</kbd>
             </label>
+            <button className="quick-capture-top" onClick={() => setShowCapture(true)}>＋ Capture</button>
             <button className="icon-button" onClick={() => setShowMcp(true)} title="Connect GPT">✧</button>
             <button className="user-avatar" onClick={logout}>{user.username[0].toUpperCase()}</button>
           </div>
@@ -219,9 +294,9 @@ export default function Workspace() {
           <div className="notes-column">
             <div className="page-heading">
               <div>
-                <p className="eyebrow">{category === 'All notes' ? 'YOUR LIBRARY' : 'FILTERED NOTES'}</p>
+                <p className="eyebrow">{category === 'Inbox' ? 'CAPTURED FOR LATER' : category === 'All notes' ? 'YOUR LIBRARY' : 'FILTERED NOTES'}</p>
                 <h1>{category}</h1>
-                <p className="muted">{notes.length} {notes.length === 1 ? 'note' : 'notes'} · Updated across your workspace</p>
+                <p className="muted">{category === 'Inbox' ? 'Thoughts and links to organize when you are ready.' : `${notes.length} ${notes.length === 1 ? 'note' : 'notes'} · Updated across your workspace`}</p>
               </div>
               <div className="view-toggle">
                 <button className={view === 'list' ? 'selected' : ''} onClick={() => setView('list')}>☷</button>
@@ -234,9 +309,11 @@ export default function Workspace() {
             ) : notes.length === 0 ? (
               <div className="empty-state">
                 <div className="empty-icon">✦</div>
-                <h3>Your space is waiting</h3>
-                <p>Capture an idea, a thought, or anything worth keeping.</p>
-                <button className="primary-button" onClick={() => createNote()}>Create your first note <span>→</span></button>
+                <h3>{category === 'Inbox' ? 'Your Inbox is clear' : 'Your space is waiting'}</h3>
+                <p>{category === 'Inbox' ? 'Quick captures will land here until you are ready to organize them.' : 'Capture an idea, a thought, or anything worth keeping.'}</p>
+                <button className="primary-button" onClick={() => category === 'Inbox' ? setShowCapture(true) : createNote()}>
+                  {category === 'Inbox' ? 'Capture a thought' : 'Create your first note'} <span>→</span>
+                </button>
               </div>
             ) : (
               <div className={view === 'grid' ? 'note-list grid-view' : 'note-list'}>
@@ -246,6 +323,7 @@ export default function Workspace() {
                     <div className="note-preview">
                       <div className="note-title-row"><h3>{note.title || 'Untitled'}</h3>{note.bookmarked && <span className="star">★</span>}</div>
                       <p>{note.content || 'Empty note — start writing...'}</p>
+                      {note.source_url && <p className="source-preview">{note.source_url}</p>}
                       <div className="note-meta">
                         <span className={`tag ${note.category.toLowerCase()}`}>{note.category}</span>
                         <span>{relativeDate(note.updated_at)}</span>
@@ -266,6 +344,7 @@ export default function Workspace() {
                     <button className="toolbar-button" onClick={removeNote} disabled={deleting} aria-label="Delete note" title="Delete note">
                       {deleting ? '…' : '⌫'}
                     </button>
+                    {selected.inbox && <button className="move-capture-button" onClick={() => moveCaptureToPages(selected)}>Move to pages</button>}
                     <button className="save-button" onClick={saveNote}>{saving ? 'Saving' : 'Save note'} <span>⌘ S</span></button>
                   </div>
                 </div>
@@ -275,6 +354,11 @@ export default function Workspace() {
                   <div className="editor-info">
                     <span>Last edited {relativeDate(selected.updated_at).toLowerCase()}</span><span>·</span><span>{wordCount} words</span>
                   </div>
+                  {selected.source_url && (
+                    <a className="capture-source-link" href={selected.source_url} target="_blank" rel="noreferrer">
+                      ↗ {selected.source_url}
+                    </a>
+                  )}
                   <MarkdownEditor value={selected.content} onChange={value => updateSelected('content', value)} />
                   <div className="editor-footer"><span>Markdown supported · Images: ![alt](URL)</span><span>⌘ Enter to save</span></div>
                 </div>
@@ -285,6 +369,35 @@ export default function Workspace() {
           </div>
         </div>
       </section>
+      {showCapture && (
+        <div className="modal-backdrop" onClick={() => setShowCapture(false)}>
+          <section className="capture-modal" role="dialog" aria-modal="true" aria-labelledby="capture-heading" onClick={event => event.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowCapture(false)} aria-label="Close capture">×</button>
+            <div className="mcp-symbol">⌁</div>
+            <p className="eyebrow">QUICK CAPTURE · INBOX</p>
+            <h2 id="capture-heading">Save it for later</h2>
+            <p className="muted modal-copy">Drop in a thought or link. You can organize it when you have time.</p>
+            <form className="capture-form" onSubmit={createCapture}>
+              <label>
+                Title <span>optional</span>
+                <input autoFocus value={captureTitle} onChange={event => { setCaptureTitle(event.target.value); setCaptureError(''); }} maxLength={160} placeholder="Give it a name" />
+              </label>
+              <label>
+                Source link <span>optional</span>
+                <input type="url" value={captureSource} onChange={event => { setCaptureSource(event.target.value); setCaptureError(''); }} maxLength={2048} placeholder="https://…" />
+              </label>
+              <label>
+                Thought or context <span>optional if you add a link</span>
+                <textarea value={captureContent} onChange={event => { setCaptureContent(event.target.value); setCaptureError(''); }} maxLength={100000} placeholder="What do you want to remember?" />
+              </label>
+              {captureError && <p className="form-error" role="alert">{captureError}</p>}
+              <button className="primary-button" type="submit" disabled={capturing}>
+                {capturing ? 'Saving…' : 'Save to Inbox'} <span>⌘ ↵</span>
+              </button>
+            </form>
+          </section>
+        </div>
+      )}
       {showMcp && (
         <div className="modal-backdrop" onClick={() => setShowMcp(false)}>
           <section className="mcp-modal" onClick={event => event.stopPropagation()}>

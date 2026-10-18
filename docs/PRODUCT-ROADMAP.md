@@ -111,10 +111,11 @@ or better. Establish baselines before setting numeric targets.
 ## Current foundation
 
 Noteform already has accounts, notes/pages, nested page navigation, categories,
-bookmarks, Markdown editing and preview, search, and MCP access. Treat these as
-the starting point, not as roadmap deliverables. Before layering on features,
-make the core create, edit, save, navigate, and delete flows reliable on desktop
-and mobile.
+bookmarks, Markdown editing and preview, search, MCP access, and a quick-capture
+Inbox that can preserve a source URL. Treat these as the starting point, not as
+roadmap deliverables. Before layering on features, make the core create, edit,
+save, navigate, and delete flows reliable on desktop and mobile. Richer capture
+sources such as browser/mobile share, PDFs, and voice remain future work.
 
 ## Roadmap at a glance
 
