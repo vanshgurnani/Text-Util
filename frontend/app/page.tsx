@@ -15,6 +15,8 @@ import {
   importWorkspace,
   Note,
   previewWorkspaceImport,
+  shareNote,
+  unshareNote,
   User,
 } from '@/lib/api';
 
@@ -152,6 +154,9 @@ export default function Workspace() {
   const [fullWidth, setFullWidth] = useState(false);
   const [smallText, setSmallText] = useState(false);
   const [showPageMenu, setShowPageMenu] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
+  const [shareLoading, setShareLoading] = useState(false);
   const [showIconPicker, setShowIconPicker] = useState(false);
   const [showCoverPicker, setShowCoverPicker] = useState(false);
   const [activeCover, setActiveCover] = useState<string | null>(null);
@@ -163,6 +168,7 @@ export default function Workspace() {
   const editRevision = useRef(0);
   const saveInFlight = useRef(false);
   const pageMenuRef = useRef<HTMLDivElement>(null);
+  const sharePopoverRef = useRef<HTMLDivElement>(null);
   const iconPickerRef = useRef<HTMLDivElement>(null);
   const coverPickerRef = useRef<HTMLDivElement>(null);
   const addColPopoverRef = useRef<HTMLDivElement>(null);
@@ -210,12 +216,16 @@ export default function Workspace() {
     setShowIconPicker(false);
     setShowCoverPicker(false);
     setShowPageMenu(false);
+    setShowShareModal(false);
   }, [selected?.id]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (pageMenuRef.current && !pageMenuRef.current.contains(event.target as Node)) {
         setShowPageMenu(false);
+      }
+      if (sharePopoverRef.current && !sharePopoverRef.current.contains(event.target as Node)) {
+        setShowShareModal(false);
       }
       if (iconPickerRef.current && !iconPickerRef.current.contains(event.target as Node)) {
         setShowIconPicker(false);
@@ -985,6 +995,30 @@ export default function Workspace() {
     }
   }
 
+  async function handleTogglePublicShare(note: Note) {
+    if (shareLoading) return;
+    setShareLoading(true);
+    try {
+      if (note.is_public) {
+        await unshareNote(note.id);
+        const updated = { ...note, is_public: false };
+        setNotes(current => current.map(item => item.id === note.id ? updated : item));
+        if (selected?.id === note.id) setSelected(updated);
+        flash('Public sharing turned off');
+      } else {
+        const res = await shareNote(note.id);
+        const updated = { ...note, is_public: true, public_id: res.public_id };
+        setNotes(current => current.map(item => item.id === note.id ? updated : item));
+        if (selected?.id === note.id) setSelected(updated);
+        flash('Note published! Anyone with the link can view it.');
+      }
+    } catch (err) {
+      flash(err instanceof Error ? err.message : 'Could not change public sharing');
+    } finally {
+      setShareLoading(false);
+    }
+  }
+
   // Soft Delete to Trash
   async function moveNoteToTrash(targetNote?: Note) {
     const noteToTrash = targetNote || selected;
@@ -1466,6 +1500,97 @@ export default function Workspace() {
                     ? 'Conflict'
                     : 'Saved'}
                 </span>
+
+                {/* Share to Web Button & Popover */}
+                <div className="notion-menu-container" ref={sharePopoverRef}>
+                  <button
+                    type="button"
+                    className={`notion-share-btn ${selected.is_public ? 'is-active' : ''}`}
+                    title="Share note publicly"
+                    onClick={() => setShowShareModal(prev => !prev)}
+                  >
+                    {selected.is_public && <span className="share-status-dot" />}
+                    <span>Share</span>
+                  </button>
+
+                  {showShareModal && (
+                    <div className="notion-share-popover">
+                      <div className="share-popover-header">
+                        <h4 className="share-popover-title">Share to Web</h4>
+                        {selected.is_public && (
+                          <span className="share-live-indicator">
+                            <span className="share-status-dot" /> Live
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="share-toggle-row">
+                        <div className="share-toggle-label">
+                          <span className="share-toggle-name">Publish to Web</span>
+                          <span className="share-toggle-sub">
+                            {selected.is_public
+                              ? 'Anyone with the link can view'
+                              : 'Allow anyone with the link to view'}
+                          </span>
+                        </div>
+                        <label className="share-switch">
+                          <input
+                            type="checkbox"
+                            checked={Boolean(selected.is_public)}
+                            disabled={shareLoading}
+                            onChange={() => handleTogglePublicShare(selected)}
+                          />
+                          <span className="share-switch-slider" />
+                        </label>
+                      </div>
+
+                      {selected.is_public && (
+                        <div className="share-link-box">
+                          <div className="share-link-input-group">
+                            <input
+                              type="text"
+                              readOnly
+                              className="share-link-input"
+                              value={
+                                typeof window !== 'undefined'
+                                  ? `${window.location.origin}/p/${selected.public_id || selected.id}`
+                                  : `/p/${selected.public_id || selected.id}`
+                              }
+                              onClick={e => (e.target as HTMLInputElement).select()}
+                            />
+                            <button
+                              type="button"
+                              className="share-copy-btn"
+                              onClick={() => {
+                                if (typeof window !== 'undefined') {
+                                  const url = `${window.location.origin}/p/${selected.public_id || selected.id}`;
+                                  navigator.clipboard.writeText(url);
+                                  setShareCopied(true);
+                                  flash('Public link copied to clipboard!');
+                                  setTimeout(() => setShareCopied(false), 2000);
+                                }
+                              }}
+                            >
+                              {shareCopied ? '✓ Copied' : 'Copy'}
+                            </button>
+                          </div>
+
+                          <div className="share-link-actions">
+                            <a
+                              href={`/p/${selected.public_id || selected.id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="share-open-link"
+                            >
+                              Open public note ↗
+                            </a>
+                            <span style={{ color: 'var(--notion-light-muted)' }}>Read-only</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
 
                 <button
                   type="button"

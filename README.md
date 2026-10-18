@@ -245,6 +245,9 @@ The server publishes protected-resource metadata, authorization-server metadata,
 | `GET` | `/notes/{id}/revisions` | List note revisions |
 | `POST` | `/notes/{id}/revisions/{version}/restore` | Restore a note revision |
 | `POST` | `/notes/{id}/bookmark` | Toggle a bookmark |
+| `POST` | `/notes/{id}/share` | Enable public link sharing for a note |
+| `DELETE` | `/notes/{id}/share` | Disable public sharing for a note |
+| `GET` | `/public/notes/{public_id}` | Read-only public note view (no auth required) |
 | `DELETE` | `/notes/{id}` | Delete a note |
 | `POST` | `/mcp` | MCP JSON-RPC endpoint |
 | `GET` | `/.well-known/oauth-protected-resource` | OAuth resource metadata |

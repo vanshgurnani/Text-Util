@@ -14,6 +14,18 @@ export type Note = {
   bookmarked: boolean;
   pinned: boolean;
   tags: string[];
+  is_public?: boolean;
+  public_id?: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PublicNote = {
+  title: string;
+  content: string;
+  category: string;
+  icon: string;
+  tags: string[];
   created_at: string;
   updated_at: string;
 };
@@ -123,3 +135,26 @@ export function clearSession() {
   localStorage.removeItem('noteform_token');
   localStorage.removeItem('noteform_user');
 }
+
+export function shareNote(noteId: string) {
+  return api<{ is_public: boolean; public_id: string; note: Note }>(`/notes/${noteId}/share`, {
+    method: 'POST',
+  });
+}
+
+export function unshareNote(noteId: string) {
+  return api<{ is_public: boolean; note: Note }>(`/notes/${noteId}/share`, {
+    method: 'DELETE',
+  });
+}
+
+export async function fetchPublicNote(publicId: string): Promise<PublicNote> {
+  const response = await fetch(`${API_URL}/public/notes/${publicId}`);
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const detail = data.detail || 'This note is private or does not exist';
+    throw new ApiError(typeof detail === 'string' ? detail : 'Could not load public note', response.status, detail);
+  }
+  return data.note;
+}
+

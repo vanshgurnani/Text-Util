@@ -22,7 +22,7 @@ from .auth import create_access_token, create_mcp_token, create_oauth_token, cur
 from .config import settings
 from .database import data_records_collection, data_tables_collection, lifespan, notes_collection, oauth_clients_collection, oauth_codes_collection, oauth_tokens_collection, summaries_collection, users_collection
 from .schemas import LoginRequest, MCPCall, NoteCreate, NoteUpdate, RegisterRequest, SummaryCreate
-from .serializers import serialize_note
+from .serializers import serialize_note, serialize_public_note
 from .structured_data import normalize_columns, serialize_record, serialize_table, validate_record_values
 from .structured_schemas import DataColumn, DataRecordCreate, DataRecordUpdate, DataTableCreate, DataTableUpdate
 from .workspace_archive import MAX_ARCHIVE_BYTES, MAX_ARCHIVE_NOTES, create_workspace_archive, parse_workspace_archive
@@ -340,6 +340,43 @@ def delete_note(note_id: str, user: dict = Depends(current_user)):
         raise HTTPException(status_code=409, detail="Move or delete this page's child pages before deleting it")
     notes_collection().delete_one({"_id": ObjectId(note_id), **owner_filter(user)})
     return {"success": True}
+
+
+@app.post("/notes/{note_id}/share")
+def share_note(note_id: str, user: dict = Depends(current_user)):
+    note = note_or_404(note_id, user)
+    public_id = note.get("public_id")
+    if not public_id:
+        public_id = f"pub_{secrets.token_urlsafe(12)}"
+    now = datetime.now(timezone.utc)
+    notes_collection().update_one(
+        {"_id": ObjectId(note_id), **owner_filter(user)},
+        {"$set": {"is_public": True, "public_id": public_id, "updated_at": now}},
+    )
+    updated = note_or_404(note_id, user)
+    return {"is_public": True, "public_id": public_id, "note": serialize_note(updated)}
+
+
+@app.delete("/notes/{note_id}/share")
+def unshare_note(note_id: str, user: dict = Depends(current_user)):
+    note_or_404(note_id, user)
+    now = datetime.now(timezone.utc)
+    notes_collection().update_one(
+        {"_id": ObjectId(note_id), **owner_filter(user)},
+        {"$set": {"is_public": False, "updated_at": now}},
+    )
+    updated = note_or_404(note_id, user)
+    return {"is_public": False, "note": serialize_note(updated)}
+
+
+@app.get("/public/notes/{public_id}")
+def get_public_note(public_id: str):
+    note = notes_collection().find_one({"public_id": public_id, "is_public": True})
+    if not note and ObjectId.is_valid(public_id):
+        note = notes_collection().find_one({"_id": ObjectId(public_id), "is_public": True})
+    if not note:
+        raise HTTPException(status_code=404, detail="This note is private or does not exist")
+    return {"note": serialize_public_note(note)}
 
 
 @app.get("/workspace/export")

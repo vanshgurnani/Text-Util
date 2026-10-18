@@ -73,6 +73,7 @@ class NoteUpdate(BaseModel):
     inbox: Optional[bool] = None
     source_url: Optional[str] = Field(default=None, max_length=2048)
     tags: Optional[list[str]] = Field(default=None, max_length=20)
+    is_public: Optional[bool] = None
 
     @field_validator("tags")
     @classmethod
@@ -100,6 +101,19 @@ class Note(BaseModel):
     category: str
     icon: str
     bookmarked: bool
+    is_public: bool = False
+    public_id: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
+
+
+class PublicNote(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    title: str
+    content: str
+    category: str
+    icon: str
+    tags: list[str] = Field(default_factory=list)
     created_at: datetime
     updated_at: datetime
 

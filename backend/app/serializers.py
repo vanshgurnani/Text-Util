@@ -21,6 +21,26 @@ def serialize_note(note: dict) -> dict:
         "bookmarked": bool(note.get("bookmarked", False)),
         "pinned": bool(note.get("pinned", False)),
         "tags": tags,
+        "is_public": bool(note.get("is_public", False)),
+        "public_id": note.get("public_id"),
+        "created_at": note.get("created_at", datetime.utcnow()).isoformat(),
+        "updated_at": note.get("updated_at", datetime.utcnow()).isoformat(),
+    }
+
+
+def serialize_public_note(note: dict) -> dict:
+    tags = note.get("tags")
+    if not isinstance(tags, list):
+        tags = []
+    else:
+        tags = [tag for tag in tags if isinstance(tag, str)]
+
+    return {
+        "title": note.get("title", "Untitled"),
+        "content": note.get("content", ""),
+        "category": note.get("category", "General"),
+        "icon": note.get("icon", "✦"),
+        "tags": tags,
         "created_at": note.get("created_at", datetime.utcnow()).isoformat(),
         "updated_at": note.get("updated_at", datetime.utcnow()).isoformat(),
     }
