@@ -237,6 +237,8 @@ source page and task views.
 
 ### 9. Structured databases and multiple views
 
+- See the [structured data and spreadsheet roadmap](./STRUCTURED-DATA-ROADMAP.md)
+  for the phased plan for typed tables, spreadsheet import/export, and views.
 - Let users create a simple table with typed properties: text, status, date,
   checkbox, select, and page relation.
 - Provide table and board views first; add calendar view when date properties

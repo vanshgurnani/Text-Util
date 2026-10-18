@@ -108,8 +108,12 @@ export default function Workspace() {
   async function loadNotes() {
     try {
       const result = await api<{ notes: Note[] }>('/notes');
-      setNotes(result.notes);
-      if (!selected && result.notes[0]) setSelected(result.notes[0]);
+      const loadedNotes = result.notes.map(note => ({
+        ...note,
+        tags: Array.isArray(note.tags) ? note.tags.filter((tag): tag is string => typeof tag === 'string') : [],
+      }));
+      setNotes(loadedNotes);
+      if (!selected && loadedNotes[0]) setSelected(loadedNotes[0]);
     } catch (err) {
       if (err instanceof Error && err.message.includes('token')) router.replace('/login');
     } finally {

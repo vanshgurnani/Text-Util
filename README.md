@@ -52,7 +52,9 @@ See the [product roadmap](docs/PRODUCT-ROADMAP.md) for user-facing features and
 the [architecture roadmap](docs/ARCHITECTURE-ROADMAP.md) for technical
 foundations and operations. The [frontend UI redesign plan](docs/FRONTEND-UI-REDESIGN.md)
 tracks the workspace and editor experience improvements. The workspace uses a
-neutral light theme with a muted Noteform-green accent.
+neutral light theme with a muted Noteform-green accent. The
+[structured data roadmap](docs/STRUCTURED-DATA-ROADMAP.md) covers
+spreadsheet-like tables, typed properties, and CSV/Excel import/export.
 
 ## Repository layout
 

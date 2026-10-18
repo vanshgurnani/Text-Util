@@ -37,6 +37,18 @@ class NoteTagTests(unittest.TestCase):
         self.assertEqual(serialized["tags"], [])
         self.assertFalse(serialized["pinned"])
 
+    def test_serializer_normalizes_malformed_legacy_tags(self):
+        for tags in (None, "research", ["research", None, 42]):
+            with self.subTest(tags=tags):
+                serialized = serialize_note({
+                    "_id": "note-id",
+                    "tags": tags,
+                    "created_at": datetime(2025, 1, 1),
+                    "updated_at": datetime(2025, 1, 1),
+                })
+
+                self.assertEqual(serialized["tags"], ["research"] if isinstance(tags, list) else [])
+
 
 if __name__ == "__main__":
     unittest.main()

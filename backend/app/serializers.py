@@ -2,6 +2,12 @@ from datetime import datetime
 
 
 def serialize_note(note: dict) -> dict:
+    tags = note.get("tags")
+    if not isinstance(tags, list):
+        tags = []
+    else:
+        tags = [tag for tag in tags if isinstance(tag, str)]
+
     return {
         "id": str(note["_id"]),
         "title": note.get("title", "Untitled"),
@@ -14,7 +20,7 @@ def serialize_note(note: dict) -> dict:
         "version": int(note.get("version", 1)),
         "bookmarked": bool(note.get("bookmarked", False)),
         "pinned": bool(note.get("pinned", False)),
-        "tags": note.get("tags", []),
+        "tags": tags,
         "created_at": note.get("created_at", datetime.utcnow()).isoformat(),
         "updated_at": note.get("updated_at", datetime.utcnow()).isoformat(),
     }
