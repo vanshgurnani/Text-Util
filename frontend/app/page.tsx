@@ -3044,8 +3044,8 @@ export default function Workspace() {
             <p className="muted modal-copy">Connect ChatGPT or any MCP client to query and interact with your workspace.</p>
             <div className="connect-step">
               <span>01</span>
-              <div><strong>Your MCP endpoint</strong><code>{location.origin.replace('3000', '8000')}/mcp</code></div>
-              <button onClick={() => navigator.clipboard?.writeText(`${location.origin.replace('3000', '8000')}/mcp`)}>Copy</button>
+              <div><strong>Your MCP endpoint</strong><code>{typeof window !== 'undefined' ? `${window.location.origin}/mcp` : '/mcp'}</code></div>
+              <button onClick={() => navigator.clipboard?.writeText(typeof window !== 'undefined' ? `${window.location.origin}/mcp` : '/mcp')}>Copy</button>
             </div>
             <div className="connect-step">
               <span>02</span>
