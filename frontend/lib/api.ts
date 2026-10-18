@@ -49,6 +49,45 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
   return data as T;
 }
 
+async function uploadWorkspaceFile<T>(path: string, file: File): Promise<T> {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('noteform_token') : null;
+  const headers = new Headers();
+  if (token) headers.set('Authorization', `Bearer ${token}`);
+  const form = new FormData();
+  form.append('file', file);
+  const response = await fetch(`${API_URL}${path}`, { method: 'POST', headers, body: form });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const detail = data.detail || data.error;
+    throw new ApiError(typeof detail === 'string' ? detail : 'Could not process workspace archive', response.status, detail);
+  }
+  return data as T;
+}
+
+export function previewWorkspaceImport(file: File) {
+  return uploadWorkspaceFile<{ count: number; pages: { title: string; path: string }[] }>(
+    '/workspace/import/preview',
+    file,
+  );
+}
+
+export function importWorkspace(file: File) {
+  return uploadWorkspaceFile<{ imported: number }>('/workspace/import', file);
+}
+
+export async function downloadWorkspaceExport(): Promise<Blob> {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('noteform_token') : null;
+  const headers = new Headers();
+  if (token) headers.set('Authorization', `Bearer ${token}`);
+  const response = await fetch(`${API_URL}/workspace/export`, { headers });
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    const detail = data.detail || data.error;
+    throw new ApiError(typeof detail === 'string' ? detail : 'Could not export workspace', response.status, detail);
+  }
+  return response.blob();
+}
+
 export function saveSession(token: string, user: User) {
   localStorage.setItem('noteform_token', token);
   localStorage.setItem('noteform_user', JSON.stringify(user));

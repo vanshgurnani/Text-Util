@@ -203,13 +203,18 @@ workflow from a template without copying old notes manually.
 
 ### 7. Keep user data portable
 
-- Import Markdown files and folders while preserving folder relationships.
-- Export a page or workspace as Markdown and attachments.
-- Include a readable JSON export for backup and migration.
-- Preview import counts and conflicts before writing imported data.
+- [x] Export all pages as readable Markdown in a Noteform ZIP, with nested folder
+  paths and a manifest preserving hierarchy, bookmarks, source URLs, and dates.
+- [x] Preview a Noteform ZIP's page count and add the pages without replacing
+  existing workspace data.
+- [x] Preserve Markdown content, including externally linked media URLs.
+- [ ] Add arbitrary Markdown/folder imports, JSON backup, and binary attachment
+  storage/export; these are not supported by the current Noteform ZIP format.
+- Enforce the current import/export limits of 500 pages and 20 MB.
 
-**Done when:** a user can export their workspace and re-import it into a fresh
-account without losing page hierarchy or content.
+**Done when:** a user can export and re-import a Noteform ZIP without losing
+page hierarchy, Markdown content, source links, bookmarks, or linked media
+references. This first version does not package binary attachments.
 
 ## Stage 3 — Turn pages into useful work
 
@@ -310,8 +315,9 @@ analytics choices to users.
    protection, and mobile editing.
 2. **Capture and find:** Inbox, one excellent capture path, global
    command/search palette, search excerpts, and keyboard navigation.
-3. **Make switching safe:** Markdown and attachment import/export with
-   preserved hierarchy, links, and a documented round-trip test.
+3. **Make switching safer:** [x] Noteform Markdown ZIP import/export with
+   preserved hierarchy, links, and page metadata. Arbitrary Markdown imports
+   and binary attachments remain future work.
 4. **Connect knowledge:** user-created tags, backlinks, and templates, guided
    by the capture and retrieval patterns users actually adopt.
 

@@ -14,6 +14,9 @@ Noteform is a calm, Notion-inspired personal notes workspace. Users can create, 
 - Note creation, editing, deletion, category filtering, search, and bookmarks.
 - Nested pages with a navigable page tree in each personal workspace.
 - Quick-capture Inbox for thoughts and source links to organize later.
+- Noteform ZIP workspace import/export for Markdown pages, nested hierarchy,
+  bookmarks, source URLs, and linked media URLs; binary attachments are not
+  included (500-page and 20 MB limits).
 - Debounced editor autosave with concurrent-edit conflict handling.
 - Responsive Notion-inspired two-pane workspace UI.
 - JWT session authentication for the web application.
@@ -55,7 +58,8 @@ foundations and operations.
 │   │   ├── database.py      # MongoDB client and collection access
 │   │   ├── main.py          # FastAPI routes and MCP JSON-RPC endpoint
 │   │   ├── schemas.py       # Request validation models
-│   │   └── serializers.py   # MongoDB response serialization
+│   │   ├── serializers.py   # MongoDB response serialization
+│   │   └── workspace_archive.py # Validated Markdown workspace ZIP format
 │   ├── Dockerfile
 │   └── requirements.txt
 ├── frontend/

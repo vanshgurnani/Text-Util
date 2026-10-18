@@ -4,7 +4,16 @@ import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 're
 import { useRouter } from 'next/navigation';
 import MarkdownEditor from '@/app/components/MarkdownEditor';
 import PagesTree from '@/app/components/PagesTree';
-import { ApiError, api, clearSession, Note, User } from '@/lib/api';
+import {
+  ApiError,
+  api,
+  clearSession,
+  downloadWorkspaceExport,
+  importWorkspace,
+  Note,
+  previewWorkspaceImport,
+  User,
+} from '@/lib/api';
 
 const categories = ['All notes', 'Personal', 'Work', 'Ideas', 'Reading', 'General'];
 const icons = ['✦', '◌', '⌁', '□', '◈', '○'];
@@ -39,6 +48,13 @@ export default function Workspace() {
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [commandQuery, setCommandQuery] = useState('');
   const [commandIndex, setCommandIndex] = useState(0);
+  const [showPortability, setShowPortability] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importPreview, setImportPreview] = useState<{ count: number; pages: { title: string; path: string }[] } | null>(null);
+  const [importError, setImportError] = useState('');
+  const [previewingImport, setPreviewingImport] = useState(false);
+  const [importingWorkspace, setImportingWorkspace] = useState(false);
+  const [exportingWorkspace, setExportingWorkspace] = useState(false);
   const [recentIds, setRecentIds] = useState<string[]>([]);
   const commandInputRef = useRef<HTMLInputElement>(null);
   const editRevision = useRef(0);
@@ -419,6 +435,63 @@ export default function Workspace() {
     }
   }
 
+  async function inspectWorkspaceArchive(file: File | null) {
+    setImportFile(file);
+    setImportPreview(null);
+    setImportError('');
+    if (!file) return;
+    if (file.size > 20 * 1024 * 1024) {
+      setImportError('Choose a ZIP archive no larger than 20 MB.');
+      return;
+    }
+    setPreviewingImport(true);
+    try {
+      setImportPreview(await previewWorkspaceImport(file));
+    } catch (err) {
+      setImportError(err instanceof Error ? err.message : 'Could not read this archive');
+    } finally {
+      setPreviewingImport(false);
+    }
+  }
+
+  async function exportWorkspace() {
+    if (draftDirty && !await saveNote()) return;
+    setExportingWorkspace(true);
+    try {
+      const blob = await downloadWorkspaceExport();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'noteform-workspace.zip';
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      flash('Workspace export downloaded');
+    } catch (err) {
+      setImportError(err instanceof Error ? err.message : 'Could not export workspace');
+    } finally {
+      setExportingWorkspace(false);
+    }
+  }
+
+  async function confirmWorkspaceImport() {
+    if (!importFile || !importPreview || importingWorkspace) return;
+    if (draftDirty && !await saveNote()) return;
+    setImportingWorkspace(true);
+    setImportError('');
+    try {
+      const result = await importWorkspace(importFile);
+      setImportFile(null);
+      setImportPreview(null);
+      setShowPortability(false);
+      await loadNotes();
+      flash(`${result.imported} ${result.imported === 1 ? 'page' : 'pages'} added to your workspace`);
+    } catch (err) {
+      setImportError(err instanceof Error ? err.message : 'Could not import workspace');
+    } finally {
+      setImportingWorkspace(false);
+    }
+  }
+
   if (!user) {
     return <div className="loading-screen"><span className="brand-mark small">✦</span> Loading your workspace…</div>;
   }
@@ -473,7 +546,7 @@ export default function Workspace() {
           <button className="nav-item" onClick={() => setShowMcp(true)}><span>✧</span> Connect GPT</button>
         </nav>
         <div className="sidebar-bottom">
-          <button className="nav-item" onClick={() => setShowMcp(true)}><span>⚙</span> Settings</button>
+          <button className="nav-item" onClick={() => setShowPortability(true)}><span>⇄</span> Import / export</button>
           <button className="profile-row" onClick={logout}>
             <div className="avatar small-avatar">{user.username[0].toUpperCase()}</div>
             <span>{user.username}<small>Sign out</small></span><span>⋯</span>
@@ -499,6 +572,7 @@ export default function Workspace() {
             </label>
             <button className="command-open-button" onClick={() => setShowCommandPalette(true)} aria-label="Open command palette">⌘ K</button>
             <button className="quick-capture-top" onClick={() => setShowCapture(true)}>＋ Capture</button>
+            <button className="icon-button portability-top-button" onClick={() => setShowPortability(true)} aria-label="Import or export workspace" title="Import or export workspace">⇄</button>
             <button className="icon-button" onClick={() => setShowMcp(true)} title="Connect GPT">✧</button>
             <button className="user-avatar" onClick={logout}>{user.username[0].toUpperCase()}</button>
           </div>
@@ -698,6 +772,47 @@ export default function Workspace() {
                 {capturing ? 'Saving…' : 'Save to Inbox'} <span>⌘ ↵</span>
               </button>
             </form>
+          </section>
+        </div>
+      )}
+      {showPortability && (
+        <div className="modal-backdrop" onClick={() => setShowPortability(false)}>
+          <section className="capture-modal portability-modal" role="dialog" aria-modal="true" aria-labelledby="portability-heading" onClick={event => event.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowPortability(false)} aria-label="Close import and export">×</button>
+            <div className="mcp-symbol">⇄</div>
+            <p className="eyebrow">YOUR DATA · YOUR CHOICE</p>
+            <h2 id="portability-heading">Take your workspace with you</h2>
+            <p className="muted modal-copy">Export readable Markdown pages in a ZIP, or add pages from a Noteform export. Imports never replace your existing notes.</p>
+            <button className="primary-button portability-export" onClick={() => void exportWorkspace()} disabled={exportingWorkspace}>
+              {exportingWorkspace ? 'Preparing export…' : 'Download workspace ZIP'} <span>↓</span>
+            </button>
+            <label className="archive-picker">
+              Import a Noteform ZIP
+              <input
+                type="file"
+                accept=".zip,application/zip"
+                onChange={event => {
+                  const file = event.target.files?.[0] || null;
+                  event.currentTarget.value = '';
+                  void inspectWorkspaceArchive(file);
+                }}
+              />
+            </label>
+            {previewingImport && <p className="muted" role="status">Checking archive…</p>}
+            {importPreview && (
+              <div className="import-preview">
+                <strong>{importPreview.count} {importPreview.count === 1 ? 'page' : 'pages'} ready to add</strong>
+                {importPreview.pages.length > 0 && (
+                  <ul>{importPreview.pages.map((page, index) => <li key={`${page.path}-${index}`}>{page.title}</li>)}</ul>
+                )}
+                {importPreview.count > importPreview.pages.length && <small>and {importPreview.count - importPreview.pages.length} more</small>}
+                <button className="primary-button" onClick={() => void confirmWorkspaceImport()} disabled={importingWorkspace || importPreview.count === 0}>
+                  {importingWorkspace ? 'Importing…' : `Add ${importPreview.count} ${importPreview.count === 1 ? 'page' : 'pages'}`}
+                </button>
+              </div>
+            )}
+            <p className="archive-note">Preserves page hierarchy, Markdown content, bookmarks, source URLs, and linked media URLs. Binary attachments are not supported. Limit: 500 pages and 20 MB.</p>
+            {importError && <p className="form-error" role="alert">{importError}</p>}
           </section>
         </div>
       )}
