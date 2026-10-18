@@ -36,6 +36,11 @@ export default function Workspace() {
   const [captureSource, setCaptureSource] = useState('');
   const [captureError, setCaptureError] = useState('');
   const [capturing, setCapturing] = useState(false);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const [commandQuery, setCommandQuery] = useState('');
+  const [commandIndex, setCommandIndex] = useState(0);
+  const [recentIds, setRecentIds] = useState<string[]>([]);
+  const commandInputRef = useRef<HTMLInputElement>(null);
   const editRevision = useRef(0);
   const saveInFlight = useRef(false);
 
@@ -47,28 +52,36 @@ export default function Workspace() {
       return;
     }
     setUser(JSON.parse(stored));
+    try {
+      const recent = JSON.parse(localStorage.getItem(`noteform_recent_${JSON.parse(stored).id}`) || '[]');
+      if (Array.isArray(recent)) setRecentIds(recent.filter((id): id is string => typeof id === 'string').slice(0, 5));
+    } catch {
+      localStorage.removeItem(`noteform_recent_${JSON.parse(stored).id}`);
+    }
     loadNotes();
   }, []);
 
   useEffect(() => {
-    function handleCaptureShortcut(event: KeyboardEvent) {
+    function handleGlobalShortcuts(event: KeyboardEvent) {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        setShowCommandPalette(true);
+        setCommandQuery('');
+        setCommandIndex(0);
+        return;
+      }
       if (event.altKey && event.shiftKey && event.key.toLowerCase() === 'c') {
         event.preventDefault();
         setShowCapture(true);
       }
     }
-    window.addEventListener('keydown', handleCaptureShortcut);
-    return () => window.removeEventListener('keydown', handleCaptureShortcut);
+    window.addEventListener('keydown', handleGlobalShortcuts);
+    return () => window.removeEventListener('keydown', handleGlobalShortcuts);
   }, []);
 
   async function loadNotes() {
     try {
-      const query = new URLSearchParams();
-      if (search) query.set('search', search);
-      if (category === 'Inbox') query.set('inbox', 'true');
-      else if (category !== 'All notes' && category !== 'Favorites') query.set('category', category);
-      if (category === 'Favorites') query.set('bookmarked', 'true');
-      const result = await api<{ notes: Note[] }>(`/notes?${query}`);
+      const result = await api<{ notes: Note[] }>('/notes');
       setNotes(result.notes);
       if (!selected && result.notes[0]) setSelected(result.notes[0]);
     } catch (err) {
@@ -78,12 +91,58 @@ export default function Workspace() {
     }
   }
 
-  useEffect(() => {
-    if (!loading) {
-      const timer = setTimeout(loadNotes, 250);
-      return () => clearTimeout(timer);
+  const visibleNotes = useMemo(() => {
+    const query = search.trim().toLocaleLowerCase();
+    return notes.filter(note => {
+      if (category === 'Inbox' && !note.inbox) return false;
+      if (category === 'Favorites' && !note.bookmarked) return false;
+      if (!['All notes', 'Inbox', 'Favorites'].includes(category) && note.category !== category) return false;
+      if (!query) return true;
+      return [note.title, note.content, note.source_url || '']
+        .some(value => value.toLocaleLowerCase().includes(query));
+    });
+  }, [notes, search, category]);
+
+  const pageBreadcrumbs = useMemo(() => {
+    if (!selected) return [];
+    const byId = new Map(notes.map(note => [note.id, note]));
+    const path: Note[] = [];
+    let parentId = selected.parent_id;
+    while (parentId) {
+      const parent = byId.get(parentId);
+      if (!parent) break;
+      path.unshift(parent);
+      parentId = parent.parent_id;
     }
-  }, [search, category]);
+    return path;
+  }, [notes, selected]);
+
+  const childPages = useMemo(
+    () => selected ? notes.filter(note => note.parent_id === selected.id && !note.inbox) : [],
+    [notes, selected],
+  );
+
+  const commandItems = useMemo(() => {
+    const query = commandQuery.trim().toLocaleLowerCase();
+    const actions = [
+      { id: 'new-page', title: 'Create a new page', subtitle: 'Add a page to your workspace', kind: 'action' as const },
+      { id: 'quick-capture', title: 'Quick capture', subtitle: 'Save a thought or link to Inbox', kind: 'action' as const },
+      { id: 'inbox', title: 'Open Inbox', subtitle: 'Review uncategorized captures', kind: 'action' as const },
+      { id: 'favorites', title: 'Open Favorites', subtitle: 'See bookmarked pages', kind: 'action' as const },
+    ].filter(item => !query || `${item.title} ${item.subtitle}`.toLocaleLowerCase().includes(query));
+    const pages = notes
+      .filter(note => !note.inbox && (!query || `${note.title} ${note.content} ${note.source_url || ''}`.toLocaleLowerCase().includes(query)))
+      .map(note => ({ id: note.id, title: note.title || 'Untitled', subtitle: note.category, kind: 'page' as const, note }));
+    return [...actions, ...pages].slice(0, 30);
+  }, [commandQuery, notes]);
+
+  useEffect(() => {
+    setCommandIndex(index => Math.max(0, Math.min(index, commandItems.length - 1)));
+  }, [commandItems.length]);
+
+  useEffect(() => {
+    if (showCommandPalette) commandInputRef.current?.focus();
+  }, [showCommandPalette]);
 
   const wordCount = useMemo(
     () => (selected?.content || '').trim() ? selected!.content.trim().split(/\s+/).length : 0,
@@ -175,7 +234,38 @@ export default function Workspace() {
     if (draftDirty && !await saveNote()) return false;
     setSelected(note);
     setSaveStatus('saved');
+    if (note && !note.inbox && user) {
+      setRecentIds(current => {
+        const next = [note.id, ...current.filter(id => id !== note.id)].slice(0, 5);
+        localStorage.setItem(`noteform_recent_${user.id}`, JSON.stringify(next));
+        return next;
+      });
+    }
     return true;
+  }
+
+  async function openPage(note: Note): Promise<boolean> {
+    if (!await selectNote(note)) return false;
+    setCategory('All notes');
+    setSearch('');
+    return true;
+  }
+
+  async function runCommand(item: (typeof commandItems)[number]) {
+    setShowCommandPalette(false);
+    setCommandQuery('');
+    if (item.kind === 'page') {
+      await openPage(item.note);
+      return;
+    }
+    if (item.id === 'new-page') {
+      setCategory('All notes');
+      await createNote();
+    } else if (item.id === 'quick-capture') {
+      setShowCapture(true);
+    } else if (item.id === 'inbox' || item.id === 'favorites') {
+      if (await selectNote(null)) setCategory(item.id === 'inbox' ? 'Inbox' : 'Favorites');
+    }
   }
 
   async function reloadConflictedNote() {
@@ -243,10 +333,6 @@ export default function Workspace() {
         }),
       });
       setNotes(current => [result.note, ...current]);
-      setCategory('Inbox');
-      setSelected(result.note);
-      setDraftDirty(false);
-      setSaveStatus('saved');
       setCaptureTitle('');
       setCaptureContent('');
       setCaptureSource('');
@@ -357,16 +443,24 @@ export default function Workspace() {
             });
           }}><span>⌁</span> Inbox</button>
           <button className={category === 'Favorites' ? 'nav-item active' : 'nav-item'} onClick={() => setCategory('Favorites')}><span>♡</span> Favorites</button>
+          {recentIds.some(id => notes.some(note => note.id === id)) && (
+            <>
+              <p className="nav-label categories-label">RECENT</p>
+              {recentIds
+                .map(id => notes.find(note => note.id === id))
+                .filter((note): note is Note => Boolean(note))
+                .map(note => (
+                  <button key={note.id} className="nav-item recent-page" onClick={() => { void openPage(note); }}>
+                    <span>{note.icon}</span><span className="recent-page-title">{note.title || 'Untitled'}</span>
+                  </button>
+                ))}
+            </>
+          )}
           <p className="nav-label categories-label">PRIVATE <button aria-label="Create page" onClick={() => createNote()}>＋</button></p>
           <PagesTree
             notes={notes.filter(note => !note.inbox)}
             selectedId={selected?.id}
-            onSelect={async note => {
-              if (await selectNote(note)) {
-                setCategory('All notes');
-                setSearch('');
-              }
-            }}
+            onSelect={openPage}
             onCreateChild={parentId => createNote(parentId)}
           />
           <p className="nav-label categories-label">CATEGORIES <button onClick={() => setCategory('General')}>＋</button></p>
@@ -388,11 +482,22 @@ export default function Workspace() {
       </aside>
       <section className="content-area">
         <header className="topbar">
-          <div className="breadcrumbs"><span>Workspace</span><b>/</b><strong>{selected?.title || category}</strong></div>
+          <div className="breadcrumbs">
+            <button onClick={async () => { if (await selectNote(null)) { setCategory('All notes'); setSearch(''); } }}>Workspace</button>
+            {pageBreadcrumbs.map(crumb => (
+              <span className="breadcrumb-segment" key={crumb.id}>
+                <b>/</b>
+                <button onClick={() => { void openPage(crumb); }}>{crumb.title || 'Untitled'}</button>
+              </span>
+            ))}
+            <b>/</b><strong>{selected?.title || category}</strong>
+          </div>
           <div className="top-actions">
             <label className="search-box">
-              <span>⌕</span><input value={search} onChange={event => setSearch(event.target.value)} placeholder="Search notes..." /><kbd>⌘ K</kbd>
+              <span>⌕</span><input value={search} onChange={event => setSearch(event.target.value)} placeholder="Search notes..." />
+              <button type="button" className="search-palette-key" onClick={() => setShowCommandPalette(true)} aria-label="Open command palette">⌘ K</button>
             </label>
+            <button className="command-open-button" onClick={() => setShowCommandPalette(true)} aria-label="Open command palette">⌘ K</button>
             <button className="quick-capture-top" onClick={() => setShowCapture(true)}>＋ Capture</button>
             <button className="icon-button" onClick={() => setShowMcp(true)} title="Connect GPT">✧</button>
             <button className="user-avatar" onClick={logout}>{user.username[0].toUpperCase()}</button>
@@ -404,7 +509,7 @@ export default function Workspace() {
               <div>
                 <p className="eyebrow">{category === 'Inbox' ? 'CAPTURED FOR LATER' : category === 'All notes' ? 'YOUR LIBRARY' : 'FILTERED NOTES'}</p>
                 <h1>{category}</h1>
-                <p className="muted">{category === 'Inbox' ? 'Thoughts and links to organize when you are ready.' : `${notes.length} ${notes.length === 1 ? 'note' : 'notes'} · Updated across your workspace`}</p>
+                <p className="muted">{category === 'Inbox' ? 'Thoughts and links to organize when you are ready.' : `${visibleNotes.length} ${visibleNotes.length === 1 ? 'note' : 'notes'} · Updated across your workspace`}</p>
               </div>
               <div className="view-toggle">
                 <button className={view === 'list' ? 'selected' : ''} onClick={() => setView('list')}>☷</button>
@@ -414,7 +519,7 @@ export default function Workspace() {
             {message && <div className="toast">{message}</div>}
             {loading ? (
               <div className="empty-state"><span className="spinner" /> Loading notes…</div>
-            ) : notes.length === 0 ? (
+            ) : visibleNotes.length === 0 ? (
               <div className="empty-state">
                 <div className="empty-icon">✦</div>
                 <h3>{category === 'Inbox' ? 'Your Inbox is clear' : 'Your space is waiting'}</h3>
@@ -425,8 +530,27 @@ export default function Workspace() {
               </div>
             ) : (
               <div className={view === 'grid' ? 'note-list grid-view' : 'note-list'}>
-                {notes.map(note => (
-                  <article key={note.id} className={`note-card ${selected?.id === note.id ? 'selected' : ''}`} onClick={() => { void selectNote(note); }}>
+                {visibleNotes.map(note => (
+                  <article
+                    key={note.id}
+                    role="button"
+                    tabIndex={0}
+                    aria-pressed={selected?.id === note.id}
+                    className={`note-card ${selected?.id === note.id ? 'selected' : ''}`}
+                    onClick={() => { void selectNote(note); }}
+                    onKeyDown={event => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        void selectNote(note);
+                      }
+                      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                        event.preventDefault();
+                        const cards = Array.from(event.currentTarget.parentElement?.querySelectorAll<HTMLElement>('.note-card') || []);
+                        const index = cards.indexOf(event.currentTarget);
+                        cards[index + (event.key === 'ArrowDown' ? 1 : -1)]?.focus();
+                      }
+                    }}
+                  >
                     <div className="note-icon">{note.icon}</div>
                     <div className="note-preview">
                       <div className="note-title-row"><h3>{note.title || 'Untitled'}</h3>{note.bookmarked && <span className="star">★</span>}</div>
@@ -474,6 +598,16 @@ export default function Workspace() {
                   <div className="editor-info">
                     <span>Last edited {relativeDate(selected.updated_at).toLowerCase()}</span><span>·</span><span>{wordCount} words</span>
                   </div>
+                  {childPages.length > 0 && (
+                    <div className="page-children">
+                      <span>SUBPAGES</span>
+                      {childPages.map(child => (
+                        <button key={child.id} onClick={() => { void openPage(child); }}>
+                          <span>{child.icon}</span>{child.title || 'Untitled'} <b>→</b>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                   {selected.source_url && (
                     <a className="capture-source-link" href={selected.source_url} target="_blank" rel="noreferrer">
                       ↗ {selected.source_url}
@@ -489,6 +623,55 @@ export default function Workspace() {
           </div>
         </div>
       </section>
+      {showCommandPalette && (
+        <div className="modal-backdrop command-backdrop" onClick={() => setShowCommandPalette(false)}>
+          <section className="command-palette" role="dialog" aria-modal="true" aria-label="Command palette" onClick={event => event.stopPropagation()}>
+            <div className="command-search">
+              <span>⌕</span>
+              <input
+                ref={commandInputRef}
+                value={commandQuery}
+                onChange={event => { setCommandQuery(event.target.value); setCommandIndex(0); }}
+                onKeyDown={event => {
+                  if (event.key === 'Escape') setShowCommandPalette(false);
+                  if (event.key === 'ArrowDown') {
+                    event.preventDefault();
+                    setCommandIndex(index => Math.min(index + 1, commandItems.length - 1));
+                  }
+                  if (event.key === 'ArrowUp') {
+                    event.preventDefault();
+                    setCommandIndex(index => Math.max(index - 1, 0));
+                  }
+                  if (event.key === 'Enter' && commandItems[commandIndex]) {
+                    event.preventDefault();
+                    void runCommand(commandItems[commandIndex]);
+                  }
+                }}
+                placeholder="Search pages or run a command…"
+                aria-label="Search pages or run a command"
+              />
+              <kbd>ESC</kbd>
+            </div>
+            <div className="command-results">
+              {commandItems.length === 0 ? (
+                <p className="command-empty">No pages or commands found.</p>
+              ) : commandItems.map((item, index) => (
+                <button
+                  key={`${item.kind}-${item.id}`}
+                  className={`command-result ${index === commandIndex ? 'active' : ''}`}
+                  onMouseEnter={() => setCommandIndex(index)}
+                  onClick={() => { void runCommand(item); }}
+                >
+                  <span className="command-result-icon">{item.kind === 'page' ? item.note.icon : item.id === 'quick-capture' ? '⌁' : item.id === 'inbox' ? '↳' : item.id === 'favorites' ? '♡' : '＋'}</span>
+                  <span><strong>{item.title}</strong><small>{item.subtitle}</small></span>
+                  {item.kind === 'page' && <kbd>↵</kbd>}
+                </button>
+              ))}
+            </div>
+            <footer><span>↑↓ Navigate</span><span>↵ Open</span><span>⌘ K Toggle</span></footer>
+          </section>
+        </div>
+      )}
       {showCapture && (
         <div className="modal-backdrop" onClick={() => setShowCapture(false)}>
           <section className="capture-modal" role="dialog" aria-modal="true" aria-labelledby="capture-heading" onClick={event => event.stopPropagation()}>

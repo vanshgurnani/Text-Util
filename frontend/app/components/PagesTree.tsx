@@ -53,8 +53,9 @@ export default function PagesTree({ notes, selectedId, onSelect, onCreateChild }
           <button
             type="button"
             className="page-tree-toggle"
-            aria-label={isExpanded ? `Collapse ${note.title}` : `Expand ${note.title}`}
-            aria-expanded={isExpanded}
+            aria-label={children.length ? (isExpanded ? `Collapse ${note.title}` : `Expand ${note.title}`) : `${note.title} has no subpages`}
+            aria-expanded={children.length ? isExpanded : undefined}
+            disabled={!children.length}
             onClick={() => setExpanded(current => {
               const next = new Set(current);
               if (next.has(note.id)) next.delete(note.id);
@@ -85,5 +86,43 @@ export default function PagesTree({ notes, selectedId, onSelect, onCreateChild }
     );
   }
 
-  return <div className="page-tree">{roots.map(note => renderPage(note, 0))}</div>;
+  return (
+    <div
+      className="page-tree"
+      onKeyDown={event => {
+        const title = (event.target as HTMLElement).closest<HTMLButtonElement>('.page-tree-title');
+        if (!title) return;
+        const titles = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('.page-tree-title'));
+        const index = titles.indexOf(title);
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+          event.preventDefault();
+          titles[index + (event.key === 'ArrowDown' ? 1 : -1)]?.focus();
+        } else if (event.key === 'Home' || event.key === 'End') {
+          event.preventDefault();
+          (event.key === 'Home' ? titles[0] : titles[titles.length - 1])?.focus();
+        } else if (event.key === 'ArrowRight') {
+          const toggle = title.parentElement?.querySelector<HTMLButtonElement>('.page-tree-toggle');
+          if (toggle?.getAttribute('aria-expanded') === 'false') {
+            event.preventDefault();
+            toggle.click();
+          }
+        } else if (event.key === 'ArrowLeft') {
+          const toggle = title.parentElement?.querySelector<HTMLButtonElement>('.page-tree-toggle');
+          if (toggle?.getAttribute('aria-expanded') === 'true') {
+            event.preventDefault();
+            toggle.click();
+          } else {
+            const parentNode = title.closest('.page-tree-node')?.parentElement?.closest('.page-tree-node');
+            const parentTitle = parentNode?.querySelector<HTMLButtonElement>(':scope > .page-tree-row .page-tree-title');
+            if (parentTitle) {
+              event.preventDefault();
+              parentTitle.focus();
+            }
+          }
+        }
+      }}
+    >
+      {roots.map(note => renderPage(note, 0))}
+    </div>
+  );
 }

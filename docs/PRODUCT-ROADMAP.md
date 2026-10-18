@@ -135,11 +135,11 @@ stage at once.
 
 ### 1. Fast capture inbox
 
-- Add a persistent **Quick capture** action from every screen.
-- Save a short note immediately to a personal Inbox, without asking for a page,
+- [x] Add a persistent **Quick capture** action from the workspace.
+- [x] Save a short note immediately to a personal Inbox, without asking for a page,
   category, or template first.
-- Let users turn an inbox item into a page, task, or archived item later.
-- Support capture from a keyboard shortcut and a small mobile-friendly form.
+- [x] Let users turn an inbox item into a page later.
+- [x] Support capture from a keyboard shortcut and a small mobile-friendly form.
 
 **Done when:** a signed-in user can capture a thought and return to their prior
 page without losing context; new captures appear in Inbox across refreshes.
@@ -159,13 +159,13 @@ and users can tell whether the latest change has been persisted.
 
 ### 3. Make navigation feel immediate
 
-- Add a command palette for opening pages, creating a page, and common actions.
-- Add keyboard navigation for the page tree and note results.
-- Add recent pages and a clearly visible Inbox entry.
-- Add breadcrumbs and quick parent/child navigation on nested pages.
+- [x] Add a command palette for opening pages, creating a page, and common actions.
+- [x] Add keyboard navigation for the page tree and note results.
+- [x] Add recent pages and a clearly visible Inbox entry.
+- [x] Add breadcrumbs and quick parent/child navigation on nested pages.
 
-**Done when:** users can open a known page from the keyboard and navigate back
-to its parent without scanning the full page tree.
+**Done when (met):** users can open a known page from the keyboard and navigate
+back to its parent without scanning the full page tree.
 
 ## Stage 2 — Build a personal knowledge base
 
