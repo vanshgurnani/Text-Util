@@ -2,9 +2,9 @@
 
 Noteform is a calm, Notion-inspired personal notes workspace. Users can create, edit, search, categorize, bookmark, and delete notes from a Next.js interface. A FastAPI service owns authentication and data access, while an MCP endpoint lets an authorized GPT-compatible client search and write notes.
 
-![Noteform workspace preview](docs/assets/noteform-workspace.svg)
+![Noteform workspace preview](docs/assets/noteform-workspace.png)
 
-> The image above is the repository UI reference preview for the current product direction. The live interface is rendered by `frontend/`.
+> Workspace screenshot.
 
 ## Product capabilities
 
