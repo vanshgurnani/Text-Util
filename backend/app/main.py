@@ -7,7 +7,7 @@ import io
 import json
 import secrets
 from datetime import datetime, timedelta, timezone
-from typing import Any, Optional
+from typing import Annotated, Any, Optional
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from bson import ObjectId
@@ -600,30 +600,37 @@ def oauth_token(
 
 @app.get("/notes")
 def list_notes(
-    search: str = Query(default=""),
-    category: Optional[str] = Query(default=None),
-    tag: Optional[str] = Query(default=None, min_length=1, max_length=32),
-    bookmarked: Optional[bool] = Query(default=None),
-    inbox: Optional[bool] = Query(default=None),
+    search: str = "",
+    category: Optional[str] = None,
+    tag: Annotated[Optional[str], Query(min_length=1, max_length=32)] = None,
+    bookmarked: Optional[bool] = None,
+    inbox: Optional[bool] = None,
     user: dict = Depends(current_user),
 ):
+    # Safe defensive normalization for direct Python invocations & FastAPI params
+    search_str = "" if hasattr(search, "default") or not isinstance(search, str) else search.strip()
+    cat_str = None if hasattr(category, "default") or not isinstance(category, str) else category.strip()
+    tag_str = None if hasattr(tag, "default") or not isinstance(tag, str) else tag.strip()
+    b_val = None if hasattr(bookmarked, "default") or not isinstance(bookmarked, bool) else bookmarked
+    i_val = None if hasattr(inbox, "default") or not isinstance(inbox, bool) else inbox
+
     query: dict[str, Any] = owner_filter(user)
-    if category and category.lower() != "all":
-        if category.lower() == "pinned":
+    if cat_str and cat_str.lower() != "all":
+        if cat_str.lower() == "pinned":
             query["pinned"] = True
         else:
-            query["category"] = category
-    if bookmarked is not None:
-        query["bookmarked"] = bookmarked
-    if inbox is not None:
-        query["inbox"] = inbox
-    if tag and tag.strip():
-        query["tags"] = tag.strip().casefold()
-    if search.strip():
+            query["category"] = cat_str
+    if b_val is not None:
+        query["bookmarked"] = b_val
+    if i_val is not None:
+        query["inbox"] = i_val
+    if tag_str:
+        query["tags"] = tag_str.casefold()
+    if search_str:
         query["$or"] = [
-            {"title": {"$regex": search.strip(), "$options": "i"}},
-            {"content": {"$regex": search.strip(), "$options": "i"}},
-            {"source_url": {"$regex": search.strip(), "$options": "i"}},
+            {"title": {"$regex": search_str, "$options": "i"}},
+            {"content": {"$regex": search_str, "$options": "i"}},
+            {"source_url": {"$regex": search_str, "$options": "i"}},
         ]
     notes = notes_collection().find(query).sort("updated_at", -1)
     return {"notes": [serialize_note(note) for note in notes]}
@@ -960,12 +967,13 @@ def add_data_column(table_id: str, payload: DataColumn, user: dict = Depends(cur
 
 
 @app.get("/tables/{table_id}/records")
-def list_data_records(table_id: str, limit: int = Query(default=200, ge=1, le=500), user: dict = Depends(current_user)):
+def list_data_records(table_id: str, limit: Annotated[int, Query(ge=1, le=500)] = 200, user: dict = Depends(current_user)):
+    actual_limit = 200 if hasattr(limit, "default") or not isinstance(limit, int) else limit
     table = data_table_or_404(table_id, user)
     records = data_records_collection().find({
         "table_id": table["_id"],
         **owner_filter(user),
-    }).sort([("created_at", 1), ("_id", 1)]).limit(limit)
+    }).sort([("created_at", 1), ("_id", 1)]).limit(actual_limit)
     return {"records": [serialize_record(record) for record in records]}
 
 
@@ -1084,10 +1092,37 @@ async def mcp(request: Request):
         tool = call.params.get("name")
         values = call.params.get("arguments", {}) or {}
         if tool == "search_notes":
-            notes = list_notes(search=str(values.get("query", "")), user=user)["notes"]
-            text = "\n\n".join(f"[{note['id']}] {note['title']}\n{note['content']}" for note in notes)
+            search_query = str(values.get("query") or values.get("search") or values.get("q") or "").strip()
+            notes = list_notes(search=search_query, user=user)["notes"]
+            if not notes:
+                text = f"No notes found matching '{search_query}'." if search_query else "No notes found in workspace."
+            else:
+                formatted = []
+                for note in notes:
+                    tags_str = f" [tags: {', '.join(note.get('tags', []))}]" if note.get("tags") else ""
+                    formatted.append(f"[{note['id']}] {note['title']}{tags_str}\n{note.get('content', '')}")
+                text = "\n\n---\n\n".join(formatted)
         elif tool == "get_note":
-            text = str(get_note(str(values.get("note_id", "")), user=user)["note"])
+            note_id = str(values.get("note_id") or values.get("id") or "").strip()
+            if not note_id:
+                return mcp_error(call.id, -32602, "Missing required argument 'note_id'")
+            try:
+                note = get_note(note_id, user=user)["note"]
+                text = (
+                    f"Title: {note.get('title', 'Untitled')}\n"
+                    f"ID: {note.get('id', '')}\n"
+                    f"Category: {note.get('category', 'General')}\n"
+                    f"Tags: {', '.join(note.get('tags', [])) if note.get('tags') else 'None'}\n"
+                    f"Bookmarked: {note.get('bookmarked', False)}\n"
+                    f"Pinned: {note.get('pinned', False)}\n"
+                    f"Updated: {note.get('updated_at', '')}\n\n"
+                    f"{note.get('content', '')}"
+                )
+            except HTTPException as exc:
+                if exc.status_code == 404:
+                    text = f"Note with ID '{note_id}' was not found in your workspace."
+                else:
+                    raise
         elif tool == "create_note":
             created = create_note(NoteCreate(title=values.get("title", "Untitled"), content=values.get("content", ""), category=values.get("category", "General")), user=user)
             text = f"Created note {created['note']['id']}: {created['note']['title']}"
