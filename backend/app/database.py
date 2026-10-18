@@ -22,6 +22,18 @@ def summaries_collection():
     return db.summaries
 
 
+def oauth_clients_collection():
+    return db.oauth_clients
+
+
+def oauth_codes_collection():
+    return db.oauth_codes
+
+
+def oauth_tokens_collection():
+    return db.oauth_tokens
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     try:

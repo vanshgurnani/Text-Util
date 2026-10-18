@@ -31,6 +31,20 @@ def verify_password(password: str, encoded: str) -> bool:
         return False
 
 
+def hash_mcp_token(token: str) -> str:
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
+def create_mcp_token() -> tuple[str, str]:
+    token = f"nf_mcp_{secrets.token_urlsafe(40)}"
+    return token, hash_mcp_token(token)
+
+
+def create_oauth_token(prefix: str) -> tuple[str, str]:
+    token = f"{prefix}_{secrets.token_urlsafe(40)}"
+    return token, hash_mcp_token(token)
+
+
 def create_access_token(user_id: str, username: str) -> str:
     expires = datetime.now(timezone.utc) + timedelta(minutes=settings.jwt_expiry_minutes)
     return jwt.encode({"sub": user_id, "username": username, "exp": expires}, settings.jwt_secret, algorithm="HS256")

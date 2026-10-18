@@ -15,6 +15,7 @@ services:
       MONGO_DB: noteform
       JWT_SECRET: ${JWT_SECRET:-local-development-secret-change-me}
       CORS_ORIGINS: http://localhost:3000
+      MCP_PUBLIC_URL: ${MCP_PUBLIC_URL:-https://mcp.example.com/mcp}
       MCP_API_KEY: ${MCP_API_KEY:-}
       MCP_USER_ID: ${MCP_USER_ID:-}
     depends_on:
@@ -32,6 +33,13 @@ services:
       - backend
     ports:
       - "3000:3000"
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN:?Set CLOUDFLARE_TUNNEL_TOKEN in .env}
+    depends_on:
+      - backend
 
 volumes:
   mongo_data:

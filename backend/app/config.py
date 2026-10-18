@@ -10,6 +10,7 @@ class Settings:
     cors_origins = [origin.strip() for origin in os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",") if origin.strip()]
     mcp_api_key = os.getenv("MCP_API_KEY", "")
     mcp_user_id = os.getenv("MCP_USER_ID", "")
+    mcp_public_url = os.getenv("MCP_PUBLIC_URL", "https://mcp.example.com/mcp").rstrip("/")
 
 
 settings = Settings()

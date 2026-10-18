@@ -1,16 +1,22 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+import base64
+import hashlib
+import html
+import secrets
+from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from bson import ObjectId
-from fastapi import Depends, FastAPI, HTTPException, Query, Request, status
+from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, RedirectResponse
 from pymongo.errors import DuplicateKeyError
 
-from .auth import create_access_token, current_user, hash_password, public_user, user_from_token, verify_password
+from .auth import create_access_token, create_mcp_token, create_oauth_token, current_user, hash_mcp_token, hash_password, public_user, user_from_token, verify_password
 from .config import settings
-from .database import lifespan, notes_collection, summaries_collection, users_collection
+from .database import lifespan, notes_collection, oauth_clients_collection, oauth_codes_collection, oauth_tokens_collection, summaries_collection, users_collection
 from .schemas import LoginRequest, MCPCall, NoteCreate, NoteUpdate, RegisterRequest, SummaryCreate
 from .serializers import serialize_note
 
@@ -65,6 +71,165 @@ def login(payload: LoginRequest):
 @app.get("/auth/me")
 def me(user: dict = Depends(current_user)):
     return {"user": public_user(user)}
+
+
+@app.post("/auth/mcp-token")
+def issue_mcp_token(user: dict = Depends(current_user)):
+    token, token_hash = create_mcp_token()
+    users_collection().update_one(
+        {"_id": user["_id"]},
+        {"$set": {"mcp_token_hash": token_hash, "mcp_token_created_at": datetime.now(timezone.utc)}},
+    )
+    return {"token": token, "message": "MCP token created. Copy it now; it will not be shown again."}
+
+
+@app.delete("/auth/mcp-token")
+def revoke_mcp_token(user: dict = Depends(current_user)):
+    users_collection().update_one({"_id": user["_id"]}, {"$unset": {"mcp_token_hash": "", "mcp_token_created_at": ""}})
+    return {"success": True, "message": "MCP token revoked"}
+
+
+def oauth_issuer() -> str:
+    return settings.mcp_public_url[:-4] if settings.mcp_public_url.endswith("/mcp") else settings.mcp_public_url
+
+
+def oauth_error_page(message: str, code: int = 400):
+    body = f"<!doctype html><title>Noteform authorization</title><main style='font:16px system-ui;max-width:500px;margin:10vh auto'><h1>Noteform</h1><p>{html.escape(message)}</p></main>"
+    return HTMLResponse(body, status_code=code, headers={"Cache-Control": "no-store"})
+
+
+def valid_oauth_client(client_id: str, redirect_uri: str) -> Optional[dict]:
+    client = oauth_clients_collection().find_one({"client_id": client_id})
+    if not client or redirect_uri not in client.get("redirect_uris", []):
+        return None
+    return client
+
+
+def pkce_challenge(verifier: str) -> str:
+    digest = hashlib.sha256(verifier.encode("ascii")).digest()
+    return base64.urlsafe_b64encode(digest).rstrip(b"=").decode("ascii")
+
+
+def protected_resource_metadata_payload():
+    return {
+        "resource": settings.mcp_public_url,
+        "authorization_servers": [oauth_issuer()],
+        "scopes_supported": ["notes:read", "notes:write"],
+        "bearer_methods_supported": ["header"],
+    }
+
+
+@app.get("/.well-known/oauth-protected-resource")
+def protected_resource_metadata():
+    return protected_resource_metadata_payload()
+
+
+@app.get("/.well-known/oauth-protected-resource/mcp")
+def protected_resource_metadata_for_mcp_path():
+    # Some MCP clients append the resource path to the well-known URL.
+    return protected_resource_metadata_payload()
+
+
+@app.get("/.well-known/oauth-authorization-server")
+def authorization_server_metadata():
+    issuer = oauth_issuer()
+    return {
+        "issuer": issuer,
+        "authorization_endpoint": f"{issuer}/oauth/authorize",
+        "token_endpoint": f"{issuer}/oauth/token",
+        "registration_endpoint": f"{issuer}/oauth/register",
+        "response_types_supported": ["code"],
+        "grant_types_supported": ["authorization_code", "refresh_token"],
+        "code_challenge_methods_supported": ["S256"],
+        "token_endpoint_auth_methods_supported": ["none"],
+        "scopes_supported": ["notes:read", "notes:write"],
+    }
+
+
+@app.post("/oauth/register")
+async def oauth_register(request: Request):
+    payload = await request.json()
+    redirect_uris = payload.get("redirect_uris", [])
+    if not isinstance(redirect_uris, list) or not redirect_uris or not all(isinstance(uri, str) for uri in redirect_uris):
+        return {"error": "invalid_client_metadata", "error_description": "redirect_uris is required"}
+    client_id = f"nf_client_{secrets.token_urlsafe(18)}"
+    oauth_clients_collection().insert_one({"client_id": client_id, "client_name": payload.get("client_name", "MCP client"), "redirect_uris": redirect_uris, "created_at": datetime.now(timezone.utc)})
+    return {"client_id": client_id, "client_name": payload.get("client_name", "MCP client"), "redirect_uris": redirect_uris, "token_endpoint_auth_method": "none"}
+
+
+@app.get("/oauth/authorize", response_class=HTMLResponse)
+def oauth_authorize(
+    response_type: str = Query(default=""), client_id: str = Query(default=""), redirect_uri: str = Query(default=""),
+    scope: str = Query(default="notes:read notes:write"), state: str = Query(default=""), code_challenge: str = Query(default=""),
+    code_challenge_method: str = Query(default=""), resource: str = Query(default=""),
+):
+    if response_type != "code" or code_challenge_method != "S256" or not code_challenge:
+        return oauth_error_page("This authorization request must use PKCE with S256.")
+    if resource and resource.rstrip("/") != settings.mcp_public_url:
+        return oauth_error_page("This authorization request targets a different MCP resource.")
+    if not valid_oauth_client(client_id, redirect_uri):
+        return oauth_error_page("The OAuth client or redirect URI is not registered.")
+    fields = {"response_type": response_type, "client_id": client_id, "redirect_uri": redirect_uri, "scope": scope, "state": state, "code_challenge": code_challenge, "code_challenge_method": code_challenge_method, "resource": resource}
+    hidden = "".join(f"<input type='hidden' name='{html.escape(key)}' value='{html.escape(value)}'>" for key, value in fields.items())
+    body = f"""<!doctype html><title>Connect Noteform</title><main style='font:16px system-ui;max-width:420px;margin:10vh auto;padding:28px;border:1px solid #ddd;border-radius:8px'><h1>Connect Noteform</h1><p>Sign in to let ChatGPT access your notes.</p><form method='post' action='/oauth/authorize'>{hidden}<label>Email<br><input name='email' type='email' required style='width:100%;padding:9px;margin:6px 0 14px'></label><label>Password<br><input name='password' type='password' required style='width:100%;padding:9px;margin:6px 0 18px'></label><button type='submit' style='padding:10px 16px'>Authorize</button></form></main>"""
+    return HTMLResponse(body, headers={"Cache-Control": "no-store"})
+
+
+@app.post("/oauth/authorize")
+def oauth_authorize_submit(
+    email: str = Form(...), password: str = Form(...), response_type: str = Form(...), client_id: str = Form(...), redirect_uri: str = Form(...),
+    scope: str = Form("notes:read notes:write"), state: str = Form(""), code_challenge: str = Form(...), code_challenge_method: str = Form(...), resource: str = Form(""),
+):
+    if response_type != "code" or code_challenge_method != "S256" or not valid_oauth_client(client_id, redirect_uri):
+        return oauth_error_page("Invalid authorization request.")
+    if resource and resource.rstrip("/") != settings.mcp_public_url:
+        return oauth_error_page("This authorization request targets a different MCP resource.")
+    user = users_collection().find_one({"email": email.lower()})
+    if not user or not verify_password(password, user.get("password_hash", "")):
+        return oauth_error_page("Invalid Noteform email or password.")
+    code = f"nf_code_{secrets.token_urlsafe(40)}"
+    oauth_codes_collection().insert_one({"code_hash": hash_mcp_token(code), "user_id": user["_id"], "client_id": client_id, "redirect_uri": redirect_uri, "code_challenge": code_challenge, "scope": scope, "resource": resource, "expires_at": datetime.now(timezone.utc) + timedelta(minutes=5)})
+    query = {"code": code}
+    if state:
+        query["state"] = state
+    parts = urlsplit(redirect_uri)
+    redirect = urlunsplit((parts.scheme, parts.netloc, parts.path, urlencode({**dict(parse_qsl(parts.query)), **query}), parts.fragment))
+    return RedirectResponse(redirect, status_code=303, headers={"Cache-Control": "no-store"})
+
+
+@app.post("/oauth/token")
+def oauth_token(
+    grant_type: str = Form(...), client_id: str = Form(...), code: Optional[str] = Form(default=None), redirect_uri: Optional[str] = Form(default=None),
+    code_verifier: Optional[str] = Form(default=None), refresh_token: Optional[str] = Form(default=None),
+):
+    now = datetime.now(timezone.utc)
+    if grant_type == "authorization_code":
+        if not code or not redirect_uri or not code_verifier:
+            return {"error": "invalid_request", "error_description": "code, redirect_uri, and code_verifier are required"}
+        # Put expiry in the Mongo query. PyMongo decodes BSON dates as naive
+        # UTC datetimes, so comparing a decoded value with an aware Python
+        # datetime raises TypeError inside the request handler.
+        stored = oauth_codes_collection().find_one_and_delete({"code_hash": hash_mcp_token(code), "expires_at": {"$gt": now}})
+        if not stored or stored["client_id"] != client_id or stored["redirect_uri"] != redirect_uri or pkce_challenge(code_verifier) != stored["code_challenge"]:
+            return {"error": "invalid_grant", "error_description": "Authorization code is invalid or expired"}
+        user_id, scope, resource_value = stored["user_id"], stored.get("scope", "notes:read notes:write"), stored.get("resource", "")
+    elif grant_type == "refresh_token" and refresh_token:
+        stored = oauth_tokens_collection().find_one({"token_hash": hash_mcp_token(refresh_token), "token_type": "refresh", "client_id": client_id, "expires_at": {"$gt": now}})
+        if not stored:
+            return {"error": "invalid_grant", "error_description": "Refresh token is invalid or expired"}
+        user_id, scope, resource_value = stored["user_id"], stored.get("scope", "notes:read notes:write"), stored.get("resource", "")
+    else:
+        return {"error": "unsupported_grant_type"}
+    access_token, access_hash = create_oauth_token("nf_oauth")
+    refresh_value, refresh_hash = create_oauth_token("nf_refresh")
+    oauth_tokens_collection().insert_many([
+        {"token_hash": access_hash, "token_type": "access", "user_id": user_id, "client_id": client_id, "scope": scope, "resource": resource_value, "expires_at": now + timedelta(hours=1)},
+        {"token_hash": refresh_hash, "token_type": "refresh", "user_id": user_id, "client_id": client_id, "scope": scope, "resource": resource_value, "expires_at": now + timedelta(days=30)},
+    ])
+    response = {"access_token": access_token, "token_type": "Bearer", "expires_in": 3600, "refresh_token": refresh_value, "scope": scope}
+    if resource_value:
+        response["resource"] = resource_value
+    return response
 
 
 @app.get("/notes")
@@ -159,11 +324,31 @@ def mcp_result(request_id: Any, result: dict):
 def mcp_user(request: Request) -> dict:
     auth = request.headers.get("authorization", "")
     api_key = request.headers.get("x-mcp-api-key", "")
+    bearer = auth.split(" ", 1)[1].strip() if auth.lower().startswith("bearer ") else ""
+    supplied_token = api_key or bearer
+    if supplied_token.startswith("nf_oauth_"):
+        token = oauth_tokens_collection().find_one({"token_hash": hash_mcp_token(supplied_token), "token_type": "access", "expires_at": {"$gt": datetime.now(timezone.utc)}})
+        if token:
+            user = users_collection().find_one({"_id": token["user_id"]})
+            if user:
+                return user
+    if supplied_token.startswith("nf_mcp_"):
+        user = users_collection().find_one({"mcp_token_hash": hash_mcp_token(supplied_token)})
+        if user:
+            return user
     if settings.mcp_api_key and api_key == settings.mcp_api_key and settings.mcp_user_id:
-        return user_from_token(create_access_token(settings.mcp_user_id, "mcp"))
+        if ObjectId.is_valid(settings.mcp_user_id):
+            user = users_collection().find_one({"_id": ObjectId(settings.mcp_user_id)})
+            if user:
+                return user
     if auth.lower().startswith("bearer "):
-        return user_from_token(auth.split(" ", 1)[1].strip())
-    raise HTTPException(status_code=401, detail="Use a bearer token or configured MCP API key")
+        return user_from_token(bearer)
+    raise HTTPException(status_code=401, detail="OAuth or MCP API token required")
+
+
+def mcp_unauthorized(exc: HTTPException):
+    metadata_url = f"{oauth_issuer()}/.well-known/oauth-protected-resource"
+    raise HTTPException(status_code=401, detail=exc.detail, headers={"WWW-Authenticate": f'Bearer resource_metadata="{metadata_url}"'})
 
 
 @app.post("/mcp")
@@ -177,15 +362,15 @@ async def mcp(request: Request):
         return {}
     if call.method == "initialize":
         return mcp_result(call.id, {"protocolVersion": "2025-03-26", "capabilities": {"tools": {}}, "serverInfo": {"name": "noteform", "version": "2.0.0"}})
-    if call.method == "tools/list":
-        return mcp_result(call.id, {"tools": [
-            {"name": "search_notes", "description": "Search the connected user's notes by title or content.", "inputSchema": {"type": "object", "properties": {"query": {"type": "string"}}, "required": ["query"]}},
-            {"name": "get_note", "description": "Read one note by id.", "inputSchema": {"type": "object", "properties": {"note_id": {"type": "string"}}, "required": ["note_id"]}},
-            {"name": "create_note", "description": "Save a new note to the connected user's workspace.", "inputSchema": {"type": "object", "properties": {"title": {"type": "string"}, "content": {"type": "string"}, "category": {"type": "string"}}, "required": ["content"]}},
-            {"name": "list_bookmarks", "description": "List the connected user's bookmarked notes.", "inputSchema": {"type": "object", "properties": {}}},
-        ]})
     try:
         user = mcp_user(request)
+        if call.method == "tools/list":
+            return mcp_result(call.id, {"tools": [
+                {"name": "search_notes", "description": "Search the connected user's notes by title or content.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:read"]}], "inputSchema": {"type": "object", "properties": {"query": {"type": "string"}}, "required": ["query"]}},
+                {"name": "get_note", "description": "Read one note by id.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:read"]}], "inputSchema": {"type": "object", "properties": {"note_id": {"type": "string"}}, "required": ["note_id"]}},
+                {"name": "create_note", "description": "Save a new note to the connected user's workspace.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:write"]}], "inputSchema": {"type": "object", "properties": {"title": {"type": "string"}, "content": {"type": "string"}, "category": {"type": "string"}}, "required": ["content"]}},
+                {"name": "list_bookmarks", "description": "List the connected user's bookmarked notes.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:read"]}], "inputSchema": {"type": "object", "properties": {}}},
+            ]})
         if call.method != "tools/call":
             return mcp_error(call.id, -32601, "Method not found")
         tool = call.params.get("name")
@@ -205,6 +390,8 @@ async def mcp(request: Request):
             return mcp_error(call.id, -32602, f"Unknown tool: {tool}")
         return mcp_result(call.id, {"content": [{"type": "text", "text": text or "No matching notes."}]})
     except HTTPException as exc:
+        if exc.status_code == 401:
+            mcp_unauthorized(exc)
         return mcp_error(call.id, -32001, exc.detail)
     except Exception as exc:
         return mcp_error(call.id, -32000, str(exc))

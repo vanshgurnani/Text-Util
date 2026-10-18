@@ -6,7 +6,7 @@
     "dev": "npm --prefix frontend run dev",
     "build": "npm --prefix frontend run build",
     "start": "npm --prefix frontend run start",
-    "docker:up": "colima start && docker-compose up --build -d",
+    "docker:up": "colima start && DOCKER_BUILDKIT=0 docker-compose up --build -d",
     "docker:down": "docker-compose down"
   }
 }
