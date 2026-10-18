@@ -1,6 +1,6 @@
-# Noteform
+# NoteOS
 
-Noteform is a calm, Notion-inspired personal notes workspace. Users can create, edit, search, categorize, bookmark, and delete notes from a Next.js interface. A FastAPI service owns authentication and data access, while an MCP endpoint lets an authorized GPT-compatible client search and write notes.
+NoteOS is a calm, Notion-inspired personal notes workspace. Users can create, edit, search, categorize, bookmark, and delete notes from a Next.js interface. A FastAPI service owns authentication and data access, while an MCP endpoint lets an authorized GPT-compatible client search and write notes.
 
 ![Noteform workspace preview](docs/assets/noteform-workspace.png)
 

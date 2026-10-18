@@ -35,7 +35,7 @@ export default function LoginPage() {
       <div className="notion-auth-box">
         <div className="notion-auth-brand">
           <div className="notion-auth-icon">✦</div>
-          <span className="notion-auth-brand-text">Noteform</span>
+          <span className="notion-auth-brand-text">NoteOS</span>
         </div>
 
         <h1 className="notion-auth-title">Log in</h1>

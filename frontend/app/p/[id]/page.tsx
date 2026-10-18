@@ -28,7 +28,7 @@ export default function PublicNotePage() {
           setNote(data);
           setLoading(false);
           if (data.title) {
-            document.title = `${data.title} — Noteform`;
+            document.title = `${data.title} — NoteOS`;
           }
         }
       })
@@ -71,7 +71,7 @@ export default function PublicNotePage() {
         <header className="public-note-nav">
           <Link href="/" className="public-note-brand">
             <span className="public-brand-icon">✦</span>
-            <span className="public-brand-name">Noteform</span>
+            <span className="public-brand-name">NoteOS</span>
           </Link>
         </header>
         <main className="public-note-canvas">
@@ -95,11 +95,11 @@ export default function PublicNotePage() {
         <header className="public-note-nav">
           <Link href="/" className="public-note-brand">
             <span className="public-brand-icon">✦</span>
-            <span className="public-brand-name">Noteform</span>
+            <span className="public-brand-name">NoteOS</span>
           </Link>
           <div className="public-nav-actions">
             <Link href="/" className="public-cta-btn">
-              Open Noteform
+              Open NoteOS
             </Link>
           </div>
         </header>
@@ -111,7 +111,7 @@ export default function PublicNotePage() {
               The owner may have turned off public sharing, restricted access, or deleted this note.
             </p>
             <Link href="/" className="public-primary-btn">
-              Go to Noteform Home
+              Go to NoteOS Home
             </Link>
           </div>
         </main>
@@ -123,9 +123,9 @@ export default function PublicNotePage() {
     <div className="public-note-container">
       {/* Sleek top navigation */}
       <header className="public-note-nav">
-        <Link href="/" className="public-note-brand" title="Noteform Home">
+        <Link href="/" className="public-note-brand" title="NoteOS Home">
           <span className="public-brand-icon">✦</span>
-          <span className="public-brand-name">Noteform</span>
+          <span className="public-brand-name">NoteOS</span>
           <span className="public-badge-readonly">View Only</span>
         </Link>
         <div className="public-nav-actions">
@@ -226,7 +226,7 @@ export default function PublicNotePage() {
         {/* Subtle footer */}
         <footer className="public-note-footer">
           <div className="public-footer-inner">
-            <span>Published with <strong>Noteform</strong></span>
+            <span>Published with <strong>NoteOS</strong></span>
             <span className="footer-bullet">•</span>
             <span>The calm, fast personal workspace</span>
             <span className="footer-bullet">•</span>

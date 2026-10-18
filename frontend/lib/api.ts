@@ -65,8 +65,13 @@ export class ApiError extends Error {
   }
 }
 
+export function getSessionToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('noteos_token') || localStorage.getItem('noteform_token');
+}
+
 export async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('noteform_token') : null;
+  const token = getSessionToken();
   const headers = new Headers(options.headers);
   headers.set('Content-Type', 'application/json');
   if (token) headers.set('Authorization', `Bearer ${token}`);
@@ -88,7 +93,7 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
 }
 
 async function uploadWorkspaceFile<T>(path: string, file: File): Promise<T> {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('noteform_token') : null;
+  const token = getSessionToken();
   const headers = new Headers();
   if (token) headers.set('Authorization', `Bearer ${token}`);
   const form = new FormData();
@@ -114,7 +119,7 @@ export function importWorkspace(file: File) {
 }
 
 export async function downloadWorkspaceExport(): Promise<Blob> {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('noteform_token') : null;
+  const token = getSessionToken();
   const headers = new Headers();
   if (token) headers.set('Authorization', `Bearer ${token}`);
   const response = await fetch(`${API_URL}/workspace/export`, { headers });
@@ -127,11 +132,15 @@ export async function downloadWorkspaceExport(): Promise<Blob> {
 }
 
 export function saveSession(token: string, user: User) {
+  localStorage.setItem('noteos_token', token);
+  localStorage.setItem('noteos_user', JSON.stringify(user));
   localStorage.setItem('noteform_token', token);
   localStorage.setItem('noteform_user', JSON.stringify(user));
 }
 
 export function clearSession() {
+  localStorage.removeItem('noteos_token');
+  localStorage.removeItem('noteos_user');
   localStorage.removeItem('noteform_token');
   localStorage.removeItem('noteform_user');
 }

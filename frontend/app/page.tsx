@@ -173,10 +173,12 @@ export default function Workspace() {
   const coverPickerRef = useRef<HTMLDivElement>(null);
   const addColPopoverRef = useRef<HTMLDivElement>(null);
   const csvFileInputRef = useRef<HTMLInputElement>(null);
+  const archiveFileInputRef = useRef<HTMLInputElement>(null);
+  const [archiveDragActive, setArchiveDragActive] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem('noteform_user');
-    const token = localStorage.getItem('noteform_token');
+    const stored = localStorage.getItem('noteos_user') || localStorage.getItem('noteform_user');
+    const token = localStorage.getItem('noteos_token') || localStorage.getItem('noteform_token');
     if (!stored || !token) {
       router.replace('/login');
       return;
@@ -1112,7 +1114,7 @@ export default function Workspace() {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'noteform-workspace.zip';
+      link.download = 'noteos-workspace.zip';
       link.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
       flash('Workspace export downloaded');
@@ -2799,45 +2801,234 @@ export default function Workspace() {
 
       {/* Portability Modal (Import / Export) */}
       {showPortability && (
-        <div className="modal-backdrop" onClick={() => setShowPortability(false)}>
-          <section className="capture-modal portability-modal" role="dialog" aria-modal="true" aria-labelledby="portability-heading" onClick={event => event.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowPortability(false)} aria-label="Close import and export">×</button>
-            <div className="mcp-symbol">⇄</div>
-            <p className="eyebrow">WORKSPACE PORTABILITY</p>
-            <h2 id="portability-heading">Import and Export</h2>
-            <p className="muted modal-copy">Export your notes in Markdown ZIP, or import existing Markdown notes preserving hierarchy.</p>
-            <button className="primary-button portability-export" onClick={() => void exportWorkspace()} disabled={exportingWorkspace}>
-              {exportingWorkspace ? 'Preparing export…' : 'Download workspace ZIP'} <span>↓</span>
-            </button>
-            <label className="archive-picker">
-              Import a Markdown ZIP
-              <input
-                type="file"
-                accept=".zip,application/zip"
-                onChange={event => {
-                  const file = event.target.files?.[0] || null;
-                  event.currentTarget.value = '';
-                  void inspectWorkspaceArchive(file);
-                }}
-              />
-            </label>
-            {previewingImport && <p className="muted" role="status">Checking archive…</p>}
-            {importPreview && (
-              <div className="import-preview">
-                <strong>{importPreview.count} {importPreview.count === 1 ? 'page' : 'pages'} ready to add</strong>
-                {importPreview.pages.length > 0 && (
-                  <ul>{importPreview.pages.map((page, index) => <li key={`${page.path}-${index}`}>{page.title}</li>)}</ul>
-                )}
-                {importPreview.count > importPreview.pages.length && <small>and {importPreview.count - importPreview.pages.length} more</small>}
-                {importPreview.skipped_files > 0 && (
-                  <small>{importPreview.skipped_files} asset or other non-Markdown file(s) accepted but not stored.</small>
-                )}
-                <button className="primary-button" onClick={() => void confirmWorkspaceImport()} disabled={importingWorkspace || importPreview.count === 0}>
-                  {importingWorkspace ? 'Importing…' : `Add ${importPreview.count} ${importPreview.count === 1 ? 'page' : 'pages'}`}
-                </button>
+        <div className="modal-backdrop" onClick={() => { setShowPortability(false); setImportFile(null); setImportPreview(null); setImportError(''); }}>
+          <section className="portability-modal" role="dialog" aria-modal="true" aria-labelledby="portability-heading" onClick={event => event.stopPropagation()}>
+            <button className="modal-close" onClick={() => { setShowPortability(false); setImportFile(null); setImportPreview(null); setImportError(''); }} aria-label="Close import and export">×</button>
+            
+            <div className="portability-header">
+              <div className="portability-icon-badge">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
               </div>
-            )}
-            {importError && <p className="form-error" role="alert">{importError}</p>}
+              <div className="portability-header-text">
+                <p className="eyebrow">WORKSPACE PORTABILITY</p>
+                <h2 id="portability-heading">Import and Export</h2>
+                <p className="modal-copy">Backup your entire workspace or import notes from Notion, Obsidian, and Markdown.</p>
+              </div>
+            </div>
+
+            <div className="portability-sections">
+              {/* Export Card */}
+              <div className="portability-card">
+                <div className="portability-card-header">
+                  <div className="portability-card-icon export-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="7 10 12 15 17 10" />
+                      <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                  </div>
+                  <div className="portability-card-info">
+                    <h3>Export Workspace</h3>
+                    <p>Download all your notes, pages, and directory hierarchy as a standard Markdown ZIP archive.</p>
+                  </div>
+                </div>
+                <div className="portability-card-action">
+                  <button className="portability-btn export-btn" onClick={() => void exportWorkspace()} disabled={exportingWorkspace}>
+                    {exportingWorkspace ? (
+                      <>
+                        <span className="btn-spinner" />
+                        <span>Preparing ZIP…</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                          <polyline points="7 10 12 15 17 10" />
+                          <line x1="12" y1="15" x2="12" y2="3" />
+                        </svg>
+                        <span>Download workspace ZIP</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Import Card */}
+              <div className="portability-card">
+                <div className="portability-card-header">
+                  <div className="portability-card-icon import-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="17 8 12 3 7 8" />
+                      <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                  </div>
+                  <div className="portability-card-info">
+                    <h3>Import Markdown Archive</h3>
+                    <p>Upload a <code>.zip</code> file containing markdown files. Preserves folder tree and nested pages.</p>
+                  </div>
+                </div>
+
+                {/* Dropzone */}
+                <div
+                  className={`archive-dropzone ${archiveDragActive ? 'is-dragging' : ''} ${importFile ? 'has-file' : ''}`}
+                  onDragOver={(e) => { e.preventDefault(); setArchiveDragActive(true); }}
+                  onDragLeave={() => setArchiveDragActive(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setArchiveDragActive(false);
+                    const file = e.dataTransfer.files?.[0] || null;
+                    if (file) void inspectWorkspaceArchive(file);
+                  }}
+                  onClick={() => {
+                    if (!importFile) archiveFileInputRef.current?.click();
+                  }}
+                  tabIndex={0}
+                  role="button"
+                  aria-label="Upload Markdown ZIP archive"
+                >
+                  <input
+                    ref={archiveFileInputRef}
+                    type="file"
+                    className="archive-hidden-input"
+                    accept=".zip,application/zip"
+                    onChange={event => {
+                      const file = event.target.files?.[0] || null;
+                      event.currentTarget.value = '';
+                      void inspectWorkspaceArchive(file);
+                    }}
+                  />
+
+                  {importFile ? (
+                    <div className="archive-file-selected" onClick={e => e.stopPropagation()}>
+                      <div className="archive-file-left">
+                        <span className="archive-file-badge">ZIP</span>
+                        <div className="archive-file-details">
+                          <strong className="archive-file-name">{importFile.name}</strong>
+                          <span className="archive-file-size">
+                            {(importFile.size / (1024 * 1024)).toFixed(2)} MB
+                          </span>
+                        </div>
+                      </div>
+                      <div className="archive-file-actions">
+                        <button
+                          type="button"
+                          className="archive-action-text-btn"
+                          onClick={() => archiveFileInputRef.current?.click()}
+                        >
+                          Change
+                        </button>
+                        <button
+                          type="button"
+                          className="archive-action-remove-btn"
+                          onClick={() => {
+                            setImportFile(null);
+                            setImportPreview(null);
+                            setImportError('');
+                          }}
+                          aria-label="Remove file"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="dropzone-empty-state">
+                      <div className="dropzone-icon-bubble">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" />
+                          <path d="M12 12v9" />
+                          <path d="m16 16-4-4-4 4" />
+                        </svg>
+                      </div>
+                      <p className="dropzone-title">
+                        <span>Click to browse</span> or drag and drop archive
+                      </p>
+                      <p className="dropzone-subtitle">Supported format: ZIP archive containing Markdown files (max 20 MB)</p>
+                    </div>
+                  )}
+                </div>
+
+                {previewingImport && (
+                  <div className="import-status-indicator">
+                    <span className="btn-spinner" />
+                    <span>Inspecting archive structure…</span>
+                  </div>
+                )}
+
+                {importPreview && (
+                  <div className="import-preview-container">
+                    <div className="import-preview-badge">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                      <span>{importPreview.count} {importPreview.count === 1 ? 'page' : 'pages'} ready to add</span>
+                    </div>
+
+                    {importPreview.pages.length > 0 && (
+                      <div className="import-preview-tree">
+                        <ul>
+                          {importPreview.pages.map((page, index) => (
+                            <li key={`${page.path}-${index}`}>
+                              <span className="preview-page-icon">📄</span>
+                              <span className="preview-page-title">{page.title}</span>
+                              <span className="preview-page-path">{page.path}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {importPreview.count > importPreview.pages.length && (
+                      <p className="import-preview-overflow">
+                        + {importPreview.count - importPreview.pages.length} more pages in folders
+                      </p>
+                    )}
+
+                    {importPreview.skipped_files > 0 && (
+                      <p className="import-preview-skipped">
+                        ℹ {importPreview.skipped_files} non-Markdown asset(s) skipped.
+                      </p>
+                    )}
+
+                    <div className="import-preview-cta">
+                      <button
+                        className="portability-btn import-btn"
+                        onClick={() => void confirmWorkspaceImport()}
+                        disabled={importingWorkspace || importPreview.count === 0}
+                      >
+                        {importingWorkspace ? (
+                          <>
+                            <span className="btn-spinner" />
+                            <span>Importing into workspace…</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>Add {importPreview.count} {importPreview.count === 1 ? 'page' : 'pages'} to workspace</span>
+                            <span className="btn-arrow">→</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {importError && (
+                  <div className="import-alert-error" role="alert">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    <span>{importError}</span>
+                  </div>
+                )}
+              </div>
+            </div>
           </section>
         </div>
       )}
@@ -2848,7 +3039,7 @@ export default function Workspace() {
           <section className="mcp-modal" onClick={event => event.stopPropagation()}>
             <button className="modal-close" onClick={() => setShowMcp(false)}>×</button>
             <div className="mcp-symbol">✧</div>
-            <p className="eyebrow">NOTEFORM CONNECT</p>
+            <p className="eyebrow">NOTEOS CONNECT</p>
             <h2>Connect GPT / MCP</h2>
             <p className="muted modal-copy">Connect ChatGPT or any MCP client to query and interact with your workspace.</p>
             <div className="connect-step">
