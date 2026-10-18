@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="760" viewBox="0 0 1440 760" role="img" aria-labelledby="title desc">
+  <title id="title">Noteform workspace preview</title>
+  <desc id="desc">A Notion-inspired Noteform workspace with a navigation sidebar, note library, and note editor.</desc>
+  <defs>
+    <style>
+      .sans { font-family: Arial, Helvetica, sans-serif; }
+      .serif { font-family: Georgia, 'Times New Roman', serif; }
+      .mono { font-family: 'Courier New', monospace; }
+    </style>
+  </defs>
+  <rect width="1440" height="760" fill="#f8f7f3"/>
+  <rect x="0" y="0" width="260" height="760" fill="#f1f0ea"/>
+  <rect x="260" y="0" width="1" height="760" fill="#e5e1d8"/>
+  <rect x="261" y="0" width="1179" height="70" fill="#fdfcf8"/>
+  <rect x="261" y="69" width="1179" height="1" fill="#e5e1d8"/>
+  <rect x="824" y="70" width="1" height="690" fill="#e5e1d8"/>
+
+  <text x="36" y="47" class="sans" font-size="22" font-weight="700" fill="#24221f">✦ <tspan fill="#24221f">Noteform</tspan></text>
+  <rect x="25" y="93" width="210" height="58" rx="6" fill="#f9f8f3" stroke="#dedbd2"/>
+  <circle cx="51" cy="122" r="15" fill="#b8c9ae"/>
+  <text x="46" y="127" class="sans" font-size="13" font-weight="700" fill="#405743">V</text>
+  <text x="75" y="118" class="sans" font-size="12" font-weight="700" fill="#3e3b36">Vansh GURNANI's space</text>
+  <text x="75" y="136" class="sans" font-size="10" fill="#949087">Personal workspace</text>
+  <text x="215" y="126" class="sans" font-size="16" fill="#9e9a91">⌄</text>
+
+  <rect x="25" y="169" width="210" height="45" rx="5" fill="#405743"/>
+  <text x="43" y="198" class="sans" font-size="22" fill="#fff">＋</text>
+  <text x="75" y="197" class="sans" font-size="13" fill="#fff">New note</text>
+  <text x="194" y="197" class="mono" font-size="10" fill="#c4d0c0">⌘ N</text>
+
+  <text x="37" y="261" class="mono" font-size="10" letter-spacing="2" fill="#aaa69e">LIBRARY</text>
+  <rect x="25" y="278" width="210" height="35" rx="4" fill="#e2e8df"/>
+  <text x="43" y="301" class="sans" font-size="16" fill="#405743">▤</text>
+  <text x="75" y="300" class="sans" font-size="12" fill="#405743">All notes</text>
+  <text x="213" y="300" class="sans" font-size="10" fill="#899381">3</text>
+  <text x="43" y="339" class="sans" font-size="18" fill="#96958d">♡</text>
+  <text x="75" y="339" class="sans" font-size="12" fill="#78756e">Favorites</text>
+  <text x="37" y="390" class="mono" font-size="10" letter-spacing="2" fill="#aaa69e">CATEGORIES</text>
+  <text x="219" y="390" class="sans" font-size="17" fill="#aaa69e">＋</text>
+  <circle cx="47" cy="420" r="5" fill="#a9b99f"/><text x="65" y="425" class="sans" font-size="12" fill="#78756e">Personal</text>
+  <circle cx="47" cy="456" r="5" fill="#c9937f"/><text x="65" y="461" class="sans" font-size="12" fill="#78756e">Work</text>
+  <circle cx="47" cy="492" r="5" fill="#d2ae6b"/><text x="65" y="497" class="sans" font-size="12" fill="#78756e">Ideas</text>
+  <circle cx="47" cy="528" r="5" fill="#8faab5"/><text x="65" y="533" class="sans" font-size="12" fill="#78756e">Reading</text>
+  <circle cx="47" cy="564" r="5" fill="#b4a4b9"/><text x="65" y="569" class="sans" font-size="12" fill="#78756e">General</text>
+  <text x="37" y="625" class="mono" font-size="10" letter-spacing="2" fill="#aaa69e">CONNECT</text>
+  <text x="219" y="625" class="sans" font-size="17" fill="#aaa69e">＋</text>
+  <text x="43" y="662" class="sans" font-size="18" fill="#96958d">✧</text><text x="75" y="661" class="sans" font-size="12" fill="#78756e">Connect GPT</text>
+
+  <text x="294" y="43" class="sans" font-size="12" fill="#aaa69e">Workspace</text>
+  <text x="367" y="43" class="sans" font-size="12" fill="#d0ccc4">/</text>
+  <text x="388" y="43" class="sans" font-size="12" font-weight="700" fill="#65625c">All notes</text>
+  <rect x="1194" y="21" width="180" height="30" rx="5" fill="#fffefa" stroke="#e4e0d7"/>
+  <text x="1207" y="41" class="sans" font-size="17" fill="#aaa69e">⌕</text>
+  <text x="1231" y="40" class="sans" font-size="11" fill="#96928a">Search notes...</text>
+  <text x="1350" y="40" class="mono" font-size="9" fill="#bbb7ae">⌘ K</text>
+  <text x="1391" y="43" class="sans" font-size="21" fill="#96928d">✧</text>
+  <circle cx="1420" cy="35" r="14" fill="#d4e0cd"/><text x="1415" y="40" class="sans" font-size="11" font-weight="700" fill="#405743">V</text>
+
+  <text x="304" y="145" class="mono" font-size="11" letter-spacing="3" fill="#aaa69e">YOUR LIBRARY</text>
+  <text x="304" y="190" class="serif" font-size="43" fill="#24221f">All notes</text>
+  <text x="304" y="217" class="sans" font-size="13" fill="#96928a">3 notes · Updated across your workspace</text>
+  <rect x="730" y="126" width="65" height="37" rx="5" fill="#fffefa" stroke="#e5e1d8"/>
+  <rect x="734" y="130" width="28" height="29" rx="3" fill="#e5ebe3"/><text x="743" y="150" class="sans" font-size="17" fill="#405743">☷</text><text x="774" y="150" class="sans" font-size="17" fill="#aaa69e">⊞</text>
+
+  <rect x="294" y="256" width="500" height="105" rx="6" fill="#edf2e9" stroke="#d5dfcf"/>
+  <rect x="315" y="278" width="35" height="35" rx="4" fill="#fffefa" stroke="#e7e3d9"/><text x="326" y="302" class="sans" font-size="17" fill="#b48e52">✦</text>
+  <text x="371" y="287" class="sans" font-size="15" font-weight="700" fill="#3d3a35">Baked Protein Cupcakes</text>
+  <text x="371" y="310" class="sans" font-size="12" fill="#99958d">BAKED PROTEIN CUPCAKES (makes 8) Soft, moist cupcakes made with oat fl...</text>
+  <rect x="371" y="327" width="52" height="18" rx="3" fill="#e0e9dc"/><text x="380" y="340" class="sans" font-size="10" fill="#68745f">Recipes</text><text x="435" y="340" class="mono" font-size="10" fill="#aaa69e">Today</text>
+
+  <rect x="294" y="376" width="500" height="92" rx="6" fill="#f8f7f3"/>
+  <rect x="315" y="398" width="35" height="35" rx="4" fill="#fffefa" stroke="#e7e3d9"/><text x="326" y="422" class="sans" font-size="17" fill="#b48e52">✦</text>
+  <text x="371" y="407" class="sans" font-size="15" font-weight="700" fill="#3d3a35">Homemade Protein Pizza</text>
+  <text x="371" y="430" class="sans" font-size="12" fill="#99958d">HOMEMADE PROTEIN PIZZA (makes 2 pizzas, about 8 inch) The protein com...</text>
+  <rect x="371" y="445" width="52" height="18" rx="3" fill="#e0e9dc"/><text x="380" y="458" class="sans" font-size="10" fill="#68745f">Recipes</text><text x="435" y="458" class="mono" font-size="10" fill="#aaa69e">Today</text>
+
+  <rect x="294" y="483" width="500" height="92" rx="6" fill="#f8f7f3"/>
+  <rect x="315" y="505" width="35" height="35" rx="4" fill="#fffefa" stroke="#e7e3d9"/><text x="326" y="529" class="sans" font-size="17" fill="#b48e52">✦</text>
+  <text x="371" y="514" class="sans" font-size="15" font-weight="700" fill="#3d3a35">Rajma Chawal Recipe</text>
+  <text x="371" y="537" class="sans" font-size="12" fill="#99958d">RAJMA CHAWAL (serves 4) INGREDIENTS Rajma: - 200 g dried rajma (kidne...</text>
+  <rect x="371" y="552" width="52" height="18" rx="3" fill="#e0e9dc"/><text x="380" y="565" class="sans" font-size="10" fill="#68745f">Recipes</text><text x="435" y="565" class="mono" font-size="10" fill="#aaa69e">Today</text>
+
+  <text x="850" y="104" class="mono" font-size="10" fill="#aaa69e">✓ Saved</text>
+  <text x="1280" y="105" class="sans" font-size="25" fill="#8f8c84">☆</text><text x="1318" y="105" class="sans" font-size="20" fill="#8f8c84">⌫</text>
+  <rect x="1360" y="85" width="70" height="35" rx="4" fill="#e7eee2"/><text x="1371" y="107" class="sans" font-size="11" fill="#405743">Save note</text>
+  <rect x="850" y="119" width="540" height="1" fill="#eeeae2"/>
+  <text x="879" y="191" class="sans" font-size="31" fill="#c7a15e">✦</text>
+  <text x="879" y="284" class="serif" font-size="45" font-weight="700" fill="#24221f">Baked Protein Cupcakes</text>
+  <text x="879" y="323" class="mono" font-size="10" fill="#aaa69e">Last edited today  ·  469 words</text>
+  <text x="879" y="419" class="serif" font-size="20" font-weight="700" fill="#706b63">BAKED PROTEIN CUPCAKES (makes 8)</text>
+  <text x="879" y="476" class="serif" font-size="18" fill="#706b63">Soft, moist cupcakes made with oat flour, whey protein, eggs and</text>
+  <text x="879" y="507" class="serif" font-size="18" fill="#706b63">Greek yogurt. Roughly 8–10 g protein each, depending on your</text>
+  <text x="879" y="538" class="serif" font-size="18" fill="#706b63">protein powder.</text>
+  <text x="879" y="614" class="serif" font-size="20" font-weight="700" fill="#706b63">INGREDIENTS</text>
+  <text x="879" y="650" class="serif" font-size="18" fill="#706b63">Dry:</text>
+  <text x="879" y="684" class="serif" font-size="17" fill="#706b63">– 1 cup oat flour   – 2 scoops whey protein</text>
+</svg>
