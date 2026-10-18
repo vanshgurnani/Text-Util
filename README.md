@@ -19,23 +19,23 @@ Noteform is a calm, Notion-inspired personal notes workspace. Users can create, 
 - OAuth 2.1 discovery, dynamic client registration, authorization-code + PKCE flow, and refresh tokens for hosted MCP clients such as ChatGPT.
 - MCP tools for `search_notes`, `get_note`, `create_note`, and `list_bookmarks`.
 - MongoDB persistence with Docker volume storage.
-- Cloudflare Tunnel support for exposing the MCP endpoint through HTTPS without opening inbound ports.
+- Public HTTPS MCP access through the hosting provider's web service.
 - Mongo-backed background jobs with a Compose worker for asynchronous insights.
 
 ## Architecture at a glance
 
 ```text
-Browser ──HTTP──> Next.js frontend :3000
-                     │ REST + JWT
-                     ▼
-                FastAPI API :8000 ──> MongoDB :27017
-                     ▲
-                     │ MCP + OAuth 2.1
-                     │
-ChatGPT / MCP client ──HTTPS──> Cloudflare Tunnel ──> backend:8000
+Browser ──HTTPS──> Next.js frontend
+                      │ REST + JWT
+                      ▼
+                 FastAPI API ──> MongoDB
+                      ▲
+                      │ MCP + OAuth 2.1
+                      │
+              ChatGPT / MCP client
 ```
 
-The frontend and backend are separate containers on the default Compose network. `cloudflared` creates an outbound tunnel to the same backend service; it does not expose a new inbound application port.
+The frontend and backend are separate services. In production, the backend web service is directly reachable over HTTPS, so MCP clients can use its `/mcp` endpoint without a tunnel.
 
 The longer-term architecture and feature improvement plan is in [`docs/ARCHITECTURE-ROADMAP.md`](docs/ARCHITECTURE-ROADMAP.md).
 
@@ -77,7 +77,8 @@ The old Express backend and legacy React application are no longer part of the r
 ## Quick start with Docker
 
 ```bash
-cp .env.example .env
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
 npm run docker:up
 ```
 
@@ -98,66 +99,66 @@ MongoDB data is stored in the named `mongo_data` Docker volume. The `docker:up` 
 
 ## Environment configuration
 
-Copy `.env.example` to `.env` and replace development values before sharing the service publicly.
+Copy the relevant `backend/.env.example` or `frontend/.env.example` file to a local `.env` file and replace development values before sharing the service publicly.
 
 | Variable | Purpose |
 | --- | --- |
 | `JWT_SECRET` | Signs web-session JWTs. Use a long random value. |
-| `MCP_PUBLIC_URL` | Public MCP resource URL, normally `https://mcp.example.com/mcp`. |
+| `MCP_PUBLIC_URL` | Public MCP resource URL, normally `https://your-api.onrender.com/mcp`. |
 | `MCP_API_KEY` | Optional server-to-server MCP key. Prefer user-generated tokens for user-scoped access. |
 | `MCP_USER_ID` | User ID paired with the optional global `MCP_API_KEY`. |
-| `CLOUDFLARE_TUNNEL_TOKEN` | Token for the named Cloudflare Tunnel used by Compose. |
 
-Never commit `.env`, JWT secrets, MCP tokens, or Cloudflare tunnel tokens. If a tunnel token is pasted into a chat, terminal recording, issue, or commit, revoke it in Cloudflare and create a replacement.
+Never commit `.env`, JWT secrets, MCP tokens, or database credentials. If a credential was ever committed, revoke or rotate it even after removing it from the working tree.
 
-## Cloudflare Tunnel and MCP setup
+## Render deployment
 
-### Production named tunnel
+Render can build the existing backend Dockerfile and host the frontend as a Node.js web service. Use MongoDB Atlas or a Render-hosted MongoDB private service; the local Compose MongoDB volume is not a production database.
 
-1. Create a Cloudflare Tunnel in Cloudflare Zero Trust and choose the Docker connector.
-2. Put the generated token in `.env`:
+1. Push the repository to GitHub or another Git provider.
+2. Create a MongoDB database. Copy its connection string and make sure the database accepts connections from Render. Use a strong database user and password.
+3. In Render, create a **Web Service** for the backend from the repository:
 
-   ```dotenv
-   CLOUDFLARE_TUNNEL_TOKEN=replace-with-a-new-token
+   - Runtime: **Docker**
+   - Root directory: `backend`
+   - Health check path: `/health`
+   - Environment variables:
+
+     ```dotenv
+     MONGO_URI=<mongodb-connection-string>
+     MONGO_DB=noteform
+     JWT_SECRET=<long-random-secret>
+     CORS_ORIGINS=https://<frontend-service>.onrender.com
+     MCP_PUBLIC_URL=https://<backend-service>.onrender.com/mcp
+     MCP_API_KEY=
+     MCP_USER_ID=
+     ```
+
+   Render supplies `PORT`; the backend container uses it automatically.
+
+4. Create a second Render **Web Service** for the frontend:
+
+   - Runtime: **Node**
+   - Root directory: `frontend`
+   - Build command: `npm ci && npm run build`
+   - Start command: `npm start`
+   - Environment variable:
+
+     ```dotenv
+     NEXT_PUBLIC_API_URL=https://<backend-service>.onrender.com
+     ```
+
+5. Replace `<frontend-service>.onrender.com` in the backend's `CORS_ORIGINS` value with the actual frontend URL, save, and redeploy the backend.
+6. Verify the deployment:
+
+   ```text
+   https://<backend-service>.onrender.com/health
+   https://<backend-service>.onrender.com/.well-known/oauth-protected-resource
+   https://<frontend-service>.onrender.com
    ```
 
-3. Add a public hostname, for example `mcp.example.com`, to the tunnel.
-4. Route the hostname to `http://backend:8000`.
-5. Make sure these paths reach the backend: `/mcp*`, `/.well-known/*`, and `/oauth/*`.
-6. Set the exact public MCP resource URL:
+Use `https://<backend-service>.onrender.com/mcp` as the MCP URL. If you add a custom domain, update `MCP_PUBLIC_URL`, `CORS_ORIGINS`, and the MCP client configuration to use that stable domain, then redeploy the backend.
 
-   ```dotenv
-   MCP_PUBLIC_URL=https://mcp.example.com/mcp
-   ```
-
-7. Start or recreate the stack:
-
-   ```bash
-   npm run docker:up
-   ```
-
-The OAuth discovery endpoints are required when a hosted MCP client needs to sign in. A request to `/mcp` without credentials should return `401`; that is expected.
-
-### Temporary tunnel without a domain
-
-For local testing, run the application without the named tunnel and start a temporary Quick Tunnel:
-
-```bash
-docker-compose up --build -d mongo backend frontend
-docker run --rm --name noteform-quick-tunnel cloudflare/cloudflared:latest tunnel --no-autoupdate --url http://host.docker.internal:8000
-```
-
-Cloudflare prints a temporary `https://<random-name>.trycloudflare.com` URL. Set the backend resource URL to that address plus `/mcp`, then recreate only the backend:
-
-```dotenv
-MCP_PUBLIC_URL=https://<random-name>.trycloudflare.com/mcp
-```
-
-```bash
-docker-compose up -d --force-recreate backend
-```
-
-Quick Tunnel URLs change when the process stops and are intended for development, not production.
+See Render's [Docker deployment](https://render.com/docs/docker), [web service guide](https://render.com/docs/web-services), and [environment variable guide](https://render.com/docs/configure-environment-variables) for the current dashboard fields.
 
 ## Connecting an MCP client
 
@@ -294,14 +295,13 @@ That means the endpoint is reachable but no valid OAuth access token or `nf_mcp_
 
 ### OAuth discovery fails
 
-Check that the Cloudflare hostname routes `/mcp*`, `/.well-known/*`, and `/oauth/*` to `http://backend:8000`, and that `MCP_PUBLIC_URL` exactly matches the public HTTPS MCP URL.
+Check that `MCP_PUBLIC_URL` exactly matches the public HTTPS MCP URL and that the backend exposes `/mcp`, `/.well-known/*`, and `/oauth/*`.
 
 ### Inspect service logs
 
 ```bash
 docker-compose logs --tail=150 backend
 docker-compose logs --tail=150 frontend
-docker-compose logs --tail=150 cloudflared
 ```
 
 ## Security notes

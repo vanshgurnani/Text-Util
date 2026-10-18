@@ -10,7 +10,7 @@ This document describes how to evolve Noteform from a working Dockerized MVP int
 - FastAPI backend in backend/app/.
 - MongoDB 7 for users, notes, summaries, and OAuth records.
 - Docker Compose for local orchestration.
-- Cloudflare Tunnel for public HTTPS MCP access.
+- Public HTTPS web service for MCP access.
 - MCP JSON-RPC endpoint at POST /mcp.
 - OAuth 2.1 discovery, dynamic registration, PKCE authorization code flow, and refresh tokens.
 - Long-lived per-user MCP API tokens for generic clients.
@@ -32,14 +32,13 @@ This document describes how to evolve Noteform from a working Dockerized MVP int
 - There is no background job system for embeddings, imports, exports, or AI enrichment.
 - There are no automated integration tests running in CI.
 - The frontend stores web credentials in browser storage and needs a stronger production session boundary.
-- Cloudflare Tunnel configuration is operationally documented but not validated automatically.
 - The MCP tool catalog is hard-coded instead of being versioned and capability-driven.
 
 ## 2. Target architecture
 
 ~~~mermaid
 flowchart LR
-    Browser[Next.js web app] -->|HTTPS REST| Edge[Cloudflare / reverse proxy]
+    Browser[Next.js web app] -->|HTTPS REST| Edge[Public HTTPS host]
     ChatGPT[ChatGPT or MCP client] -->|HTTPS MCP + OAuth 2.1| Edge
     Edge --> API[FastAPI API]
     Edge --> MCP[MCP adapter]
@@ -336,7 +335,6 @@ Track:
 - MCP tool calls by tool, client, scope, and outcome.
 - OAuth authorization and token exchange failures.
 - Background queue depth and job age.
-- Cloudflare Tunnel connection status.
 
 Use structured JSON logs with:
 
@@ -391,7 +389,6 @@ Every pull request should run:
 ### Phase 0 — Stabilize the MVP
 
 - [x] Separate Next.js, FastAPI, MongoDB, and Docker services.
-- [x] Add Cloudflare Tunnel Compose service.
 - [x] Add OAuth metadata and PKCE flow.
 - [x] Add permanent user-scoped MCP tokens.
 - [ ] Add automated CI build and test workflow.
