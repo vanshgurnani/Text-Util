@@ -75,6 +75,19 @@ class WorkspaceArchiveTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "unsafe file path"):
             parse_workspace_archive(output.getvalue())
 
+    def test_accepts_normal_directory_entries(self):
+        output = io.BytesIO()
+        with zipfile.ZipFile(io.BytesIO(create_workspace_archive(self.notes))) as source:
+            files = {name: source.read(name) for name in source.namelist()}
+        with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+            archive.writestr("Pages/", b"")
+            archive.writestr("Pages/research--root-1/", b"")
+            for name, contents in files.items():
+                archive.writestr(name, contents)
+
+        imported = parse_workspace_archive(output.getvalue())
+        self.assertEqual(len(imported), len(self.notes))
+
     def test_rejects_extra_binary_files(self):
         output = io.BytesIO()
         with zipfile.ZipFile(io.BytesIO(create_workspace_archive(self.notes))) as source:

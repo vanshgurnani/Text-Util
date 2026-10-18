@@ -124,15 +124,18 @@ def parse_workspace_archive(data: bytes) -> list[dict[str, Any]]:
         total_size = 0
         files: dict[str, zipfile.ZipInfo] = {}
         for entry in entries:
-            path = PurePosixPath(entry.filename)
+            is_directory = entry.is_dir()
+            path_name = entry.filename[:-1] if is_directory and entry.filename.endswith("/") else entry.filename
+            path = PurePosixPath(path_name)
             if (
-                not entry.filename
+                not path_name
                 or path.is_absolute()
-                or "\\" in entry.filename
-                or any(part in {"", ".", ".."} for part in entry.filename.split("/"))
+                or "\\" in path_name
+                or any(part in {"", ".", ".."} for part in path_name.split("/"))
+                or (path.parts and path.parts[0].endswith(":"))
             ):
                 raise ValueError("Archive contains an unsafe file path")
-            if entry.is_dir():
+            if is_directory:
                 continue
             if entry.filename in files:
                 raise ValueError("Archive contains duplicate file paths")
