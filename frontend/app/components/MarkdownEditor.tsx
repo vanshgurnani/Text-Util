@@ -28,6 +28,8 @@ interface SlashCommand {
 }
 
 const SLASH_COMMANDS: SlashCommand[] = [
+  { id: 'ask-ai', label: 'Ask AI Copilot', desc: 'Query workspace or summarize note with AI', icon: '✨', syntax: '> 🤖 **AI Copilot:** ' },
+  { id: 'summary-ai', label: 'AI Summary Section', desc: 'Structured AI synthesis template', icon: '⚡', syntax: '## ⚡ AI Summary\n- **Key Takeaways:** \n- **Action Items:** \n\n' },
   { id: 'h1', label: 'Heading 1', desc: 'Big section heading', icon: 'H1', syntax: '# ' },
   { id: 'h2', label: 'Heading 2', desc: 'Medium section heading', icon: 'H2', syntax: '## ' },
   { id: 'h3', label: 'Heading 3', desc: 'Small section heading', icon: 'H3', syntax: '### ' },

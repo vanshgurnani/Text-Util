@@ -26,6 +26,13 @@ from .serializers import serialize_note, serialize_public_note
 from .structured_data import normalize_columns, serialize_record, serialize_table, validate_record_values
 from .structured_schemas import DataColumn, DataRecordCreate, DataRecordUpdate, DataTableCreate, DataTableUpdate
 from .workspace_archive import MAX_ARCHIVE_BYTES, MAX_ARCHIVE_NOTES, create_workspace_archive, parse_workspace_archive
+from .rag.router import router as rag_router
+from .rag.openai_router import router as openai_router
+from .rag.retriever import index_note, delete_note_chunks, retrieve_relevant_chunks
+from .rag.cache import invalidate_user_rag_cache
+from .rag.providers import generate_chat_completion
+from .chat.router import router as chat_router
+from .settings_router import router as settings_router
 
 
 app = FastAPI(title=settings.app_name, version="2.0.0", lifespan=lifespan)
@@ -37,6 +44,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(rag_router)
+app.include_router(chat_router)
+app.include_router(openai_router)
+app.include_router(settings_router)
 
 
 def owner_filter(user: dict) -> dict:
@@ -648,6 +660,18 @@ def create_note(payload: NoteCreate, user: dict = Depends(current_user)):
     note = {**note_data, "owner_id": user["_id"], "bookmarked": False, "version": 1, "created_at": now, "updated_at": now}
     result = notes_collection().insert_one(note)
     note["_id"] = result.inserted_id
+    try:
+        index_note(
+            note_id=str(result.inserted_id),
+            owner_id=str(user["_id"]),
+            title=note.get("title", ""),
+            content=note.get("content", ""),
+            category=note.get("category", "general"),
+            tags=note.get("tags", []),
+        )
+        invalidate_user_rag_cache(str(user["_id"]))
+    except Exception:
+        pass
     return {"note": serialize_note(note)}
 
 
@@ -696,6 +720,18 @@ def update_note(note_id: str, payload: NoteUpdate, user: dict = Depends(current_
             },
         )
     updated = note_or_404(note_id, user)
+    try:
+        index_note(
+            note_id=note_id,
+            owner_id=str(user["_id"]),
+            title=updated.get("title", ""),
+            content=updated.get("content", ""),
+            category=updated.get("category", "general"),
+            tags=updated.get("tags", []),
+        )
+        invalidate_user_rag_cache(str(user["_id"]))
+    except Exception:
+        pass
     return {"note": serialize_note(updated)}
 
 
@@ -705,6 +741,11 @@ def delete_note(note_id: str, user: dict = Depends(current_user)):
     if notes_collection().find_one({"parent_id": ObjectId(note_id), **owner_filter(user)}):
         raise HTTPException(status_code=409, detail="Move or delete this page's child pages before deleting it")
     notes_collection().delete_one({"_id": ObjectId(note_id), **owner_filter(user)})
+    try:
+        delete_note_chunks(note_id, str(user["_id"]))
+        invalidate_user_rag_cache(str(user["_id"]))
+    except Exception:
+        pass
     return {"success": True}
 
 
@@ -1086,6 +1127,8 @@ async def mcp(request: Request):
                 {"name": "update_table_record", "description": "Update a record using its version and a partial values object.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:write"]}], "inputSchema": {"type": "object", "properties": {"table_id": {"type": "string"}, "record_id": {"type": "string"}, "version": {"type": "integer", "minimum": 1}, "values": {"type": "object"}}, "required": ["table_id", "record_id", "version", "values"]}},
                 {"name": "delete_table_record", "description": "Permanently delete one record from a table.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:write"]}], "inputSchema": {"type": "object", "properties": {"table_id": {"type": "string"}, "record_id": {"type": "string"}}, "required": ["table_id", "record_id"]}},
                 {"name": "delete_table", "description": "Permanently delete a table and all its records.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:write"]}], "inputSchema": {"type": "object", "properties": {"table_id": {"type": "string"}}, "required": ["table_id"]}},
+                {"name": "rag_search", "description": "Perform hybrid dense-vector and keyword search across notes using RAG embeddings with citations.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:read"]}], "inputSchema": {"type": "object", "properties": {"query": {"type": "string"}, "top_k": {"type": "integer", "default": 5}}, "required": ["query"]}},
+                {"name": "ask_workspace", "description": "Ask an AI question about workspace notes with automatic RAG grounding and citations.", "securitySchemes": [{"type": "oauth2", "scopes": ["notes:read"]}], "inputSchema": {"type": "object", "properties": {"query": {"type": "string"}, "model": {"type": "string"}}, "required": ["query"]}},
             ]})
         if call.method != "tools/call":
             return mcp_error(call.id, -32601, "Method not found")
@@ -1174,6 +1217,27 @@ async def mcp(request: Request):
             table_id = str(values.get("table_id", ""))
             delete_data_table(table_id, user=user)
             text = f"Deleted table {table_id} and its records"
+        elif tool == "rag_search":
+            search_q = str(values.get("query") or values.get("q") or "").strip()
+            top_k_val = int(values.get("top_k", 5))
+            chunks = retrieve_relevant_chunks(query=search_q, owner_id=str(user["_id"]), top_k=top_k_val)
+            if not chunks:
+                text = f"No relevant note chunks found for '{search_q}'."
+            else:
+                formatted = [f"[{c.note_title} (score: {c.score:.2f})]:\n{c.text}" for c in chunks]
+                text = "\n\n---\n\n".join(formatted)
+        elif tool == "ask_workspace":
+            search_q = str(values.get("query") or values.get("q") or "").strip()
+            model_val = values.get("model") or "gemini-2.0-flash"
+            chunks = retrieve_relevant_chunks(query=search_q, owner_id=str(user["_id"]), top_k=4)
+            context_blocks = [f"--- Note Reference: \"{c.note_title}\" ---\n{c.text}" for c in chunks]
+            system_prompt = (
+                "You are Noteform AI assistant. Answer using the retrieved notes below. "
+                "Cite note titles in brackets like [Note Title].\n\n"
+                f"Retrieved Workspace Context:\n{chr(10).join(context_blocks) or 'No relevant notes found.'}"
+            )
+            messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": search_q}]
+            text = generate_chat_completion(messages, model=model_val)
         else:
             return mcp_error(call.id, -32602, f"Unknown tool: {tool}")
         return mcp_result(call.id, {"content": [{"type": "text", "text": text or "No matching notes."}]})

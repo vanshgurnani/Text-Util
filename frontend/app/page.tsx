@@ -1,9 +1,11 @@
 'use client';
 
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import MarkdownEditor from '@/app/components/MarkdownEditor';
 import PagesTree from '@/app/components/PagesTree';
+import AiCopilotDrawer from '@/app/components/AiCopilotDrawer';
 import {
   ApiError,
   api,
@@ -123,6 +125,7 @@ export default function Workspace() {
   const [draftDirty, setDraftDirty] = useState(false);
   const [message, setMessage] = useState('');
   const [showMcp, setShowMcp] = useState(false);
+  const [showCopilot, setShowCopilot] = useState(false);
   const [mcpToken, setMcpToken] = useState('');
   const [showCapture, setShowCapture] = useState(false);
   const [showNewPageDialog, setShowNewPageDialog] = useState(false);
@@ -265,6 +268,11 @@ export default function Workspace() {
       if (event.altKey && event.shiftKey && event.key.toLowerCase() === 'c') {
         event.preventDefault();
         setShowCapture(true);
+      }
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'j') {
+        event.preventDefault();
+        setShowCopilot(curr => !curr);
+        return;
       }
       if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.key.toLowerCase() === 'l') {
         event.preventDefault();
@@ -1395,6 +1403,27 @@ export default function Workspace() {
             <span className="notion-nav-text">Import / Export</span>
           </button>
 
+          <Link
+            href="/chat"
+            className="notion-nav-row"
+            title="Open Noteform AI Chat (ChatGPT style with RAG)"
+          >
+            <span className="notion-nav-icon">✨</span>
+            <span className="notion-nav-text">AI Chat</span>
+            <span className="notion-nav-pill">RAG</span>
+          </Link>
+
+          <button
+            type="button"
+            className="notion-nav-row"
+            onClick={() => setShowCopilot(true)}
+            title="Open AI Copilot Drawer (⌘J)"
+          >
+            <span className="notion-nav-icon">⚡</span>
+            <span className="notion-nav-text">Ask Copilot</span>
+            <span className="notion-nav-kbd">⌘J</span>
+          </button>
+
           <button
             type="button"
             className="notion-nav-row"
@@ -1403,6 +1432,15 @@ export default function Workspace() {
             <span className="notion-nav-icon">✧</span>
             <span className="notion-nav-text">Connect GPT</span>
           </button>
+
+          <Link
+            href="/settings"
+            className="notion-nav-row"
+            title="Configure AI Models, API Keys & Settings"
+          >
+            <span className="notion-nav-icon">⚙️</span>
+            <span className="notion-nav-text">Settings</span>
+          </Link>
 
           <button
             type="button"
@@ -1493,6 +1531,15 @@ export default function Workspace() {
           </div>
 
           <div className="notion-topbar-actions">
+            <button
+              type="button"
+              className="notion-copilot-topbar-btn"
+              title="Ask AI Workspace Copilot (⌘J)"
+              onClick={() => setShowCopilot(true)}
+            >
+              <span className="notion-copilot-sparkle">✨</span>
+              <span>Ask AI</span>
+            </button>
             {selected && (
               <>
                 <span className={`notion-save-indicator state-${saveStatus}`}>
@@ -3257,6 +3304,21 @@ export default function Workspace() {
           </section>
         </div>
       )}
+
+      {/* AI Workspace Copilot Drawer (⌘J) */}
+      <AiCopilotDrawer
+        isOpen={showCopilot}
+        onClose={() => setShowCopilot(false)}
+        activeNoteId={selected?.id}
+        activeNoteTitle={selected?.title}
+        onInsertText={(insertedText) => {
+          if (selected) {
+            const updated = selected.content ? `${selected.content}\n\n${insertedText}` : insertedText;
+            updateSelected('content', updated);
+            flash('Inserted AI response into note');
+          }
+        }}
+      />
     </main>
   );
 }
